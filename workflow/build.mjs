@@ -348,7 +348,8 @@ cauda('(C)', 'Saída (C)', 20, 'Loop respostas', 'Loop respostas');
 const wf = {
   id: 'prspAgenteProsp1',
   name: 'NOVAX - Agente de Prospecção',
-  active: false,
+  // Robson roda em produção ao lado da Claudia (gatilhos, credenciais e tabelas separados).
+  active: true,
   nodes,
   connections,
   pinData: {},

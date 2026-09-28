@@ -1,10 +1,10 @@
 {
   "id": "prspAgenteProsp1",
   "name": "NOVAX - Agente de Prospecção",
-  "active": false,
+  "active": true,
   "nodes": [
     {
-      "id": "7aae129c-e941-4e7b-b084-33c0fda3b31c",
+      "id": "555e4138-0293-458f-8f71-0949b910e21b",
       "name": "Teste manual",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
@@ -15,7 +15,7 @@
       "parameters": {}
     },
     {
-      "id": "07f44680-6174-4d3b-8263-c1b8302f8864",
+      "id": "1f3aada3-2afa-482e-b9eb-58720fb385b7",
       "name": "Roteador de teste",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -29,7 +29,7 @@
       }
     },
     {
-      "id": "e7482ff7-503e-4205-b899-f116184bccfc",
+      "id": "1be07ba8-4b27-4e26-9670-0cda40b42126",
       "name": "Teste: captação?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -47,7 +47,7 @@
           },
           "conditions": [
             {
-              "id": "4e519a86-851b-44cc-a7df-afb79d46e54f",
+              "id": "8ba9167b-62f0-4fed-9b22-f80ef236d04f",
               "leftValue": "={{ $json.etapa === 'captacao' }}",
               "rightValue": "",
               "operator": {
@@ -64,7 +64,7 @@
       }
     },
     {
-      "id": "8b310b7e-cccc-443a-bf1f-b15a641de8d5",
+      "id": "8c9853f7-3c4f-4415-8805-780e9cc91785",
       "name": "Teste: envio?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -82,7 +82,7 @@
           },
           "conditions": [
             {
-              "id": "a3c0460d-0adb-4b2f-b4df-c0d84166e3d1",
+              "id": "f6bfe5ff-36d8-43fc-bb55-49c5c57ef149",
               "leftValue": "={{ $json.etapa === 'envio' }}",
               "rightValue": "",
               "operator": {
@@ -99,7 +99,7 @@
       }
     },
     {
-      "id": "f2279969-5215-4506-8b8a-14c9e2ed2e67",
+      "id": "33cea839-ddc2-4dfb-8861-33680d9daeb4",
       "name": "Resposta simulada",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -113,7 +113,7 @@
       }
     },
     {
-      "id": "99b52e5c-fa11-45f1-99dc-734f928bd42a",
+      "id": "3ca3fb35-a29a-4b95-a296-618f7b056c71",
       "name": "Semanal - Captação",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -133,7 +133,7 @@
       }
     },
     {
-      "id": "88431d6d-e2ee-49df-9371-6a0d1b895320",
+      "id": "f65eaf27-9263-4812-acf4-7313f015b3c2",
       "name": "Buscar taxa de resposta",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -168,7 +168,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "f9d247a0-966c-47d3-9666-86b3e5048f29",
+      "id": "38143d11-66b2-4622-b670-18b414739e1b",
       "name": "Montar buscas da semana",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -182,7 +182,7 @@
       }
     },
     {
-      "id": "0b26ee9e-6e99-40c7-946b-b54a94642889",
+      "id": "91dfb1ef-7afe-456b-9118-7ab57fad256c",
       "name": "Reservar cota Places",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -221,7 +221,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "50c4c68f-e7e1-4ccc-8962-3acb77e0b428",
+      "id": "8b034f17-ae2b-4564-bcc1-1a7cd84af605",
       "name": "Cota Places ok?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -239,7 +239,7 @@
           },
           "conditions": [
             {
-              "id": "2846e4c0-61c1-4603-95c5-0bc7ec59b1da",
+              "id": "92d2b6eb-a75f-47f2-94ee-dd0800be9b98",
               "leftValue": "={{ $json.ok === true }}",
               "rightValue": "",
               "operator": {
@@ -256,7 +256,7 @@
       }
     },
     {
-      "id": "27e9fca4-864f-471f-ad15-e5869a039d23",
+      "id": "9dd7e0ca-ba7f-4a79-8388-21dd676c9b9e",
       "name": "Cota Places esgotada",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -267,7 +267,7 @@
       "parameters": {}
     },
     {
-      "id": "05bc2b90-8fb6-4f0a-af8d-f65c46e25a89",
+      "id": "a28f57c8-b85d-4e08-8ce7-64371eadfda6",
       "name": "Places - Text Search",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -306,7 +306,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "2e950f8f-a88c-41ea-b66b-bc13cfb79511",
+      "id": "a0aac06f-2347-4cbe-96a5-94c233150e93",
       "name": "Filtrar sem site + exclusões",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -320,7 +320,7 @@
       }
     },
     {
-      "id": "4470cdf4-b8ed-4d07-818e-479e740b419e",
+      "id": "a5e28cd5-f39f-4afe-a42a-504b62ae1732",
       "name": "Há leads novos?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -338,7 +338,7 @@
           },
           "conditions": [
             {
-              "id": "a25c5a07-d915-442b-b1cf-fe382d6f5d53",
+              "id": "e1934970-30b1-4036-9902-0fd39e14526c",
               "leftValue": "={{ $json.total > 0 }}",
               "rightValue": "",
               "operator": {
@@ -355,7 +355,7 @@
       }
     },
     {
-      "id": "ff86ee52-5fce-41de-8315-2fd111069028",
+      "id": "aada9d8a-8bb2-493c-a433-c124659d93f1",
       "name": "Upsert leads",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -393,7 +393,7 @@
       }
     },
     {
-      "id": "7c01ea7a-e005-4097-9e68-80f9dd6cd2e3",
+      "id": "cc08ae58-4d3d-46a6-8863-3b3891ac6d45",
       "name": "Resumo captação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -407,7 +407,7 @@
       }
     },
     {
-      "id": "926f5478-9e05-4da2-bf72-4e98849f6432",
+      "id": "1af21f04-7a9d-43f3-90f4-cad61ccbe0a1",
       "name": "Diário - Envio",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -427,7 +427,7 @@
       }
     },
     {
-      "id": "d3cbcff4-f04f-4211-8b93-7ab8773b3820",
+      "id": "429464d1-894e-4291-814f-22aeabc136ac",
       "name": "Status envios (dia)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -462,7 +462,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "059a8418-b490-4d62-b32b-28403e56859d",
+      "id": "d5db4c58-a8dc-4206-8e8b-898befedaf08",
       "name": "Calcular limite do dia",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -476,7 +476,7 @@
       }
     },
     {
-      "id": "4fb88a53-0567-4bd9-9538-0ded2b9e52fb",
+      "id": "32dcab05-6728-4bd8-94a7-b8ce9a10759e",
       "name": "Buscar leads p/ verificação",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -511,7 +511,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "e39bee8a-ad4f-43b5-8d19-ccd29c945af5",
+      "id": "2709e9f8-7d7d-4334-970f-4d154db81866",
       "name": "Há leads p/ verificar?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -529,7 +529,7 @@
           },
           "conditions": [
             {
-              "id": "989d8093-b670-4f68-a6dc-218b1acbb7d6",
+              "id": "0517fa84-8021-42de-aead-6d3477067712",
               "leftValue": "={{ !!$json.id }}",
               "rightValue": "",
               "operator": {
@@ -546,7 +546,7 @@
       }
     },
     {
-      "id": "734a9b4b-8e6c-41d2-831d-ba98858c8e1f",
+      "id": "7379ff9d-2b43-4384-9d2e-cc546798f660",
       "name": "Loop verificação",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -560,7 +560,7 @@
       }
     },
     {
-      "id": "94ec8a2e-cd0d-4d40-8cc1-a416c3e85557",
+      "id": "6e042b12-b5de-478d-81da-8afa2d4c4244",
       "name": "Variações do nome",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -574,7 +574,7 @@
       }
     },
     {
-      "id": "5dbded85-bf0a-4349-9e45-6f4b099a2317",
+      "id": "413a6de7-fce3-4e86-8417-d47f14e597b7",
       "name": "Tem variação?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -592,7 +592,7 @@
           },
           "conditions": [
             {
-              "id": "002c74ae-e734-4a75-bf03-455322094607",
+              "id": "0dfe2cb7-e2b6-494f-9994-5a06a09d5938",
               "leftValue": "={{ !!$json.email }}",
               "rightValue": "",
               "operator": {
@@ -609,7 +609,7 @@
       }
     },
     {
-      "id": "a1104976-bf1f-455b-932c-3b38bc359189",
+      "id": "92e252af-333f-4f17-9bbd-b896feb7eeff",
       "name": "Reacher - variações do nome",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -631,7 +631,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "42a298fc-db85-42fe-9772-e480d64bce24",
+      "id": "1492b539-e638-422b-a93e-ba2622ac9649",
       "name": "Resultado verificação (código)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -645,7 +645,7 @@
       }
     },
     {
-      "id": "3e73eeb7-0127-494d-acd7-d189b670802c",
+      "id": "e5b1a9a2-7a59-4113-a15e-89ee14e60f81",
       "name": "Reacher travou?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -663,7 +663,7 @@
           },
           "conditions": [
             {
-              "id": "e7326e77-8f2d-4364-9ac0-c35005c907b2",
+              "id": "812b7007-614b-4dc3-9ddd-1a2b8f6806b6",
               "leftValue": "={{ $json.incompleto === true }}",
               "rightValue": "",
               "operator": {
@@ -680,7 +680,7 @@
       }
     },
     {
-      "id": "55f8a030-5525-4fbe-9fa6-c0bc9ab29e06",
+      "id": "5fab948b-d9a8-4d59-980c-7bcd382a5ce3",
       "name": "E-mail do nome confirmado?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -698,7 +698,7 @@
           },
           "conditions": [
             {
-              "id": "e193cc82-c4f7-46a6-80ab-975a2315f864",
+              "id": "131c445d-ac79-4377-8274-f97d2ff06ea0",
               "leftValue": "={{ $json.safe === true }}",
               "rightValue": "",
               "operator": {
@@ -715,7 +715,7 @@
       }
     },
     {
-      "id": "217a1900-8102-4d39-a579-b106fd6b8d58",
+      "id": "050a7e23-a59c-4bcd-9106-9f3948062192",
       "name": "Pausa entre verificações",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -728,10 +728,10 @@
         "amount": 10,
         "unit": "seconds"
       },
-      "webhookId": "5a4481e5-be74-4b3e-9adf-e15b1a71b85b"
+      "webhookId": "88329251-e827-4a16-ad15-3f7de71305e1"
     },
     {
-      "id": "623e79f2-58e0-4cde-97c4-3d59ad5d147c",
+      "id": "fabb1348-d021-4536-a59f-21002757364f",
       "name": "Salvar contato verificado",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -770,7 +770,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "1e9273e4-c4d6-43c1-9ac2-a48ed4a57e73",
+      "id": "ae119aa7-eca9-4117-bd05-ea77ae28e894",
       "name": "Marcar verificação (lead)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -809,7 +809,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "50222780-db0b-47df-9e33-d811a782c72a",
+      "id": "1177bd7c-bd1f-4e88-af56-131810602451",
       "name": "Fim da verificação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -823,7 +823,7 @@
       }
     },
     {
-      "id": "ec5d4af4-f15f-485f-bcbe-0d385a9d2cbd",
+      "id": "8a6f48af-61a3-41f6-a499-3b7e869d0604",
       "name": "Buscar fila com e-mail",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -858,7 +858,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "6a94d479-c456-43f6-93f4-271018e9c9df",
+      "id": "24a5ec14-54ab-4459-9bde-f2fab04b68f5",
       "name": "Buscar fila fallback",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -893,7 +893,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "911c4b7d-3501-4778-bb72-2297bf398526",
+      "id": "72789209-f32f-4c57-b007-70e26eb001c6",
       "name": "Montar fila de envio",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -907,7 +907,7 @@
       }
     },
     {
-      "id": "7de8c445-74db-468c-a5d8-95439d85a3e2",
+      "id": "f3b7544e-790e-4670-b2d6-a85800568acc",
       "name": "Loop leads",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -921,7 +921,7 @@
       }
     },
     {
-      "id": "5fe49b43-6354-4ef4-b096-d3b68b25563b",
+      "id": "60276166-c283-4377-8f04-78458d502894",
       "name": "Status envios (lead)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -956,7 +956,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "fa1088ba-a995-4bce-8951-c6e8fb04910f",
+      "id": "5a655f1e-030c-42ca-8f14-976529dbb7e2",
       "name": "Checar limite (lead)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -970,7 +970,7 @@
       }
     },
     {
-      "id": "6250292f-62e1-4c24-a1a2-b32086535b4d",
+      "id": "81f17381-597c-4879-820f-e614293cc909",
       "name": "Cabe no limite?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -988,7 +988,7 @@
           },
           "conditions": [
             {
-              "id": "9bac8805-6a8f-4e5f-b298-0b78b3047c81",
+              "id": "bb6e5ef9-1b54-412e-b0a3-ab4ebbf567d6",
               "leftValue": "={{ $json.cabe === true }}",
               "rightValue": "",
               "operator": {
@@ -1005,7 +1005,7 @@
       }
     },
     {
-      "id": "2478e956-a6c0-4cb2-9405-257916be01ae",
+      "id": "941c7612-b286-4daf-a1f9-c698aec7af17",
       "name": "Pedido IA - e-mail",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1019,7 +1019,7 @@
       }
     },
     {
-      "id": "9678b682-e295-4254-931c-021cd6939e28",
+      "id": "d0d8de7f-1073-47b4-8562-46586e44dda1",
       "name": "Reservar cota IA (e-mail)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1058,7 +1058,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "09bbe0ef-f0f0-4899-8ad7-bc4f97c00cd9",
+      "id": "ef23899e-ee73-4172-b49d-24f606e8ab3e",
       "name": "Cota IA ok? (e-mail)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1076,7 +1076,7 @@
           },
           "conditions": [
             {
-              "id": "d870968a-0581-4bbc-a2bc-99b914bfcaa2",
+              "id": "0518e162-1a78-4560-8126-004872a7aced",
               "leftValue": "={{ $json.ok === true }}",
               "rightValue": "",
               "operator": {
@@ -1093,7 +1093,7 @@
       }
     },
     {
-      "id": "e682f6c2-af40-40e1-9a9d-dc068b0d830e",
+      "id": "9a3dc699-0df1-4e98-9064-065ee0663f55",
       "name": "Parar: cota IA esgotada",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -1104,7 +1104,7 @@
       "parameters": {}
     },
     {
-      "id": "7ba08f78-cc51-4a40-b37d-7523c4a2c1e5",
+      "id": "2e2e13e6-ef05-48ec-8da6-736f34e88d60",
       "name": "OpenRouter - gerar e-mail",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1147,7 +1147,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "293a099e-0947-4555-8496-b3d27a7e2dec",
+      "id": "7714f1f5-1ba1-4b31-8e9d-73dc77fe1842",
       "name": "Validar resposta IA - e-mail",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1161,7 +1161,7 @@
       }
     },
     {
-      "id": "a00fb6df-07bc-408a-8b41-4b4e0272de29",
+      "id": "49f7b98d-fd10-44e1-802c-e6d8bf36bd1d",
       "name": "JSON válido? (e-mail)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1179,7 +1179,7 @@
           },
           "conditions": [
             {
-              "id": "bb1418ce-3039-414c-adec-0d8219ff9a68",
+              "id": "64ce1b86-c413-473d-9160-30bcc867b09c",
               "leftValue": "={{ $json.ok === true }}",
               "rightValue": "",
               "operator": {
@@ -1196,7 +1196,7 @@
       }
     },
     {
-      "id": "804bdf7e-db4b-4145-850e-19497bbe5742",
+      "id": "107010ba-2c39-4071-b04d-3409b7fcbfd5",
       "name": "Ainda tem tentativa? (e-mail)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1214,7 +1214,7 @@
           },
           "conditions": [
             {
-              "id": "4e043ede-7f94-4af9-bd2f-8a2d130c7cc1",
+              "id": "0d474f25-40ca-461f-8ea6-b8c92ab1fa3f",
               "leftValue": "={{ $json.tentativa < 3 }}",
               "rightValue": "",
               "operator": {
@@ -1231,7 +1231,7 @@
       }
     },
     {
-      "id": "300c0801-095e-43e5-93f5-b92c617828a1",
+      "id": "5bc34a2e-a990-4765-9351-64734a47e61e",
       "name": "Pausa retry (e-mail)",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -1244,10 +1244,10 @@
         "amount": 15,
         "unit": "seconds"
       },
-      "webhookId": "0095f1b4-1cf0-4f87-9746-e97fcded87bc"
+      "webhookId": "2362e63c-61ea-4d09-b0bb-92b92a249e3d"
     },
     {
-      "id": "eb1d4170-2634-42e9-bc3f-4a952b02ecc6",
+      "id": "836f6608-6052-4c01-948d-0a8fb2274f43",
       "name": "Preparar retry - e-mail",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1261,7 +1261,7 @@
       }
     },
     {
-      "id": "7a16d81a-b2bc-44fb-8330-267d180ac2f4",
+      "id": "256b759e-2d3f-408b-84e9-895e71c8ff3a",
       "name": "Revisão manual (e-mail)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1275,7 +1275,7 @@
       }
     },
     {
-      "id": "44c8899c-5284-4d2e-9bd1-91f3b5d9d631",
+      "id": "cab7acea-b429-475b-a5fd-657e75a5b703",
       "name": "E-mail já confirmado?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1293,7 +1293,7 @@
           },
           "conditions": [
             {
-              "id": "778c51c7-f2bd-40fe-b888-a010d2fae289",
+              "id": "d3f584d0-d8cf-4ab6-b693-9c8507a11bfc",
               "leftValue": "={{ !!$json.lead.fila && $json.lead.fila.modo === 'texto' }}",
               "rightValue": "",
               "operator": {
@@ -1310,7 +1310,7 @@
       }
     },
     {
-      "id": "dbdecbfe-f518-4aec-96ef-900ea1a02c9c",
+      "id": "f7f01d56-e1bb-46f2-a40c-c9cfdf83bee4",
       "name": "Há candidatos novos?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1328,7 +1328,7 @@
           },
           "conditions": [
             {
-              "id": "545cd9d7-80d3-4719-87e7-f5c3a898ee19",
+              "id": "842afd98-f98f-4f4a-8a3c-fcce52a0c2b2",
               "leftValue": "={{ !!$json.candidatos && $json.candidatos.length > 0 }}",
               "rightValue": "",
               "operator": {
@@ -1345,7 +1345,7 @@
       }
     },
     {
-      "id": "147d7d21-cc27-45ed-9771-8d7766e8f809",
+      "id": "516f305f-9fec-4645-8d0c-a06bfd1d6ef6",
       "name": "Separar candidatos",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1359,7 +1359,7 @@
       }
     },
     {
-      "id": "c2509831-2f4b-4a69-bfee-3cbbc6b85490",
+      "id": "4b2336cb-5853-42ec-b90b-a2e3fb9aa340",
       "name": "Reacher - candidatos da IA",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1381,7 +1381,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "f747be9f-4f2a-4d2b-9efe-7aa9dd627f1b",
+      "id": "56d1e689-b322-4ee9-bab6-1b4607972b46",
       "name": "Escolher melhor e-mail",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1395,7 +1395,7 @@
       }
     },
     {
-      "id": "5ba76c37-5231-4c9b-b3b3-8d8fb6f32d11",
+      "id": "4329b213-f8ab-4e9b-ac33-32e50d76fc77",
       "name": "Tem e-mail válido?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1413,7 +1413,7 @@
           },
           "conditions": [
             {
-              "id": "2ca38b75-028c-45e5-83f2-2b10423bbe62",
+              "id": "57b97209-94a5-4404-95cd-6cac0296a432",
               "leftValue": "={{ $json.tem_email === true }}",
               "rightValue": "",
               "operator": {
@@ -1430,7 +1430,7 @@
       }
     },
     {
-      "id": "e4ee1add-7843-4a01-b8f9-42ce2cc44bb3",
+      "id": "201085ef-856a-43e3-b3c0-08384fab3e18",
       "name": "Descartar lead",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1444,7 +1444,7 @@
       }
     },
     {
-      "id": "c40822dc-a29c-4800-9bd3-5dd6ff567e19",
+      "id": "06604995-510d-4616-a761-d9385f5ef9fd",
       "name": "E-mail definido",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1458,7 +1458,7 @@
       }
     },
     {
-      "id": "1e3a319c-a5f2-4ec7-983d-4d932fa39e24",
+      "id": "dc1088aa-c3f6-4a21-b1ba-614816c6e3f7",
       "name": "Checar bloqueio LGPD",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1510,7 +1510,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "395d7282-a819-4aab-b5b6-3930be999e8d",
+      "id": "99dbad63-a4b0-4461-95ba-f898622da790",
       "name": "Montar e-mail final",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1524,7 +1524,7 @@
       }
     },
     {
-      "id": "407ec7fe-6ab7-4413-9c4c-3164168cce90",
+      "id": "daeb47d4-db8b-41be-88af-cc1fa535eca8",
       "name": "Bloqueado?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1542,7 +1542,7 @@
           },
           "conditions": [
             {
-              "id": "bb03fc4b-f941-4e55-ada4-472740b2fa95",
+              "id": "bab2ec13-1dda-495e-b3dd-5905ab002d3b",
               "leftValue": "={{ $json.bloqueado === true }}",
               "rightValue": "",
               "operator": {
@@ -1559,7 +1559,7 @@
       }
     },
     {
-      "id": "d0ce714b-6861-440f-961b-644c1cff6dd2",
+      "id": "1a63d570-b76e-45ec-9112-fc01fa48e0be",
       "name": "Dry-run?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1577,7 +1577,7 @@
           },
           "conditions": [
             {
-              "id": "2ff6b658-b370-413b-9266-9ecea097422d",
+              "id": "3c42b737-57f6-4be1-93a1-06dc82e4cf71",
               "leftValue": "={{ false === true }}",
               "rightValue": "",
               "operator": {
@@ -1594,7 +1594,7 @@
       }
     },
     {
-      "id": "d9ba9d60-3da3-4cd0-8605-95d1fb1e9664",
+      "id": "d91e8397-7bad-43e6-a2af-fce795ef3669",
       "name": "Dry-run: não envia",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -1605,7 +1605,7 @@
       "parameters": {}
     },
     {
-      "id": "9877f00d-b3c5-4132-a99d-f706ac046f92",
+      "id": "e70bdd01-c935-44c5-88ca-6b28243d0f60",
       "name": "Upsert contato",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1644,7 +1644,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "1bb43388-eabf-4200-ae52-1d65ccf51efe",
+      "id": "839eb566-7b54-4043-9f7b-ec0dcca7a45c",
       "name": "Enviar e-mail (SMTP)",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -1673,7 +1673,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "cefd89e6-51f6-4d2f-bdc0-6807461a7b34",
+      "id": "9d21e943-4f71-4fd5-ae21-eec08f9fd77f",
       "name": "Resultado envio",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1687,7 +1687,7 @@
       }
     },
     {
-      "id": "0efc27f1-5567-472e-80a1-d350a32acdec",
+      "id": "0a7df89f-8447-4dc0-99e9-0e9b596b9008",
       "name": "Saída (B)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1701,7 +1701,7 @@
       }
     },
     {
-      "id": "5c4b20cf-7c83-47fc-9b06-f6bbdcbafade",
+      "id": "cf6d60b8-3df1-404d-b2ce-64fc7c586b84",
       "name": "Houve envio? (B)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1719,7 +1719,7 @@
           },
           "conditions": [
             {
-              "id": "7090de03-73af-4a0a-bb66-3a1dad15b1be",
+              "id": "8e5bd624-ff6d-4a3c-91df-4c2b9b37d325",
               "leftValue": "={{ ($('Saída (B)').first().json.envio || {}).status === 'enviado' }}",
               "rightValue": "",
               "operator": {
@@ -1736,7 +1736,7 @@
       }
     },
     {
-      "id": "4218dbab-e54f-4bf0-950d-1fc335253781",
+      "id": "4d80feed-4ebc-4b98-acf5-f8349fe7fbe5",
       "name": "Espaçar envios",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -1749,10 +1749,10 @@
         "amount": "={{ 30 + Math.floor(Math.random() * 30) }}",
         "unit": "seconds"
       },
-      "webhookId": "8d1f92f6-97f8-4d81-a07f-625c66fbe176"
+      "webhookId": "c1d76ec4-24b1-4807-ad5c-c784e39f613b"
     },
     {
-      "id": "c43438f4-f212-4848-a124-506dcab758d1",
+      "id": "1fb982f0-d84e-4b7c-b4a2-a5f8940e18a3",
       "name": "Registrar envio? (B)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1770,7 +1770,7 @@
           },
           "conditions": [
             {
-              "id": "5b3e2ddf-b131-4ab8-b040-7fb75b7ff128",
+              "id": "822b3c7c-ed8b-4665-b156-6b0cf92d9271",
               "leftValue": "={{ !!$('Saída (B)').first().json.envio }}",
               "rightValue": "",
               "operator": {
@@ -1787,7 +1787,7 @@
       }
     },
     {
-      "id": "dc8817df-e584-4c45-b9c2-89ad95f6c6ba",
+      "id": "8f6fb71a-bd00-48be-a6dc-09d83311354d",
       "name": "Registrar envio (B)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1826,7 +1826,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "ce5d1d33-47f8-4318-b256-08565bcf3a66",
+      "id": "a37ee450-229a-45fb-aefd-4c75fbe6e511",
       "name": "Atualizar lead (B)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1865,7 +1865,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "7e84fefb-8955-4732-8e20-ad8115ed3fb1",
+      "id": "4b08820d-c695-42e0-bf6f-bdb5ea7e1fb6",
       "name": "Registrar no Trello? (B)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1883,7 +1883,7 @@
           },
           "conditions": [
             {
-              "id": "cad2c2d2-2681-43d7-94a8-2ef0eb947ff3",
+              "id": "0439e93d-a33e-45c6-8804-1c1019a3f2ec",
               "leftValue": "={{ !!$('Saída (B)').first().json.trello_lista }}",
               "rightValue": "",
               "operator": {
@@ -1900,7 +1900,7 @@
       }
     },
     {
-      "id": "27796d21-d930-4718-a9c3-2efe888b8b27",
+      "id": "851f533e-4a73-42c1-96f2-05175f977ef1",
       "name": "Tem card? (B)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1918,7 +1918,7 @@
           },
           "conditions": [
             {
-              "id": "57d9e1a5-671b-4f8a-b9e4-324956cca151",
+              "id": "782c4a19-67e8-4059-8d39-97f05ae8db1d",
               "leftValue": "={{ !!$('Saída (B)').first().json.lead.trello_card_id }}",
               "rightValue": "",
               "operator": {
@@ -1935,7 +1935,7 @@
       }
     },
     {
-      "id": "cf3cffb3-0441-4b91-a150-e252e200570a",
+      "id": "e8a81669-dd80-451a-b786-ebc02562271b",
       "name": "Trello - mover card (B)",
       "type": "n8n-nodes-base.trello",
       "typeVersion": 1,
@@ -1964,7 +1964,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "e380a9b6-b5d5-4435-a693-418658d9fde1",
+      "id": "f73cc31c-a4d6-4bd3-b3da-00d9a91c4595",
       "name": "Trello - criar card (B)",
       "type": "n8n-nodes-base.trello",
       "typeVersion": 1,
@@ -1991,7 +1991,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "f0677d9d-51bc-4daf-b2e9-3b26832ec029",
+      "id": "1e85b9be-6fd0-4e12-81cb-610e59f33650",
       "name": "Salvar card no lead (B)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2030,7 +2030,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "b822ffb2-6e83-46db-8f5a-eda8b67706c5",
+      "id": "c709fe17-c5f9-403e-9595-7b94e3d461fb",
       "name": "Gmail IMAP - respostas",
       "type": "n8n-nodes-base.emailReadImap",
       "typeVersion": 2.2,
@@ -2056,7 +2056,7 @@
       }
     },
     {
-      "id": "84e56f25-faca-4bc3-aa10-aeca6aeffb6d",
+      "id": "47eff109-8a23-4504-babc-c0e03cd1bf34",
       "name": "Loop respostas",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -2070,7 +2070,7 @@
       }
     },
     {
-      "id": "7bfcd7ef-8023-40e1-b65e-cd3531ec00e7",
+      "id": "b626ac2a-ddf0-40de-9cb1-42db60efeabc",
       "name": "Extrair resposta",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2084,7 +2084,7 @@
       }
     },
     {
-      "id": "2b175dd5-1295-4069-ac73-bf1e8e77de62",
+      "id": "c9d7109d-0f03-4f67-aa38-3899f54dd30c",
       "name": "É resposta do agente?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2102,7 +2102,7 @@
           },
           "conditions": [
             {
-              "id": "18f15561-5f6e-480e-866e-313bbafcf327",
+              "id": "058a3d93-ca8a-4aa4-bf5f-3a4d820321c3",
               "leftValue": "={{ $json.ignorar === false }}",
               "rightValue": "",
               "operator": {
@@ -2119,7 +2119,7 @@
       }
     },
     {
-      "id": "2520a5c4-3391-42db-aafd-95016ae700b2",
+      "id": "d9901ef6-776a-4cc1-9c8f-7dd40f2f7b38",
       "name": "Buscar envio original",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2175,7 +2175,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "254c6a6d-d301-4953-b8ad-5e86eb4209ed",
+      "id": "db967c6e-53ad-4ccc-83e1-7266ac65499f",
       "name": "Contexto da resposta",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2189,7 +2189,7 @@
       }
     },
     {
-      "id": "ee9753b7-8e50-44dc-ab89-a922a3c47f78",
+      "id": "3af9a277-e523-4b45-be5a-2d7956591449",
       "name": "Ignorar? (C)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2207,7 +2207,7 @@
           },
           "conditions": [
             {
-              "id": "805a0f66-802b-437d-a82b-680fb480d762",
+              "id": "b10ddf99-da98-49be-9292-1798c1ebe9f6",
               "leftValue": "={{ $json.acao === 'ignorar' }}",
               "rightValue": "",
               "operator": {
@@ -2224,7 +2224,7 @@
       }
     },
     {
-      "id": "c2bf700a-92a1-49ca-8c99-5f18100dfe39",
+      "id": "ad491aaf-c5e6-477c-a60b-24d5aaeb3d0a",
       "name": "Registrar resposta no envio",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2263,7 +2263,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "6b7899d0-49e5-4e6f-8ce5-4b2e7794ff5f",
+      "id": "3a83d974-93b4-4665-9b6b-ee07d0a4b633",
       "name": "É descadastro?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2281,7 +2281,7 @@
           },
           "conditions": [
             {
-              "id": "8d1bc9b7-06a2-4da3-b126-79504896aba4",
+              "id": "15c88d4f-da50-49f8-b73f-e6ec735dc6de",
               "leftValue": "={{ $('Contexto da resposta').first().json.acao === 'optout' }}",
               "rightValue": "",
               "operator": {
@@ -2298,7 +2298,7 @@
       }
     },
     {
-      "id": "ecbf74d3-dfae-438c-9ff9-12ed8e300b28",
+      "id": "eab9e98b-396d-4b61-b413-55ce737902bb",
       "name": "Pedido IA - qualificação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2312,7 +2312,7 @@
       }
     },
     {
-      "id": "9f7b57cb-9e7a-4868-a58f-3f862b274373",
+      "id": "2f6eb96f-f52e-4087-927b-f92f8c95501e",
       "name": "Reservar cota IA (resposta)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2351,7 +2351,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "12d22c96-ec4a-4f93-a0d9-6dc825487396",
+      "id": "13e76050-5d2e-4699-8622-d27a820683a3",
       "name": "Cota IA ok? (resposta)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2369,7 +2369,7 @@
           },
           "conditions": [
             {
-              "id": "2022bf06-9e97-4d7d-bc67-f4e4f0ce486a",
+              "id": "fe3214df-beef-42d8-8836-a521c2e28cb1",
               "leftValue": "={{ $json.ok === true }}",
               "rightValue": "",
               "operator": {
@@ -2386,7 +2386,7 @@
       }
     },
     {
-      "id": "4ad3860c-33fd-4d8b-bbe0-fabf3e76afd4",
+      "id": "4fa5ed92-7e0a-42cf-ba06-a04b2dd6f249",
       "name": "OpenRouter - qualificar",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2429,7 +2429,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "25618689-0871-435d-8cf1-31d4fc8a3850",
+      "id": "fe17b1fc-07e5-433c-ae18-604c1ec61e5d",
       "name": "Validar resposta IA - qualificação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2443,7 +2443,7 @@
       }
     },
     {
-      "id": "ed0329d8-fc64-4fa9-a043-6312bf8f1809",
+      "id": "ba1e7244-d152-410e-aa97-2a718c568b8a",
       "name": "JSON válido? (resposta)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2461,7 +2461,7 @@
           },
           "conditions": [
             {
-              "id": "25824ee2-1e5a-46eb-83b7-7334b0dcc6f5",
+              "id": "3dfd0710-8745-4f61-8e7a-82a7be230cda",
               "leftValue": "={{ $json.ok === true }}",
               "rightValue": "",
               "operator": {
@@ -2478,7 +2478,7 @@
       }
     },
     {
-      "id": "7c544318-f9cc-4ecb-a1a7-3c3909e01fbc",
+      "id": "3ddd24f4-b1cb-4cf3-b212-3d51a626a018",
       "name": "Ainda tem tentativa? (resposta)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2496,7 +2496,7 @@
           },
           "conditions": [
             {
-              "id": "86fb8eca-2138-4f3d-ba25-827fdc61659f",
+              "id": "9c8a822b-6e38-4bc6-bfd1-41c520d11716",
               "leftValue": "={{ $json.tentativa < 3 }}",
               "rightValue": "",
               "operator": {
@@ -2513,7 +2513,7 @@
       }
     },
     {
-      "id": "7ead976f-4c31-4535-9114-f435588d6b0b",
+      "id": "68a9cbdf-fb08-47fd-b4ff-008ff2e9d258",
       "name": "Pausa retry (resposta)",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -2526,10 +2526,10 @@
         "amount": 15,
         "unit": "seconds"
       },
-      "webhookId": "f8ffb447-3ecd-47b5-ad1a-85189032fbd0"
+      "webhookId": "14326bab-d25e-4815-ad55-f2f1eef97e40"
     },
     {
-      "id": "87401ca7-5659-43f9-b28a-03ebd5543e52",
+      "id": "1cf5cf0a-240c-4dd6-b613-526694c4065c",
       "name": "Preparar retry - qualificação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2543,7 +2543,7 @@
       }
     },
     {
-      "id": "0cd2f815-cff7-4155-b5f8-b8d659900ff2",
+      "id": "4970f3a2-4906-4989-9619-95fd6ef5ee99",
       "name": "Revisão manual (resposta)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2557,7 +2557,7 @@
       }
     },
     {
-      "id": "891e62f6-b3ef-42de-97b0-e7246d5058d8",
+      "id": "f53ddcdb-cab5-47d6-b20e-019188e863f7",
       "name": "Salvar classificação",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2596,7 +2596,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "ce173c21-aa8b-48c3-aabf-3e0e7227517c",
+      "id": "77809bcf-f1f8-4526-bdf3-7ed9ea102ba2",
       "name": "Decidir próxima ação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2610,7 +2610,7 @@
       }
     },
     {
-      "id": "d4e223f3-657b-456a-99c2-d2f7b87d2b40",
+      "id": "6cb60478-04a5-4369-8c3f-4f27057f28a0",
       "name": "Agendar?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2628,7 +2628,7 @@
           },
           "conditions": [
             {
-              "id": "1d9b8d0f-a641-4b93-bb67-b7ae160403c1",
+              "id": "8a2da2bf-3699-493c-984d-7db09638840d",
               "leftValue": "={{ $json.acao === 'agendar' }}",
               "rightValue": "",
               "operator": {
@@ -2645,7 +2645,7 @@
       }
     },
     {
-      "id": "16b92eea-9c81-4087-854d-82b84f7318bb",
+      "id": "4a6c8c9d-508d-43d6-914e-09686ecc4f21",
       "name": "Propor?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2663,7 +2663,7 @@
           },
           "conditions": [
             {
-              "id": "7c0f6d51-5abb-49cb-b142-7e93c0b440f0",
+              "id": "20996a95-9005-451d-92a1-3c39f8af32c4",
               "leftValue": "={{ $json.acao === 'propor' }}",
               "rightValue": "",
               "operator": {
@@ -2680,7 +2680,7 @@
       }
     },
     {
-      "id": "a48c9de3-1cc4-4513-be84-bf8a7124215f",
+      "id": "e3d8d641-0fad-4656-b0e8-675e8142e5c4",
       "name": "Revisão? (C)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2698,7 +2698,7 @@
           },
           "conditions": [
             {
-              "id": "74633ba3-d4d3-4d11-9474-2f09c975bff8",
+              "id": "284462fa-2628-4164-869e-d7e26aad3ffe",
               "leftValue": "={{ $json.acao === 'revisao' }}",
               "rightValue": "",
               "operator": {
@@ -2715,7 +2715,7 @@
       }
     },
     {
-      "id": "5fd0ac51-3fbc-4d23-8fb7-cd402cc26071",
+      "id": "bf2278cb-7b90-459a-a40e-d788e6a65367",
       "name": "Dados bloqueio",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2729,7 +2729,7 @@
       }
     },
     {
-      "id": "29ed3148-61ef-49b6-8633-34f0fe7e0772",
+      "id": "01d74010-d78b-4926-9758-f4c98e273d89",
       "name": "Bloquear contatos",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2768,7 +2768,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "4437eb51-b6a9-42a1-be85-730c3c6ce36e",
+      "id": "dea4ee3e-1b8f-4d54-9ca6-aa32657109fa",
       "name": "Calendar - checar horário",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2798,7 +2798,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "04fc7271-e953-456c-83e9-68bc678ee070",
+      "id": "3348663f-5f62-4ba2-98cb-2f52b897fa4a",
       "name": "Horário ainda livre?",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2812,7 +2812,7 @@
       }
     },
     {
-      "id": "dbdb2b86-2ccf-4ce1-8cbd-9b255ef37e6e",
+      "id": "362a7cd9-6ee8-465d-8961-8d2f53937424",
       "name": "Livre?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2830,7 +2830,7 @@
           },
           "conditions": [
             {
-              "id": "08e7abda-779f-4764-a025-26082a2beeec",
+              "id": "dea733ca-3b1d-4ec8-8675-fb147773e244",
               "leftValue": "={{ $json.livre === true }}",
               "rightValue": "",
               "operator": {
@@ -2847,7 +2847,7 @@
       }
     },
     {
-      "id": "5886704f-cac9-4cc6-8e31-cbfc9a187dfe",
+      "id": "9738932f-65a3-4001-b645-a9ec2124f405",
       "name": "Montar evento",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2861,7 +2861,7 @@
       }
     },
     {
-      "id": "f419020d-ad51-4180-a22f-9722a628961e",
+      "id": "3a3fd67f-ab03-4efe-8798-b2d1456bd92a",
       "name": "Calendar - criar evento",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2904,7 +2904,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "6d68a136-9219-477d-81c1-ee178ca186fe",
+      "id": "78c8e064-7e24-4a40-8624-50a968cc0736",
       "name": "Montar confirmação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2918,7 +2918,7 @@
       }
     },
     {
-      "id": "4ac2ecab-f885-4c8c-b810-89fd6bc9e20e",
+      "id": "cf24f74a-9621-4b3f-b99d-3cfc26d1b5cb",
       "name": "Evento criado?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2936,7 +2936,7 @@
           },
           "conditions": [
             {
-              "id": "8254c092-000a-4cf4-bbea-380f77316c00",
+              "id": "0e32b59e-934d-4693-94a9-0650e5225a5e",
               "leftValue": "={{ $json.evento_ok === true }}",
               "rightValue": "",
               "operator": {
@@ -2953,7 +2953,7 @@
       }
     },
     {
-      "id": "5f699009-55b2-46b0-a6a1-72cdbf82e97b",
+      "id": "26424aab-9dd5-47b2-a2ec-287df3d2d12a",
       "name": "Enviar confirmação (SMTP)",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -2982,7 +2982,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "2c76c589-8777-4dd5-80f4-c2cf3f932a06",
+      "id": "c9ad1f34-db12-4a28-808e-4ac35031a817",
       "name": "Resultado confirmação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2996,7 +2996,7 @@
       }
     },
     {
-      "id": "bc954694-4972-4ca7-910c-be64da60442b",
+      "id": "6738f91a-3d3f-4a55-bc0e-6118dbaee492",
       "name": "Calendar - freeBusy (proposta)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -3026,7 +3026,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "2dd24eb2-436c-48be-be89-b5346ee677d9",
+      "id": "33ceff4f-a291-4c4c-b8fc-9e3a0ccaf530",
       "name": "Montar proposta de horários",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3040,7 +3040,7 @@
       }
     },
     {
-      "id": "bb10cd5a-5545-485a-b790-21be4641424e",
+      "id": "73ff00ff-df4c-4533-a42f-d6c70f784862",
       "name": "Enviar proposta (SMTP)",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -3069,7 +3069,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "a553e992-53ee-4e1c-9181-8ba214228e67",
+      "id": "12eaeec1-7e67-497d-8435-217eab6f0c48",
       "name": "Resultado proposta",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3083,7 +3083,7 @@
       }
     },
     {
-      "id": "eb5e0bb8-7d57-433b-acee-0423b0cfa16e",
+      "id": "72247c12-eac8-493d-95fa-2d548026aa79",
       "name": "Saída (C)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3097,7 +3097,7 @@
       }
     },
     {
-      "id": "c747dacd-1923-426c-af28-47c754a8f672",
+      "id": "b0a9e47a-da17-4057-a122-9ef0aa473ee2",
       "name": "Registrar envio? (C)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -3115,7 +3115,7 @@
           },
           "conditions": [
             {
-              "id": "64b91a83-a0d3-4640-8a43-21cb460329a3",
+              "id": "d289fbdb-63ca-4b43-96eb-0ca9af7e45d0",
               "leftValue": "={{ !!$('Saída (C)').first().json.envio }}",
               "rightValue": "",
               "operator": {
@@ -3132,7 +3132,7 @@
       }
     },
     {
-      "id": "c22078eb-70c8-4857-81de-cb0b88636744",
+      "id": "335bb013-9f12-484e-87af-0d29fcecd7f5",
       "name": "Registrar envio (C)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -3171,7 +3171,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "74c51540-c9e8-467b-9f64-01b9a6091195",
+      "id": "e74595b3-5be1-4aec-be4b-c2948e5cadb0",
       "name": "Atualizar lead (C)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -3210,7 +3210,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "318f8b9f-12b8-441c-bac4-0399b2d77516",
+      "id": "03030fd9-4268-4eab-a978-3ec76851edf2",
       "name": "Registrar no Trello? (C)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -3228,7 +3228,7 @@
           },
           "conditions": [
             {
-              "id": "4d3a340e-9254-4600-97f9-22966f487332",
+              "id": "6eefc68e-9253-4c18-a96a-aa85de26e1a6",
               "leftValue": "={{ !!$('Saída (C)').first().json.trello_lista }}",
               "rightValue": "",
               "operator": {
@@ -3245,7 +3245,7 @@
       }
     },
     {
-      "id": "94d55a85-0fe1-482e-a183-e781c12d2d8c",
+      "id": "d0093046-03c8-47fd-8499-81feb2c3b758",
       "name": "Tem card? (C)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -3263,7 +3263,7 @@
           },
           "conditions": [
             {
-              "id": "c7eda35b-13d8-499f-80bd-0f175ba93f38",
+              "id": "66cc4353-b12b-4d40-8464-b11147c34649",
               "leftValue": "={{ !!$('Saída (C)').first().json.lead.trello_card_id }}",
               "rightValue": "",
               "operator": {
@@ -3280,7 +3280,7 @@
       }
     },
     {
-      "id": "fe04a3cf-c9a8-4064-9c96-c23d5872fc3f",
+      "id": "618ac806-0997-40aa-acc5-164fc3c43e20",
       "name": "Trello - mover card (C)",
       "type": "n8n-nodes-base.trello",
       "typeVersion": 1,
@@ -3309,7 +3309,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "d8a6836c-0f03-42ad-bb65-31d98080e488",
+      "id": "a3fc5b03-7dd6-438b-a514-6abb101c1f13",
       "name": "Trello - criar card (C)",
       "type": "n8n-nodes-base.trello",
       "typeVersion": 1,
@@ -3336,7 +3336,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "a2afe35c-602c-4840-a77d-9ad23972faf9",
+      "id": "533fdb8b-4daa-488d-80c3-347543275957",
       "name": "Salvar card no lead (C)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
