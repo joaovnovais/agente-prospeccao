@@ -1,0 +1,219 @@
+{
+  "supabaseRest": "https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1",
+  "reacherUrl": "http://novax-prospeccao-reacher:8080/v0/check_email",
+  "openRouterUrl": "https://openrouter.ai/api/v1/chat/completions",
+  "modelos": [
+    "qwen/qwen3.8-27b:free",
+    "nvidia/nemotron-3-super-120b-a12b:free"
+  ],
+  "limiteDiarioOpenRouter": 45,
+  "limiteMensalPlaces": 900,
+  "limitePlacesPorExecucao": 40,
+  "cidadesPorSemana": 6,
+  "maxTentativasIA": 3,
+  "maxCandidatosEmail": 6,
+  "rampUpEnviosPorDia": [
+    5,
+    10,
+    15,
+    18,
+    20
+  ],
+  "esperaEntreEnviosSeg": [
+    30,
+    60
+  ],
+  "modoTeste": {
+    "ativo": false,
+    "redirecionarPara": "joaovictornovais8@gmail.com",
+    "limiteEnviosDia": 5,
+    "forcarRespostaMalformadaNaTentativa": 0,
+    "etapaManual": "envio",
+    "respostaSimulada": {
+      "inReplyTo": "",
+      "from": "",
+      "texto": ""
+    },
+    "dryRun": {
+      "ativo": false,
+      "maxLeads": 5
+    }
+  },
+  "remetente": {
+    "nome": "Novax",
+    "email": "novax.ia.br@gmail.com",
+    "assinatura": "Equipe Novax\nnovax.ia.br | instagram.com/novax.ia.br",
+    "links": {
+      "novax.ia.br": "https://novax.ia.br",
+      "instagram.com/novax.ia.br": "https://instagram.com/novax.ia.br"
+    }
+  },
+  "oferta": "A Novax cria presença digital para pequenas empresas: site profissional e atendimento automatizado com IA (recepcionista digital que responde clientes e agenda horários 24h).",
+  "agenda": {
+    "duracaoMin": 45,
+    "horarios": [
+      "09:00",
+      "10:30",
+      "14:00",
+      "15:30"
+    ],
+    "diasAFrente": 7,
+    "opcoes": 3,
+    "fusoOffset": "-03:00",
+    "fuso": "America/Sao_Paulo"
+  },
+  "trello": {
+    "novoLead": "6ab85a3648fbab359491f407",
+    "emailEnviado": "6ab85a3971205aefff7a80f1",
+    "respondeu": "6ab85a40444d93556683362b",
+    "reuniaoAgendada": "6ab85a43059b33df471a03a2",
+    "fechadoPerdido": "6ab85a450dcaa1e915dc602e",
+    "revisaoManual": "6ab87828c92db39a520decab"
+  },
+  "exclusoes": [
+    {
+      "nome": [
+        "estetica marista"
+      ]
+    },
+    {
+      "nome": [
+        "evolve",
+        "estetica"
+      ]
+    },
+    {
+      "nome": [
+        "fabiana rodrigues"
+      ]
+    },
+    {
+      "nome": [
+        "meluz"
+      ]
+    },
+    {
+      "nome": [
+        "iso",
+        "odontologica"
+      ]
+    },
+    {
+      "nome": [
+        "nao mais pelo"
+      ],
+      "nomeOuEndereco": [
+        "garavelo"
+      ]
+    }
+  ],
+  "inicioRotacao": "2026-09-28",
+  "rotacao": [
+    {
+      "nicho": "odontologia_estetica",
+      "estado": "GO",
+      "offset": 0,
+      "buscas": [
+        "clínica odontológica",
+        "clínica de estética"
+      ]
+    },
+    {
+      "nicho": "advocacia",
+      "estado": "SC",
+      "offset": 0,
+      "buscas": [
+        "escritório de advocacia"
+      ]
+    },
+    {
+      "nicho": "estetica_harmonizacao",
+      "estado": "SC",
+      "offset": 6,
+      "buscas": [
+        "harmonização facial",
+        "clínica de estética"
+      ]
+    },
+    {
+      "nicho": "varejo_local",
+      "estado": "GO",
+      "offset": 6,
+      "buscas": [
+        "loja de roupas",
+        "loja de cosméticos",
+        "pet shop"
+      ]
+    }
+  ],
+  "cidades": {
+    "GO": [
+      "Goiânia",
+      "Aparecida de Goiânia",
+      "Anápolis",
+      "Senador Canedo",
+      "Trindade",
+      "Rio Verde",
+      "Luziânia",
+      "Águas Lindas de Goiás",
+      "Valparaíso de Goiás",
+      "Formosa",
+      "Novo Gama",
+      "Itumbiara",
+      "Catalão",
+      "Jataí",
+      "Planaltina",
+      "Caldas Novas",
+      "Santo Antônio do Descoberto",
+      "Goianésia",
+      "Cidade Ocidental",
+      "Mineiros",
+      "Inhumas",
+      "Cristalina",
+      "Jaraguá",
+      "Quirinópolis",
+      "Porangatu",
+      "Uruaçu"
+    ],
+    "SC": [
+      "Florianópolis",
+      "São José",
+      "Palhoça",
+      "Joinville",
+      "Blumenau",
+      "Itajaí",
+      "Chapecó",
+      "Criciúma",
+      "Balneário Camboriú",
+      "Jaraguá do Sul",
+      "Lages",
+      "Brusque",
+      "Tubarão",
+      "Camboriú",
+      "Navegantes",
+      "Caçador",
+      "Concórdia",
+      "Rio do Sul",
+      "Araranguá",
+      "Gaspar",
+      "Biguaçu",
+      "Indaial",
+      "Mafra",
+      "Canoinhas",
+      "Itapema",
+      "São Bento do Sul",
+      "Videira",
+      "Xanxerê",
+      "Içara",
+      "Porto Belo"
+    ]
+  },
+  "nichos": {
+    "odontologia_estetica": "clínicas odontológicas e clínicas de estética",
+    "advocacia": "escritórios de advocacia",
+    "estetica_harmonizacao": "clínicas de estética e harmonização facial",
+    "varejo_local": "pequeno varejo local (lojas de roupas, cosméticos, pet shops)"
+  },
+  "verificacaoPorExecucao": 15,
+  "pausaEntreVerificacoesSeg": 10
+}

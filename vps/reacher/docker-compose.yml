@@ -1,0 +1,33 @@
+# NOVAX - Agente de Prospecção: verificador de e-mail (Reacher), self-hosted.
+# Projeto compose separado do de produção (/opt/novax-vps-n8n) de propósito:
+# subir/derrubar este aqui nunca recria o n8n/Caddy da Claudia.
+# Sem porta publicada: o n8n acessa por http://novax-prospeccao-reacher:8080 na rede interna.
+name: novax-prospeccao
+
+services:
+  reacher:
+    image: reacherhq/backend:v0.11.7
+    container_name: novax-prospeccao-reacher
+    restart: unless-stopped
+    environment:
+      RCH__HTTP_HOST: 0.0.0.0
+      RCH__HTTP_PORT: 8080
+      # HELO = PTR do IP da VPS (srv2004446.hstgr.cloud) -> menos rejeição dos MX.
+      RCH__HELLO_NAME: srv2004446.hstgr.cloud
+      RCH__FROM_EMAIL: verificacao@novax.ia.br
+      RCH__SMTP_TIMEOUT: 45
+      RCH__WORKER__ENABLE: "false"
+      # Volume baixo e espaçado: acima de ~5 consultas seguidas o Gmail passa a segurar (tarpit) o IP.
+      RCH__THROTTLE__MAX_REQUESTS_PER_MINUTE: 10
+      RCH__THROTTLE__MAX_REQUESTS_PER_DAY: 600
+    expose:
+      - "8080"
+    mem_limit: 256m
+    cpus: 0.5
+    networks:
+      - n8n_net
+
+networks:
+  n8n_net:
+    external: true
+    name: novax-vps-n8n_default
