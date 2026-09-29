@@ -2,3 +2,9 @@
 Thumbs.db
 *.log
 node_modules/
+
+# Painel Streamlit (dashboard/)
+dashboard/.streamlit/secrets.toml
+dashboard/__pycache__/
+dashboard/.venv/
+dashboard/venv/
