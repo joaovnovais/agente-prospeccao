@@ -21,13 +21,14 @@ ${formato}
 ${regrasEmail}
 Regras para "assunto": curto (4 a 9 palavras), sem emojis, sem CAIXA ALTA, sem ponto de exclamação.
 - Deve conter um dado específico desta empresa: a cidade, o nome da empresa, a nota ou o número de avaliações.
+- Se citar a nota, use SEMPRE vírgula e uma casa decimal, copiando exatamente o valor informado abaixo (ex.: "nota 3,4"). NUNCA arredonde, trunque ou escreva "nota 3" nem "nota 3.4" (ponto).
 - Não comece com "Presença digital para". Varie a construção.
 
 Regras para "corpo" (português do Brasil):
 - 4 a 6 frases (um e-mail curto), tom cordial, direto e humano. Não conte palavras nem caracteres: escreva naturalmente.
 - Cite o nome da empresa e a cidade.
 - Descreva o ramo da empresa apenas pelo que o nome dela indica. Não afirme especialidade que não esteja no nome (ex.: não chame uma clínica de estética de "odontológica" nem de "dental").
-- Escreva em português correto, com acentuação.
+- Escreva em português correto, com acentuação em TODAS as palavras que precisam (ex.: "clínica", "não", "avaliações", "reunião", "horário") — nunca "clinica", "nao", "avaliacoes".
 - Use SOMENTE fatos dos dados fornecidos (nome, segmento, cidade, nota, número de avaliações, ausência de site). Se citar nota ou avaliações, use exatamente os números fornecidos.
 - NÃO elogie nem qualifique a empresa sem base nos dados (proibido: "ótimo atendimento", "excelente", "referência", "boas avaliações", "muitas avaliações", etc.).
 - NÃO use promessas genéricas (proibido: "sem precisar de equipe extra", "resultados reais", "mais credibilidade", "aumentar vendas", "garantia"). Descreva concretamente o que um site resolveria para quem pesquisa esta empresa no Google.

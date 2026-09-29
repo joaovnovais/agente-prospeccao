@@ -4,7 +4,7 @@
   "active": true,
   "nodes": [
     {
-      "id": "555e4138-0293-458f-8f71-0949b910e21b",
+      "id": "ddc12c15-0176-404b-b117-a831cd2dc388",
       "name": "Teste manual",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
@@ -15,7 +15,7 @@
       "parameters": {}
     },
     {
-      "id": "1f3aada3-2afa-482e-b9eb-58720fb385b7",
+      "id": "612579d8-a082-4c6e-8ab9-3e86397c0d99",
       "name": "Roteador de teste",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -29,7 +29,7 @@
       }
     },
     {
-      "id": "1be07ba8-4b27-4e26-9670-0cda40b42126",
+      "id": "6d0882f6-b2f6-497a-9409-af1724dd2083",
       "name": "Teste: captação?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -47,7 +47,7 @@
           },
           "conditions": [
             {
-              "id": "8ba9167b-62f0-4fed-9b22-f80ef236d04f",
+              "id": "6bc0f77c-d660-4a4e-9b0d-05266df7ba39",
               "leftValue": "={{ $json.etapa === 'captacao' }}",
               "rightValue": "",
               "operator": {
@@ -64,7 +64,7 @@
       }
     },
     {
-      "id": "8c9853f7-3c4f-4415-8805-780e9cc91785",
+      "id": "908ad177-1e8a-4fcf-8931-3647ba56d74f",
       "name": "Teste: envio?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -82,7 +82,7 @@
           },
           "conditions": [
             {
-              "id": "f6bfe5ff-36d8-43fc-bb55-49c5c57ef149",
+              "id": "5257d0e9-3937-4584-b92d-47bf57585d28",
               "leftValue": "={{ $json.etapa === 'envio' }}",
               "rightValue": "",
               "operator": {
@@ -99,7 +99,7 @@
       }
     },
     {
-      "id": "33cea839-ddc2-4dfb-8861-33680d9daeb4",
+      "id": "31aa9b05-4d2f-4f16-9e26-7713f2e09c46",
       "name": "Resposta simulada",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -113,7 +113,7 @@
       }
     },
     {
-      "id": "3ca3fb35-a29a-4b95-a296-618f7b056c71",
+      "id": "a61228b1-2b7b-47d1-b63f-b254195cb83b",
       "name": "Semanal - Captação",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -133,7 +133,7 @@
       }
     },
     {
-      "id": "f65eaf27-9263-4812-acf4-7313f015b3c2",
+      "id": "5578b2c1-7bf6-4db6-98a5-138b82121013",
       "name": "Buscar taxa de resposta",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -168,7 +168,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "38143d11-66b2-4622-b670-18b414739e1b",
+      "id": "a0703d2f-5344-4216-919a-afd5b3ef6ea4",
       "name": "Montar buscas da semana",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -182,7 +182,7 @@
       }
     },
     {
-      "id": "91dfb1ef-7afe-456b-9118-7ab57fad256c",
+      "id": "034d4563-9f3d-4539-b712-4e6541be24eb",
       "name": "Reservar cota Places",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -221,7 +221,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "8b034f17-ae2b-4564-bcc1-1a7cd84af605",
+      "id": "4fa16094-9155-4438-a3f4-758481853926",
       "name": "Cota Places ok?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -239,7 +239,7 @@
           },
           "conditions": [
             {
-              "id": "92d2b6eb-a75f-47f2-94ee-dd0800be9b98",
+              "id": "b152e49b-7ed4-4c0e-92db-4acd269db22c",
               "leftValue": "={{ $json.ok === true }}",
               "rightValue": "",
               "operator": {
@@ -256,7 +256,7 @@
       }
     },
     {
-      "id": "9dd7e0ca-ba7f-4a79-8388-21dd676c9b9e",
+      "id": "ef538306-f64a-436c-bd5a-8da9c13c15f6",
       "name": "Cota Places esgotada",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -267,7 +267,7 @@
       "parameters": {}
     },
     {
-      "id": "a28f57c8-b85d-4e08-8ce7-64371eadfda6",
+      "id": "364a1ea1-ea22-400b-b914-09e52f472bdb",
       "name": "Places - Text Search",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -306,7 +306,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "a0aac06f-2347-4cbe-96a5-94c233150e93",
+      "id": "bd3c3108-3729-4040-8875-6374ef2a6c3a",
       "name": "Filtrar sem site + exclusões",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -320,7 +320,7 @@
       }
     },
     {
-      "id": "a5e28cd5-f39f-4afe-a42a-504b62ae1732",
+      "id": "a100b284-d771-4fd0-b475-697c858eb8b0",
       "name": "Há leads novos?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -338,7 +338,7 @@
           },
           "conditions": [
             {
-              "id": "e1934970-30b1-4036-9902-0fd39e14526c",
+              "id": "cd390f10-f2a6-4216-af59-e6e559a64ecf",
               "leftValue": "={{ $json.total > 0 }}",
               "rightValue": "",
               "operator": {
@@ -355,7 +355,7 @@
       }
     },
     {
-      "id": "aada9d8a-8bb2-493c-a433-c124659d93f1",
+      "id": "3884fd3a-371a-4780-b43d-48a82f61275d",
       "name": "Upsert leads",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -393,7 +393,7 @@
       }
     },
     {
-      "id": "cc08ae58-4d3d-46a6-8863-3b3891ac6d45",
+      "id": "d3bc9e1b-3612-4abb-80cc-c0e858026967",
       "name": "Resumo captação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -407,7 +407,7 @@
       }
     },
     {
-      "id": "1af21f04-7a9d-43f3-90f4-cad61ccbe0a1",
+      "id": "210c13d8-bc59-4496-adb6-97c016b0001d",
       "name": "Diário - Envio",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -427,7 +427,7 @@
       }
     },
     {
-      "id": "429464d1-894e-4291-814f-22aeabc136ac",
+      "id": "a8f59104-eca7-4daf-ac66-86a04db026f4",
       "name": "Status envios (dia)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -462,7 +462,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "d5db4c58-a8dc-4206-8e8b-898befedaf08",
+      "id": "191ca80b-dfa8-4131-8379-4342a3994c3f",
       "name": "Calcular limite do dia",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -476,7 +476,7 @@
       }
     },
     {
-      "id": "32dcab05-6728-4bd8-94a7-b8ce9a10759e",
+      "id": "4c8cdb4d-f45d-4c83-8162-4716b6c606ed",
       "name": "Buscar leads p/ verificação",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -511,7 +511,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "2709e9f8-7d7d-4334-970f-4d154db81866",
+      "id": "d189bbe4-29e4-4406-8856-b840766f6abe",
       "name": "Há leads p/ verificar?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -529,7 +529,7 @@
           },
           "conditions": [
             {
-              "id": "0517fa84-8021-42de-aead-6d3477067712",
+              "id": "d313c71d-3507-4c38-ac39-49d2b2567136",
               "leftValue": "={{ !!$json.id }}",
               "rightValue": "",
               "operator": {
@@ -546,7 +546,7 @@
       }
     },
     {
-      "id": "7379ff9d-2b43-4384-9d2e-cc546798f660",
+      "id": "aee53684-8bcc-49c0-b769-a62885d98900",
       "name": "Loop verificação",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -560,7 +560,7 @@
       }
     },
     {
-      "id": "6e042b12-b5de-478d-81da-8afa2d4c4244",
+      "id": "65985001-8132-44bd-a0b8-829b7ea48319",
       "name": "Variações do nome",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -574,7 +574,7 @@
       }
     },
     {
-      "id": "413a6de7-fce3-4e86-8417-d47f14e597b7",
+      "id": "1a88b58b-1808-41f9-b1f3-e5781cb8ea17",
       "name": "Tem variação?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -592,7 +592,7 @@
           },
           "conditions": [
             {
-              "id": "0dfe2cb7-e2b6-494f-9994-5a06a09d5938",
+              "id": "a623117f-4601-4a6c-98bf-96d163a460e6",
               "leftValue": "={{ !!$json.email }}",
               "rightValue": "",
               "operator": {
@@ -609,7 +609,7 @@
       }
     },
     {
-      "id": "92e252af-333f-4f17-9bbd-b896feb7eeff",
+      "id": "095b8678-6bc3-4214-81a8-9f95419903a3",
       "name": "Reacher - variações do nome",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -631,7 +631,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "1492b539-e638-422b-a93e-ba2622ac9649",
+      "id": "f767e55f-adb2-4a6d-9fc6-883a39684ebd",
       "name": "Resultado verificação (código)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -645,7 +645,7 @@
       }
     },
     {
-      "id": "e5b1a9a2-7a59-4113-a15e-89ee14e60f81",
+      "id": "37c0c798-df33-43e9-a1e6-c739bfd7db64",
       "name": "Reacher travou?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -663,7 +663,7 @@
           },
           "conditions": [
             {
-              "id": "812b7007-614b-4dc3-9ddd-1a2b8f6806b6",
+              "id": "93bbfd16-d94d-4edc-a1f6-ac93191dbade",
               "leftValue": "={{ $json.incompleto === true }}",
               "rightValue": "",
               "operator": {
@@ -680,7 +680,7 @@
       }
     },
     {
-      "id": "5fab948b-d9a8-4d59-980c-7bcd382a5ce3",
+      "id": "6de2dcb2-1f86-4b95-8f11-c9a5077fe779",
       "name": "E-mail do nome confirmado?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -698,7 +698,7 @@
           },
           "conditions": [
             {
-              "id": "131c445d-ac79-4377-8274-f97d2ff06ea0",
+              "id": "b5c28e37-60e7-410f-bc55-73044867d02a",
               "leftValue": "={{ $json.safe === true }}",
               "rightValue": "",
               "operator": {
@@ -715,7 +715,7 @@
       }
     },
     {
-      "id": "050a7e23-a59c-4bcd-9106-9f3948062192",
+      "id": "d21ee783-d96c-434e-a443-57177a09afaa",
       "name": "Pausa entre verificações",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -728,10 +728,10 @@
         "amount": 10,
         "unit": "seconds"
       },
-      "webhookId": "88329251-e827-4a16-ad15-3f7de71305e1"
+      "webhookId": "210974dd-33a2-4076-8b40-151e0d1f8b8a"
     },
     {
-      "id": "fabb1348-d021-4536-a59f-21002757364f",
+      "id": "cb1db728-fd1e-4e6e-92f2-ba16b8fdb95d",
       "name": "Salvar contato verificado",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -770,7 +770,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "ae119aa7-eca9-4117-bd05-ea77ae28e894",
+      "id": "4767ab72-63ec-4601-b845-b48d183c8c6e",
       "name": "Marcar verificação (lead)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -809,7 +809,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "1177bd7c-bd1f-4e88-af56-131810602451",
+      "id": "3b81d995-61c8-4119-9a1c-1344c575ac26",
       "name": "Fim da verificação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -823,7 +823,7 @@
       }
     },
     {
-      "id": "8a6f48af-61a3-41f6-a499-3b7e869d0604",
+      "id": "029c8160-aacf-458e-9a98-49dbb998a37e",
       "name": "Buscar fila com e-mail",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -858,7 +858,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "24a5ec14-54ab-4459-9bde-f2fab04b68f5",
+      "id": "bc56c036-1e93-42e2-bf75-835a4b53c249",
       "name": "Buscar fila fallback",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -893,7 +893,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "72789209-f32f-4c57-b007-70e26eb001c6",
+      "id": "259cf740-e2dd-4e9d-bb02-e2a4907dad80",
       "name": "Montar fila de envio",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -907,7 +907,7 @@
       }
     },
     {
-      "id": "f3b7544e-790e-4670-b2d6-a85800568acc",
+      "id": "64c336f9-5b4b-4e45-a401-0784f482f636",
       "name": "Loop leads",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -921,7 +921,7 @@
       }
     },
     {
-      "id": "60276166-c283-4377-8f04-78458d502894",
+      "id": "2f43cefe-331d-42c8-b9fa-1fa1dd08f1ad",
       "name": "Status envios (lead)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -956,7 +956,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "5a655f1e-030c-42ca-8f14-976529dbb7e2",
+      "id": "7b38af6b-fd2a-418f-ba77-da102bc0c6cd",
       "name": "Checar limite (lead)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -970,7 +970,7 @@
       }
     },
     {
-      "id": "81f17381-597c-4879-820f-e614293cc909",
+      "id": "c2b6e35b-e686-4472-9324-f613ccef7f8b",
       "name": "Cabe no limite?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -988,7 +988,7 @@
           },
           "conditions": [
             {
-              "id": "bb6e5ef9-1b54-412e-b0a3-ab4ebbf567d6",
+              "id": "13fe722b-7243-4157-8a9e-05f8bdbac8bc",
               "leftValue": "={{ $json.cabe === true }}",
               "rightValue": "",
               "operator": {
@@ -1005,7 +1005,7 @@
       }
     },
     {
-      "id": "941c7612-b286-4daf-a1f9-c698aec7af17",
+      "id": "8bf3c0bb-0701-4534-98e4-41d003fc94ab",
       "name": "Pedido IA - e-mail",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1015,11 +1015,11 @@
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// ⚠ Gerado por workflow/build.mjs — edite o repo (config.json / code/b_pedido_ia.js) e reimporte.\nconst CONFIG = {\"supabaseRest\":\"https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1\",\"reacherUrl\":\"http://novax-prospeccao-reacher:8080/v0/check_email\",\"openRouterUrl\":\"https://openrouter.ai/api/v1/chat/completions\",\"modelos\":[\"qwen/qwen3.8-27b:free\",\"nvidia/nemotron-3-super-120b-a12b:free\"],\"limiteDiarioOpenRouter\":45,\"limiteMensalPlaces\":900,\"limitePlacesPorExecucao\":40,\"cidadesPorSemana\":6,\"maxTentativasIA\":3,\"maxCandidatosEmail\":6,\"rampUpEnviosPorDia\":[5,10,15,18,20],\"esperaEntreEnviosSeg\":[30,60],\"modoTeste\":{\"ativo\":false,\"redirecionarPara\":\"joaovictornovais8@gmail.com\",\"limiteEnviosDia\":5,\"forcarRespostaMalformadaNaTentativa\":0,\"etapaManual\":\"envio\",\"respostaSimulada\":{\"inReplyTo\":\"\",\"from\":\"\",\"texto\":\"\"},\"dryRun\":{\"ativo\":false,\"maxLeads\":5}},\"remetente\":{\"nome\":\"Novax\",\"email\":\"novax.ia.br@gmail.com\",\"assinatura\":\"Equipe Novax\\nnovax.ia.br | instagram.com/novax.ia.br\",\"links\":{\"novax.ia.br\":\"https://novax.ia.br\",\"instagram.com/novax.ia.br\":\"https://instagram.com/novax.ia.br\"}},\"oferta\":\"A Novax cria presença digital para pequenas empresas: site profissional e atendimento automatizado com IA (recepcionista digital que responde clientes e agenda horários 24h).\",\"agenda\":{\"duracaoMin\":45,\"horarios\":[\"09:00\",\"10:30\",\"14:00\",\"15:30\"],\"diasAFrente\":7,\"opcoes\":3,\"fusoOffset\":\"-03:00\",\"fuso\":\"America/Sao_Paulo\"},\"trello\":{\"novoLead\":\"6ab85a3648fbab359491f407\",\"emailEnviado\":\"6ab85a3971205aefff7a80f1\",\"respondeu\":\"6ab85a40444d93556683362b\",\"reuniaoAgendada\":\"6ab85a43059b33df471a03a2\",\"fechadoPerdido\":\"6ab85a450dcaa1e915dc602e\",\"revisaoManual\":\"6ab87828c92db39a520decab\"},\"exclusoes\":[{\"nome\":[\"estetica marista\"]},{\"nome\":[\"evolve\",\"estetica\"]},{\"nome\":[\"fabiana rodrigues\"]},{\"nome\":[\"meluz\"]},{\"nome\":[\"iso\",\"odontologica\"]},{\"nome\":[\"nao mais pelo\"],\"nomeOuEndereco\":[\"garavelo\"]}],\"inicioRotacao\":\"2026-09-28\",\"rotacao\":[{\"nicho\":\"odontologia_estetica\",\"estado\":\"GO\",\"offset\":0,\"buscas\":[\"clínica odontológica\",\"clínica de estética\"]},{\"nicho\":\"advocacia\",\"estado\":\"SC\",\"offset\":0,\"buscas\":[\"escritório de advocacia\"]},{\"nicho\":\"estetica_harmonizacao\",\"estado\":\"SC\",\"offset\":6,\"buscas\":[\"harmonização facial\",\"clínica de estética\"]},{\"nicho\":\"varejo_local\",\"estado\":\"GO\",\"offset\":6,\"buscas\":[\"loja de roupas\",\"loja de cosméticos\",\"pet shop\"]}],\"cidades\":{\"GO\":[\"Goiânia\",\"Aparecida de Goiânia\",\"Anápolis\",\"Senador Canedo\",\"Trindade\",\"Rio Verde\",\"Luziânia\",\"Águas Lindas de Goiás\",\"Valparaíso de Goiás\",\"Formosa\",\"Novo Gama\",\"Itumbiara\",\"Catalão\",\"Jataí\",\"Planaltina\",\"Caldas Novas\",\"Santo Antônio do Descoberto\",\"Goianésia\",\"Cidade Ocidental\",\"Mineiros\",\"Inhumas\",\"Cristalina\",\"Jaraguá\",\"Quirinópolis\",\"Porangatu\",\"Uruaçu\"],\"SC\":[\"Florianópolis\",\"São José\",\"Palhoça\",\"Joinville\",\"Blumenau\",\"Itajaí\",\"Chapecó\",\"Criciúma\",\"Balneário Camboriú\",\"Jaraguá do Sul\",\"Lages\",\"Brusque\",\"Tubarão\",\"Camboriú\",\"Navegantes\",\"Caçador\",\"Concórdia\",\"Rio do Sul\",\"Araranguá\",\"Gaspar\",\"Biguaçu\",\"Indaial\",\"Mafra\",\"Canoinhas\",\"Itapema\",\"São Bento do Sul\",\"Videira\",\"Xanxerê\",\"Içara\",\"Porto Belo\"]},\"nichos\":{\"odontologia_estetica\":\"clínicas odontológicas e clínicas de estética\",\"advocacia\":\"escritórios de advocacia\",\"estetica_harmonizacao\":\"clínicas de estética e harmonização facial\",\"varejo_local\":\"pequeno varejo local (lojas de roupas, cosméticos, pet shops)\"},\"verificacaoPorExecucao\":15,\"pausaEntreVerificacoesSeg\":10};\n\n// ---- biblioteca compartilhada (injetada pelo build.mjs em todo Code node) ----\r\n\r\nconst norm = (s) => (s || '')\r\n  .normalize('NFD').replace(/[̀-ͯ]/g, '')\r\n  .toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\\s+/g, ' ').trim();\r\n\r\nconst EMAIL_RE = /^[a-z0-9._%+-]+@[a-z0-9-]+(\\.[a-z0-9-]+)*\\.[a-z]{2,}$/;\r\n\r\n// Frases típicas de recusa/desvio de modelos instrucionais (pt/en).\r\nconst RECUSA_RE = /(n[aã]o posso (ajudar|atender|criar|gerar|fazer)|como (um|uma) (modelo|ia|assistente)|modelo de linguagem|sinto muito, mas|i can(no|')t (help|assist|do)|i('| a)m sorry|as an ai|i('| a)m unable|against (my|the) (guidelines|policy))/i;\r\n\r\n// Saída de IA → {ok, erro, tipo_falha, obj}. Salvaguardas 1 e 2 do projeto:\r\n// só aceita JSON puro (cercas ``` são toleradas); texto antes do \"{\" é tratado como desvio.\r\nfunction parseRespostaIA(resp) {\r\n  if (!resp || resp.error || !resp.choices) {\r\n    const msg = resp?.error?.message || resp?.error || 'sem choices na resposta';\r\n    return { ok: false, tipo_falha: 'api', erro: 'erro da API: ' + String(typeof msg === 'string' ? msg : JSON.stringify(msg)).slice(0, 300), raw: '' };\r\n  }\r\n  let raw = resp.choices?.[0]?.message?.content ?? '';\r\n  if (typeof raw !== 'string') raw = JSON.stringify(raw);\r\n  const p = parseTextoIA(raw);\r\n  // Resposta cortada pelo limite de tokens nunca é aceita, mesmo que pareça JSON.\r\n  if (resp.choices?.[0]?.finish_reason === 'length') {\r\n    return { ok: false, tipo_falha: 'formato', erro: 'resposta truncada no limite de tokens' + (p.ok ? '' : ' — ' + p.erro), raw };\r\n  }\r\n  return p;\r\n}\r\n\r\nfunction parseTextoIA(raw) {\r\n  const t = raw.trim().replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/, '').trim();\r\n  if (!t) return { ok: false, tipo_falha: 'formato', erro: 'resposta vazia', raw };\r\n  if (!t.startsWith('{')) {\r\n    const recusa = RECUSA_RE.test(t.slice(0, 600));\r\n    return { ok: false, tipo_falha: recusa ? 'recusa' : 'formato',\r\n             erro: recusa ? 'modelo recusou/desviou (texto de recusa em vez de JSON)' : 'resposta não é JSON (texto explicativo antes/no lugar do objeto)', raw };\r\n  }\r\n  try {\r\n    return { ok: true, obj: JSON.parse(t), raw };\r\n  } catch (e) {\r\n    return { ok: false, tipo_falha: 'formato', erro: 'JSON malformado: ' + e.message, raw };\r\n  }\r\n}\r\n\r\nconst RESPOSTA_MALFORMADA_TESTE =\r\n  'Claro! Aqui está uma sugestão de e-mail para essa empresa:\\n\\nOlá, tudo bem? Vi que vocês ainda não têm site...\\n\\n(Espero que ajude!)';\r\n\r\nconst escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\r\nconst linkificar = (html) => {\r\n  let out = html;\r\n  // Mais longo primeiro, para \"instagram.com/novax.ia.br\" não ser quebrado pelo link de \"novax.ia.br\".\r\n  const links = Object.entries(CONFIG.remetente.links || {}).sort((a, b) => b[0].length - a[0].length);\r\n  const marcas = [];\r\n  for (const [txt, url] of links) {\r\n    const re = new RegExp('(?<![\\\\w@./])' + txt.replace(/[.*+?^${}()|[\\]\\\\/]/g, '\\\\$&') + '(?![\\\\w@])', 'g');\r\n    out = out.replace(re, () => { marcas.push(`<a href=\"${url}\">${txt}</a>`); return `\\u0000${marcas.length - 1}\\u0000`; });\r\n  }\r\n  return out.replace(/\\u0000(\\d+)\\u0000/g, (_, i) => marcas[Number(i)]);\r\n};\r\nconst textoParaHtml = (t) => '<div style=\"font-family:Arial,sans-serif;font-size:14px;line-height:1.5\">'\r\n  + linkificar(escHtml(t)).split('\\n').join('<br>') + '</div>';\r\n\r\nconst assuntoResposta = (a) => 'Re: ' + String(a || '').replace(/^\\s*(\\[TESTE[^\\]]*\\]\\s*)?((re|res|fw|enc):\\s*)*/i, '');\r\n\r\nconst rodapeLGPD = (lead) =>\r\n  `\\n\\n${CONFIG.remetente.assinatura}\\n\\n—\\nVocê recebeu esta mensagem porque ${lead.nome} aparece como empresa no Google Maps em ${lead.cidade}/${lead.estado}. ` +\r\n  'Se não quiser receber novos contatos da Novax, responda com a palavra SAIR e removemos seu e-mail imediatamente.';\r\n\r\nconst agoraISO = () => new Date().toISOString();\r\n\r\n// Ajustes de revisão (1-2): nada de elogio/qualificação sem base nos dados, nada de promessa genérica.\r\nconst FRASES_PROIBIDAS = [\r\n  [/[óo]tim[oa]s?\\b/i, 'elogio \"ótimo\"'], [/excelen/i, 'elogio \"excelente\"'], [/incr[ií]vel/i, 'elogio \"incrível\"'],\r\n  [/maravilh/i, 'elogio \"maravilhoso\"'], [/renomad/i, 'elogio \"renomado\"'], [/refer[êe]ncia/i, 'elogio \"referência\"'],\r\n  [/conceituad/i, 'elogio \"conceituado\"'], [/reconhecid/i, 'elogio \"reconhecido\"'], [/tradicional/i, 'elogio \"tradicional\"'],\r\n  [/de qualidade/i, 'elogio \"de qualidade\"'], [/(boas|muitas|diversas|v[áa]rias) avalia/i, 'qualificação vaga das avaliações (use o número)'],\r\n  [/equipe extra/i, 'promessa \"sem equipe extra\"'], [/resultados reais/i, 'promessa \"resultados reais\"'], [/focad[oa] em resultado/i, 'promessa \"focado em resultados\"'],\r\n  [/credibilidade/i, 'promessa vaga \"credibilidade\"'], [/garant/i, 'promessa \"garantia\"'], [/(dobrar|triplicar|multiplicar)/i, 'promessa de multiplicar resultados'],\r\n  [/aumentar (as |suas |seu |o )?(vendas|faturamento|lucro)/i, 'promessa de aumento de vendas'],\r\n];\r\nconst fmtNota = (r) => String(r).replace('.', ',');\r\n\r\n// Todo número de nota/avaliações citado precisa bater com o Google Maps.\r\nconst SEM_ACENTO_RE = /\\b(nao|voce|voces|servicos|horarios|reuniao|avaliacoes|informacoes|clinica|estetica|pratica|diagnostico)\\b/i;\r\nfunction checarFatos(texto, lead) {\r\n  const erros = [];\r\n  const semNome = texto.split(lead.nome || '0000').join(' '); // o nome pode estar cadastrado sem acento no Google\r\n  if (SEM_ACENTO_RE.test(semNome)) erros.push('texto sem acentuação (ex.: \"' + semNome.match(SEM_ACENTO_RE)[0] + '\")');\r\n  for (const [re, nome] of FRASES_PROIBIDAS) if (re.test(texto)) erros.push('contém ' + nome);\r\n  const t = texto.replace(/(\\d)\\.(\\d)/g, '$1,$2');\r\n  const notas = [...t.matchAll(/(\\d(?:,\\d)?)\\s*estrelas|nota\\s*(?:de\\s*)?(\\d(?:,\\d)?)|(\\d,\\d)/gi)].map((m) => m[1] || m[2] || m[3]);\r\n  for (const n of notas) if (lead.rating == null || Number(n.replace(',', '.')) !== Number(lead.rating)) erros.push(`nota \"${n}\" não bate com o Google (${lead.rating ?? 'sem nota'})`);\r\n  for (const m of t.matchAll(/(\\d+)\\s*avalia/gi)) if (Number(m[1]) !== Number(lead.total_avaliacoes)) erros.push(`\"${m[1]} avaliações\" não bate com o Google (${lead.total_avaliacoes ?? 0})`);\r\n  return erros;\r\n}\r\n\r\n// Palavras genéricas de ramo: sozinhas não identificam a empresa (clinica@gmail.com é de outra pessoa).\r\nconst GENERICAS = new Set(['clinica', 'clinicas', 'estetica', 'esteticas', 'odontologia', 'odontologica', 'odontologicas', 'odonto',\r\n  'dentista', 'dentaria', 'consultorio', 'instituto', 'centro', 'espaco', 'studio', 'estudio', 'loja', 'lojas', 'advocacia',\r\n  'advogados', 'advogado', 'escritorio', 'associados', 'avancada', 'integrada', 'especializada', 'saude', 'beauty', 'clinic',\r\n  'imagem', 'facial', 'corporal', 'implantes', 'sorriso', 'ltda', 'eireli']);\r\nconst palavrasDistintivas = (nome) => norm(nome).split(' ')\r\n  .filter((w) => w.length >= 3 && !GENERICAS.has(w) && !['de', 'da', 'do', 'das', 'dos', 'dra', 'dr', 'the'].includes(w));\r\n// Candidato só vale se o usuário do e-mail contém pelo menos uma palavra distintiva do nome.\r\nconst emailIdentificaEmpresa = (email, nome) => {\r\n  const u = email.split('@')[0].replace(/[^a-z0-9]/g, '');\r\n  return palavrasDistintivas(nome).some((w) => u.includes(w));\r\n};\r\n\r\n// Ajuste 5: variações determinísticas a partir do nome EXATO (só Gmail: é o único provedor que o Reacher confirma).\r\nfunction variantesEmail(nome) {\r\n  const palavras = norm(nome).split(' ').filter(Boolean);\r\n  const semConectivos = palavras.filter((w) => !['de', 'da', 'do', 'das', 'dos', 'e', 'dra', 'dr'].includes(w));\r\n  const slugs = [...new Set([palavras.join(''), semConectivos.join('')])];\r\n  const out = [];\r\n  for (const s of slugs) out.push(`${s}@gmail.com`, `contato.${s}@gmail.com`);\r\n  return out.filter((e) => emailIdentificaEmpresa(e, nome));\r\n}\r\n// Gmail só aceita usuário de 6 a 30 caracteres: descarta candidatos impossíveis antes do Reacher.\r\nconst emailPossivel = (e) => {\r\n  if (!e.endsWith('@gmail.com')) return true;\r\n  const u = e.split('@')[0];\r\n  return u.length >= 6 && u.length <= 30;\r\n};\r\n// ---- fim da biblioteca ----\r\n\n// Passo 3: monta o pedido à IA. Modo \"texto\": e-mail já confirmado na fase 1 → só assunto/corpo.\r\n// Modo \"fallback\": nenhuma variação do nome passou → IA sugere e-mails alternativos + texto.\r\n// Recebe tanto a 1ª tentativa (de \"Cabe no limite?\") quanto retries (de \"Preparar retry - e-mail\").\r\nconst j = $input.first().json;\r\nif (j.messages) return [{ json: { lead: j.lead, tentativa: j.tentativa, messages: j.messages } }];\r\n\r\nconst lead = j.lead;\r\nconst fallback = lead.fila?.modo !== 'texto';\r\nconst tentadas = variantesEmail(lead.nome).filter(emailPossivel);\r\nconst formato = fallback ? '{\"candidatos_email\": [\"...\"], \"assunto\": \"...\", \"corpo\": \"...\"}' : '{\"assunto\": \"...\", \"corpo\": \"...\"}';\r\nconst regrasEmail = !fallback ? '' : `\r\nRegras para \"candidatos_email\" (2 a 5 itens):\r\n- Endereços prováveis da própria empresa. Ela NÃO tem site, então priorize gmail.com (é o provedor mais usado por PMEs no Brasil).\r\n- Estes já foram testados e NÃO existem, não repita: ${tentadas.join(', ') || 'nenhum'}.\r\n- Tente abreviações e formas curtas do nome (usuário do Gmail tem no máximo 30 caracteres), sem acentos, espaços ou pontuação.\r\n- Somente letras minúsculas. Nunca invente nomes de pessoas.\r\n`;\r\nconst system = `Você é redator de prospecção B2B da Novax (novax.ia.br). ${CONFIG.oferta}\r\nResponda SOMENTE com um objeto JSON válido — sem markdown, sem texto antes ou depois — exatamente neste formato:\r\n${formato}\r\n${regrasEmail}\r\nRegras para \"assunto\": curto (4 a 9 palavras), sem emojis, sem CAIXA ALTA, sem ponto de exclamação.\r\n- Deve conter um dado específico desta empresa: a cidade, o nome da empresa, a nota ou o número de avaliações.\r\n- Não comece com \"Presença digital para\". Varie a construção.\r\n\r\nRegras para \"corpo\" (português do Brasil):\r\n- 4 a 6 frases (um e-mail curto), tom cordial, direto e humano. Não conte palavras nem caracteres: escreva naturalmente.\r\n- Cite o nome da empresa e a cidade.\r\n- Descreva o ramo da empresa apenas pelo que o nome dela indica. Não afirme especialidade que não esteja no nome (ex.: não chame uma clínica de estética de \"odontológica\" nem de \"dental\").\r\n- Escreva em português correto, com acentuação.\r\n- Use SOMENTE fatos dos dados fornecidos (nome, segmento, cidade, nota, número de avaliações, ausência de site). Se citar nota ou avaliações, use exatamente os números fornecidos.\r\n- NÃO elogie nem qualifique a empresa sem base nos dados (proibido: \"ótimo atendimento\", \"excelente\", \"referência\", \"boas avaliações\", \"muitas avaliações\", etc.).\r\n- NÃO use promessas genéricas (proibido: \"sem precisar de equipe extra\", \"resultados reais\", \"mais credibilidade\", \"aumentar vendas\", \"garantia\"). Descreva concretamente o que um site resolveria para quem pesquisa esta empresa no Google.\r\n- Mencione concretamente a lacuna encontrada: a empresa não tem site vinculado ao perfil do Google, então quem pesquisa no Google não encontra informações completas nem um canal para agendar/comprar.\r\n- Convide para uma reunião de diagnóstico gratuita de 30 minutos, online.\r\n- Sem preços, sem promessas exageradas, sem emojis, sem links, sem placeholders entre colchetes ou chaves.\r\n- NÃO inclua saudação final, assinatura nem rodapé (são adicionados automaticamente).`;\r\n\r\nconst user = `Empresa: ${lead.nome}\r\nSegmento pesquisado: ${(CONFIG.nichos || {})[lead.nicho] || lead.nicho} (a especialidade exata desta empresa só é conhecida pelo nome dela)\r\nCidade: ${lead.cidade}/${lead.estado}\r\nEndereço: ${lead.endereco || 'não informado'}\r\nAvaliação no Google: ${lead.rating != null ? fmtNota(lead.rating) : 'sem nota'} (${lead.total_avaliacoes ?? 0} avaliações)\r\nSite: nenhum cadastrado no Google Maps`;\r\n\r\nreturn [{ json: { lead, tentativa: 1, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] } }];\r\n"
+        "jsCode": "// ⚠ Gerado por workflow/build.mjs — edite o repo (config.json / code/b_pedido_ia.js) e reimporte.\nconst CONFIG = {\"supabaseRest\":\"https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1\",\"reacherUrl\":\"http://novax-prospeccao-reacher:8080/v0/check_email\",\"openRouterUrl\":\"https://openrouter.ai/api/v1/chat/completions\",\"modelos\":[\"qwen/qwen3.8-27b:free\",\"nvidia/nemotron-3-super-120b-a12b:free\"],\"limiteDiarioOpenRouter\":45,\"limiteMensalPlaces\":900,\"limitePlacesPorExecucao\":40,\"cidadesPorSemana\":6,\"maxTentativasIA\":3,\"maxCandidatosEmail\":6,\"rampUpEnviosPorDia\":[5,10,15,18,20],\"esperaEntreEnviosSeg\":[30,60],\"modoTeste\":{\"ativo\":false,\"redirecionarPara\":\"joaovictornovais8@gmail.com\",\"limiteEnviosDia\":5,\"forcarRespostaMalformadaNaTentativa\":0,\"etapaManual\":\"envio\",\"respostaSimulada\":{\"inReplyTo\":\"\",\"from\":\"\",\"texto\":\"\"},\"dryRun\":{\"ativo\":false,\"maxLeads\":5}},\"remetente\":{\"nome\":\"Novax\",\"email\":\"novax.ia.br@gmail.com\",\"assinatura\":\"Equipe Novax\\nnovax.ia.br | instagram.com/novax.ia.br\",\"links\":{\"novax.ia.br\":\"https://novax.ia.br\",\"instagram.com/novax.ia.br\":\"https://instagram.com/novax.ia.br\"}},\"oferta\":\"A Novax cria presença digital para pequenas empresas: site profissional e atendimento automatizado com IA (recepcionista digital que responde clientes e agenda horários 24h).\",\"agenda\":{\"duracaoMin\":45,\"horarios\":[\"09:00\",\"10:30\",\"14:00\",\"15:30\"],\"diasAFrente\":7,\"opcoes\":3,\"fusoOffset\":\"-03:00\",\"fuso\":\"America/Sao_Paulo\"},\"trello\":{\"novoLead\":\"6ab85a3648fbab359491f407\",\"emailEnviado\":\"6ab85a3971205aefff7a80f1\",\"respondeu\":\"6ab85a40444d93556683362b\",\"reuniaoAgendada\":\"6ab85a43059b33df471a03a2\",\"fechadoPerdido\":\"6ab85a450dcaa1e915dc602e\",\"revisaoManual\":\"6ab87828c92db39a520decab\"},\"exclusoes\":[{\"nome\":[\"estetica marista\"]},{\"nome\":[\"evolve\",\"estetica\"]},{\"nome\":[\"fabiana rodrigues\"]},{\"nome\":[\"meluz\"]},{\"nome\":[\"iso\",\"odontologica\"]},{\"nome\":[\"nao mais pelo\"],\"nomeOuEndereco\":[\"garavelo\"]}],\"inicioRotacao\":\"2026-09-28\",\"rotacao\":[{\"nicho\":\"odontologia_estetica\",\"estado\":\"GO\",\"offset\":0,\"buscas\":[\"clínica odontológica\",\"clínica de estética\"]},{\"nicho\":\"advocacia\",\"estado\":\"SC\",\"offset\":0,\"buscas\":[\"escritório de advocacia\"]},{\"nicho\":\"estetica_harmonizacao\",\"estado\":\"SC\",\"offset\":6,\"buscas\":[\"harmonização facial\",\"clínica de estética\"]},{\"nicho\":\"varejo_local\",\"estado\":\"GO\",\"offset\":6,\"buscas\":[\"loja de roupas\",\"loja de cosméticos\",\"pet shop\"]}],\"cidades\":{\"GO\":[\"Goiânia\",\"Aparecida de Goiânia\",\"Anápolis\",\"Senador Canedo\",\"Trindade\",\"Rio Verde\",\"Luziânia\",\"Águas Lindas de Goiás\",\"Valparaíso de Goiás\",\"Formosa\",\"Novo Gama\",\"Itumbiara\",\"Catalão\",\"Jataí\",\"Planaltina\",\"Caldas Novas\",\"Santo Antônio do Descoberto\",\"Goianésia\",\"Cidade Ocidental\",\"Mineiros\",\"Inhumas\",\"Cristalina\",\"Jaraguá\",\"Quirinópolis\",\"Porangatu\",\"Uruaçu\"],\"SC\":[\"Florianópolis\",\"São José\",\"Palhoça\",\"Joinville\",\"Blumenau\",\"Itajaí\",\"Chapecó\",\"Criciúma\",\"Balneário Camboriú\",\"Jaraguá do Sul\",\"Lages\",\"Brusque\",\"Tubarão\",\"Camboriú\",\"Navegantes\",\"Caçador\",\"Concórdia\",\"Rio do Sul\",\"Araranguá\",\"Gaspar\",\"Biguaçu\",\"Indaial\",\"Mafra\",\"Canoinhas\",\"Itapema\",\"São Bento do Sul\",\"Videira\",\"Xanxerê\",\"Içara\",\"Porto Belo\"]},\"nichos\":{\"odontologia_estetica\":\"clínicas odontológicas e clínicas de estética\",\"advocacia\":\"escritórios de advocacia\",\"estetica_harmonizacao\":\"clínicas de estética e harmonização facial\",\"varejo_local\":\"pequeno varejo local (lojas de roupas, cosméticos, pet shops)\"},\"verificacaoPorExecucao\":15,\"pausaEntreVerificacoesSeg\":10};\n\n// ---- biblioteca compartilhada (injetada pelo build.mjs em todo Code node) ----\r\n\r\nconst norm = (s) => (s || '')\r\n  .normalize('NFD').replace(/[̀-ͯ]/g, '')\r\n  .toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\\s+/g, ' ').trim();\r\n\r\nconst EMAIL_RE = /^[a-z0-9._%+-]+@[a-z0-9-]+(\\.[a-z0-9-]+)*\\.[a-z]{2,}$/;\r\n\r\n// Frases típicas de recusa/desvio de modelos instrucionais (pt/en).\r\nconst RECUSA_RE = /(n[aã]o posso (ajudar|atender|criar|gerar|fazer)|como (um|uma) (modelo|ia|assistente)|modelo de linguagem|sinto muito, mas|i can(no|')t (help|assist|do)|i('| a)m sorry|as an ai|i('| a)m unable|against (my|the) (guidelines|policy))/i;\r\n\r\n// Saída de IA → {ok, erro, tipo_falha, obj}. Salvaguardas 1 e 2 do projeto:\r\n// só aceita JSON puro (cercas ``` são toleradas); texto antes do \"{\" é tratado como desvio.\r\nfunction parseRespostaIA(resp) {\r\n  if (!resp || resp.error || !resp.choices) {\r\n    const msg = resp?.error?.message || resp?.error || 'sem choices na resposta';\r\n    return { ok: false, tipo_falha: 'api', erro: 'erro da API: ' + String(typeof msg === 'string' ? msg : JSON.stringify(msg)).slice(0, 300), raw: '' };\r\n  }\r\n  let raw = resp.choices?.[0]?.message?.content ?? '';\r\n  if (typeof raw !== 'string') raw = JSON.stringify(raw);\r\n  const p = parseTextoIA(raw);\r\n  // Resposta cortada pelo limite de tokens nunca é aceita, mesmo que pareça JSON.\r\n  if (resp.choices?.[0]?.finish_reason === 'length') {\r\n    return { ok: false, tipo_falha: 'formato', erro: 'resposta truncada no limite de tokens' + (p.ok ? '' : ' — ' + p.erro), raw };\r\n  }\r\n  return p;\r\n}\r\n\r\nfunction parseTextoIA(raw) {\r\n  const t = raw.trim().replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/, '').trim();\r\n  if (!t) return { ok: false, tipo_falha: 'formato', erro: 'resposta vazia', raw };\r\n  if (!t.startsWith('{')) {\r\n    const recusa = RECUSA_RE.test(t.slice(0, 600));\r\n    return { ok: false, tipo_falha: recusa ? 'recusa' : 'formato',\r\n             erro: recusa ? 'modelo recusou/desviou (texto de recusa em vez de JSON)' : 'resposta não é JSON (texto explicativo antes/no lugar do objeto)', raw };\r\n  }\r\n  try {\r\n    return { ok: true, obj: JSON.parse(t), raw };\r\n  } catch (e) {\r\n    return { ok: false, tipo_falha: 'formato', erro: 'JSON malformado: ' + e.message, raw };\r\n  }\r\n}\r\n\r\nconst RESPOSTA_MALFORMADA_TESTE =\r\n  'Claro! Aqui está uma sugestão de e-mail para essa empresa:\\n\\nOlá, tudo bem? Vi que vocês ainda não têm site...\\n\\n(Espero que ajude!)';\r\n\r\nconst escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\r\nconst linkificar = (html) => {\r\n  let out = html;\r\n  // Mais longo primeiro, para \"instagram.com/novax.ia.br\" não ser quebrado pelo link de \"novax.ia.br\".\r\n  const links = Object.entries(CONFIG.remetente.links || {}).sort((a, b) => b[0].length - a[0].length);\r\n  const marcas = [];\r\n  for (const [txt, url] of links) {\r\n    const re = new RegExp('(?<![\\\\w@./])' + txt.replace(/[.*+?^${}()|[\\]\\\\/]/g, '\\\\$&') + '(?![\\\\w@])', 'g');\r\n    out = out.replace(re, () => { marcas.push(`<a href=\"${url}\">${txt}</a>`); return `\\u0000${marcas.length - 1}\\u0000`; });\r\n  }\r\n  return out.replace(/\\u0000(\\d+)\\u0000/g, (_, i) => marcas[Number(i)]);\r\n};\r\nconst textoParaHtml = (t) => '<div style=\"font-family:Arial,sans-serif;font-size:14px;line-height:1.5\">'\r\n  + linkificar(escHtml(t)).split('\\n').join('<br>') + '</div>';\r\n\r\nconst assuntoResposta = (a) => 'Re: ' + String(a || '').replace(/^\\s*(\\[TESTE[^\\]]*\\]\\s*)?((re|res|fw|enc):\\s*)*/i, '');\r\n\r\nconst rodapeLGPD = (lead) =>\r\n  `\\n\\n${CONFIG.remetente.assinatura}\\n\\n—\\nVocê recebeu esta mensagem porque ${lead.nome} aparece como empresa no Google Maps em ${lead.cidade}/${lead.estado}. ` +\r\n  'Se não quiser receber novos contatos da Novax, responda com a palavra SAIR e removemos seu e-mail imediatamente.';\r\n\r\nconst agoraISO = () => new Date().toISOString();\r\n\r\n// Ajustes de revisão (1-2): nada de elogio/qualificação sem base nos dados, nada de promessa genérica.\r\nconst FRASES_PROIBIDAS = [\r\n  [/[óo]tim[oa]s?\\b/i, 'elogio \"ótimo\"'], [/excelen/i, 'elogio \"excelente\"'], [/incr[ií]vel/i, 'elogio \"incrível\"'],\r\n  [/maravilh/i, 'elogio \"maravilhoso\"'], [/renomad/i, 'elogio \"renomado\"'], [/refer[êe]ncia/i, 'elogio \"referência\"'],\r\n  [/conceituad/i, 'elogio \"conceituado\"'], [/reconhecid/i, 'elogio \"reconhecido\"'], [/tradicional/i, 'elogio \"tradicional\"'],\r\n  [/de qualidade/i, 'elogio \"de qualidade\"'], [/(boas|muitas|diversas|v[áa]rias) avalia/i, 'qualificação vaga das avaliações (use o número)'],\r\n  [/equipe extra/i, 'promessa \"sem equipe extra\"'], [/resultados reais/i, 'promessa \"resultados reais\"'], [/focad[oa] em resultado/i, 'promessa \"focado em resultados\"'],\r\n  [/credibilidade/i, 'promessa vaga \"credibilidade\"'], [/garant/i, 'promessa \"garantia\"'], [/(dobrar|triplicar|multiplicar)/i, 'promessa de multiplicar resultados'],\r\n  [/aumentar (as |suas |seu |o )?(vendas|faturamento|lucro)/i, 'promessa de aumento de vendas'],\r\n];\r\nconst fmtNota = (r) => String(r).replace('.', ',');\r\n\r\n// Todo número de nota/avaliações citado precisa bater com o Google Maps.\r\nconst SEM_ACENTO_RE = /\\b(nao|voce|voces|servicos|horarios|reuniao|avaliacoes|informacoes|clinica|estetica|pratica|diagnostico)\\b/i;\r\nfunction checarFatos(texto, lead) {\r\n  const erros = [];\r\n  const semNome = texto.split(lead.nome || '0000').join(' '); // o nome pode estar cadastrado sem acento no Google\r\n  if (SEM_ACENTO_RE.test(semNome)) erros.push('texto sem acentuação (ex.: \"' + semNome.match(SEM_ACENTO_RE)[0] + '\")');\r\n  for (const [re, nome] of FRASES_PROIBIDAS) if (re.test(texto)) erros.push('contém ' + nome);\r\n  const t = texto.replace(/(\\d)\\.(\\d)/g, '$1,$2');\r\n  const notas = [...t.matchAll(/(\\d(?:,\\d)?)\\s*estrelas|nota\\s*(?:de\\s*)?(\\d(?:,\\d)?)|(\\d,\\d)/gi)].map((m) => m[1] || m[2] || m[3]);\r\n  for (const n of notas) if (lead.rating == null || Number(n.replace(',', '.')) !== Number(lead.rating)) erros.push(`nota \"${n}\" não bate com o Google (${lead.rating ?? 'sem nota'})`);\r\n  for (const m of t.matchAll(/(\\d+)\\s*avalia/gi)) if (Number(m[1]) !== Number(lead.total_avaliacoes)) erros.push(`\"${m[1]} avaliações\" não bate com o Google (${lead.total_avaliacoes ?? 0})`);\r\n  return erros;\r\n}\r\n\r\n// Palavras genéricas de ramo: sozinhas não identificam a empresa (clinica@gmail.com é de outra pessoa).\r\nconst GENERICAS = new Set(['clinica', 'clinicas', 'estetica', 'esteticas', 'odontologia', 'odontologica', 'odontologicas', 'odonto',\r\n  'dentista', 'dentaria', 'consultorio', 'instituto', 'centro', 'espaco', 'studio', 'estudio', 'loja', 'lojas', 'advocacia',\r\n  'advogados', 'advogado', 'escritorio', 'associados', 'avancada', 'integrada', 'especializada', 'saude', 'beauty', 'clinic',\r\n  'imagem', 'facial', 'corporal', 'implantes', 'sorriso', 'ltda', 'eireli']);\r\nconst palavrasDistintivas = (nome) => norm(nome).split(' ')\r\n  .filter((w) => w.length >= 3 && !GENERICAS.has(w) && !['de', 'da', 'do', 'das', 'dos', 'dra', 'dr', 'the'].includes(w));\r\n// Candidato só vale se o usuário do e-mail contém pelo menos uma palavra distintiva do nome.\r\nconst emailIdentificaEmpresa = (email, nome) => {\r\n  const u = email.split('@')[0].replace(/[^a-z0-9]/g, '');\r\n  return palavrasDistintivas(nome).some((w) => u.includes(w));\r\n};\r\n\r\n// Ajuste 5: variações determinísticas a partir do nome EXATO (só Gmail: é o único provedor que o Reacher confirma).\r\nfunction variantesEmail(nome) {\r\n  const palavras = norm(nome).split(' ').filter(Boolean);\r\n  const semConectivos = palavras.filter((w) => !['de', 'da', 'do', 'das', 'dos', 'e', 'dra', 'dr'].includes(w));\r\n  const slugs = [...new Set([palavras.join(''), semConectivos.join('')])];\r\n  const out = [];\r\n  for (const s of slugs) out.push(`${s}@gmail.com`, `contato.${s}@gmail.com`);\r\n  return out.filter((e) => emailIdentificaEmpresa(e, nome));\r\n}\r\n// Gmail só aceita usuário de 6 a 30 caracteres: descarta candidatos impossíveis antes do Reacher.\r\nconst emailPossivel = (e) => {\r\n  if (!e.endsWith('@gmail.com')) return true;\r\n  const u = e.split('@')[0];\r\n  return u.length >= 6 && u.length <= 30;\r\n};\r\n// ---- fim da biblioteca ----\r\n\n// Passo 3: monta o pedido à IA. Modo \"texto\": e-mail já confirmado na fase 1 → só assunto/corpo.\n// Modo \"fallback\": nenhuma variação do nome passou → IA sugere e-mails alternativos + texto.\n// Recebe tanto a 1ª tentativa (de \"Cabe no limite?\") quanto retries (de \"Preparar retry - e-mail\").\nconst j = $input.first().json;\nif (j.messages) return [{ json: { lead: j.lead, tentativa: j.tentativa, messages: j.messages } }];\n\nconst lead = j.lead;\nconst fallback = lead.fila?.modo !== 'texto';\nconst tentadas = variantesEmail(lead.nome).filter(emailPossivel);\nconst formato = fallback ? '{\"candidatos_email\": [\"...\"], \"assunto\": \"...\", \"corpo\": \"...\"}' : '{\"assunto\": \"...\", \"corpo\": \"...\"}';\nconst regrasEmail = !fallback ? '' : `\nRegras para \"candidatos_email\" (2 a 5 itens):\n- Endereços prováveis da própria empresa. Ela NÃO tem site, então priorize gmail.com (é o provedor mais usado por PMEs no Brasil).\n- Estes já foram testados e NÃO existem, não repita: ${tentadas.join(', ') || 'nenhum'}.\n- Tente abreviações e formas curtas do nome (usuário do Gmail tem no máximo 30 caracteres), sem acentos, espaços ou pontuação.\n- Somente letras minúsculas. Nunca invente nomes de pessoas.\n`;\nconst system = `Você é redator de prospecção B2B da Novax (novax.ia.br). ${CONFIG.oferta}\nResponda SOMENTE com um objeto JSON válido — sem markdown, sem texto antes ou depois — exatamente neste formato:\n${formato}\n${regrasEmail}\nRegras para \"assunto\": curto (4 a 9 palavras), sem emojis, sem CAIXA ALTA, sem ponto de exclamação.\n- Deve conter um dado específico desta empresa: a cidade, o nome da empresa, a nota ou o número de avaliações.\n- Se citar a nota, use SEMPRE vírgula e uma casa decimal, copiando exatamente o valor informado abaixo (ex.: \"nota 3,4\"). NUNCA arredonde, trunque ou escreva \"nota 3\" nem \"nota 3.4\" (ponto).\n- Não comece com \"Presença digital para\". Varie a construção.\n\nRegras para \"corpo\" (português do Brasil):\n- 4 a 6 frases (um e-mail curto), tom cordial, direto e humano. Não conte palavras nem caracteres: escreva naturalmente.\n- Cite o nome da empresa e a cidade.\n- Descreva o ramo da empresa apenas pelo que o nome dela indica. Não afirme especialidade que não esteja no nome (ex.: não chame uma clínica de estética de \"odontológica\" nem de \"dental\").\n- Escreva em português correto, com acentuação em TODAS as palavras que precisam (ex.: \"clínica\", \"não\", \"avaliações\", \"reunião\", \"horário\") — nunca \"clinica\", \"nao\", \"avaliacoes\".\n- Use SOMENTE fatos dos dados fornecidos (nome, segmento, cidade, nota, número de avaliações, ausência de site). Se citar nota ou avaliações, use exatamente os números fornecidos.\n- NÃO elogie nem qualifique a empresa sem base nos dados (proibido: \"ótimo atendimento\", \"excelente\", \"referência\", \"boas avaliações\", \"muitas avaliações\", etc.).\n- NÃO use promessas genéricas (proibido: \"sem precisar de equipe extra\", \"resultados reais\", \"mais credibilidade\", \"aumentar vendas\", \"garantia\"). Descreva concretamente o que um site resolveria para quem pesquisa esta empresa no Google.\n- Mencione concretamente a lacuna encontrada: a empresa não tem site vinculado ao perfil do Google, então quem pesquisa no Google não encontra informações completas nem um canal para agendar/comprar.\n- Convide para uma reunião de diagnóstico gratuita de 30 minutos, online.\n- Sem preços, sem promessas exageradas, sem emojis, sem links, sem placeholders entre colchetes ou chaves.\n- NÃO inclua saudação final, assinatura nem rodapé (são adicionados automaticamente).`;\n\nconst user = `Empresa: ${lead.nome}\nSegmento pesquisado: ${(CONFIG.nichos || {})[lead.nicho] || lead.nicho} (a especialidade exata desta empresa só é conhecida pelo nome dela)\nCidade: ${lead.cidade}/${lead.estado}\nEndereço: ${lead.endereco || 'não informado'}\nAvaliação no Google: ${lead.rating != null ? fmtNota(lead.rating) : 'sem nota'} (${lead.total_avaliacoes ?? 0} avaliações)\nSite: nenhum cadastrado no Google Maps`;\n\nreturn [{ json: { lead, tentativa: 1, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] } }];\n"
       }
     },
     {
-      "id": "d0d8de7f-1073-47b4-8562-46586e44dda1",
+      "id": "3e6227a4-c2de-4c56-97ce-165472b68fb8",
       "name": "Reservar cota IA (e-mail)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1058,7 +1058,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "ef23899e-ee73-4172-b49d-24f606e8ab3e",
+      "id": "ec43741b-9d16-4a35-9caf-d63644829cce",
       "name": "Cota IA ok? (e-mail)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1076,7 +1076,7 @@
           },
           "conditions": [
             {
-              "id": "0518e162-1a78-4560-8126-004872a7aced",
+              "id": "0c8204a6-014d-456d-aef1-dd393d7d559c",
               "leftValue": "={{ $json.ok === true }}",
               "rightValue": "",
               "operator": {
@@ -1093,7 +1093,7 @@
       }
     },
     {
-      "id": "9a3dc699-0df1-4e98-9064-065ee0663f55",
+      "id": "75e2b4dd-bf25-47be-83c3-5741da40b6b5",
       "name": "Parar: cota IA esgotada",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -1104,7 +1104,7 @@
       "parameters": {}
     },
     {
-      "id": "2e2e13e6-ef05-48ec-8da6-736f34e88d60",
+      "id": "bcb5338e-7e08-4ccd-b0c2-9b16565f1065",
       "name": "OpenRouter - gerar e-mail",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1147,7 +1147,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "7714f1f5-1ba1-4b31-8e9d-73dc77fe1842",
+      "id": "837fdf25-1959-4c06-944d-94071331d144",
       "name": "Validar resposta IA - e-mail",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1161,7 +1161,7 @@
       }
     },
     {
-      "id": "49f7b98d-fd10-44e1-802c-e6d8bf36bd1d",
+      "id": "6f9ffe69-ebea-4986-803c-dbd5a8c638d1",
       "name": "JSON válido? (e-mail)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1179,7 +1179,7 @@
           },
           "conditions": [
             {
-              "id": "64ce1b86-c413-473d-9160-30bcc867b09c",
+              "id": "4d7fe97b-3423-4d0d-9ed9-7dfdb05cf475",
               "leftValue": "={{ $json.ok === true }}",
               "rightValue": "",
               "operator": {
@@ -1196,7 +1196,7 @@
       }
     },
     {
-      "id": "107010ba-2c39-4071-b04d-3409b7fcbfd5",
+      "id": "93da9f79-286e-4c00-abee-7148e0ec50a2",
       "name": "Ainda tem tentativa? (e-mail)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1214,7 +1214,7 @@
           },
           "conditions": [
             {
-              "id": "0d474f25-40ca-461f-8ea6-b8c92ab1fa3f",
+              "id": "af5ab58d-162a-4f00-b571-2621fc2b229f",
               "leftValue": "={{ $json.tentativa < 3 }}",
               "rightValue": "",
               "operator": {
@@ -1231,7 +1231,7 @@
       }
     },
     {
-      "id": "5bc34a2e-a990-4765-9351-64734a47e61e",
+      "id": "17904267-5ad9-489e-ac9a-f37d384dd7d3",
       "name": "Pausa retry (e-mail)",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -1244,10 +1244,10 @@
         "amount": 15,
         "unit": "seconds"
       },
-      "webhookId": "2362e63c-61ea-4d09-b0bb-92b92a249e3d"
+      "webhookId": "6693a71a-faf8-4f78-b2b2-24c2f1a34bdd"
     },
     {
-      "id": "836f6608-6052-4c01-948d-0a8fb2274f43",
+      "id": "5718abaa-45f6-46e6-8c1c-bbe45563e0c3",
       "name": "Preparar retry - e-mail",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1261,7 +1261,7 @@
       }
     },
     {
-      "id": "256b759e-2d3f-408b-84e9-895e71c8ff3a",
+      "id": "55d9804c-8d49-49de-90b2-75aaf4e125fd",
       "name": "Revisão manual (e-mail)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1275,7 +1275,7 @@
       }
     },
     {
-      "id": "cab7acea-b429-475b-a5fd-657e75a5b703",
+      "id": "2d244c9b-9e27-45b2-ae5f-75a303f92a95",
       "name": "E-mail já confirmado?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1293,7 +1293,7 @@
           },
           "conditions": [
             {
-              "id": "d3f584d0-d8cf-4ab6-b693-9c8507a11bfc",
+              "id": "e130127e-eba4-45f1-a61f-89bb0d2231fd",
               "leftValue": "={{ !!$json.lead.fila && $json.lead.fila.modo === 'texto' }}",
               "rightValue": "",
               "operator": {
@@ -1310,7 +1310,7 @@
       }
     },
     {
-      "id": "f7f01d56-e1bb-46f2-a40c-c9cfdf83bee4",
+      "id": "08ca954d-bb06-4a0b-88e4-1255949f5304",
       "name": "Há candidatos novos?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1328,7 +1328,7 @@
           },
           "conditions": [
             {
-              "id": "842afd98-f98f-4f4a-8a3c-fcce52a0c2b2",
+              "id": "1eeb75e9-344c-4f76-a318-f4386613bad1",
               "leftValue": "={{ !!$json.candidatos && $json.candidatos.length > 0 }}",
               "rightValue": "",
               "operator": {
@@ -1345,7 +1345,7 @@
       }
     },
     {
-      "id": "516f305f-9fec-4645-8d0c-a06bfd1d6ef6",
+      "id": "da30ba04-4e59-41bc-a78e-ec77342a2779",
       "name": "Separar candidatos",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1359,7 +1359,7 @@
       }
     },
     {
-      "id": "4b2336cb-5853-42ec-b90b-a2e3fb9aa340",
+      "id": "e1621795-0d13-4238-92f9-9af3621f8b9f",
       "name": "Reacher - candidatos da IA",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1381,7 +1381,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "56d1e689-b322-4ee9-bab6-1b4607972b46",
+      "id": "10b524b5-4bbd-4752-a4fa-a55424adde1c",
       "name": "Escolher melhor e-mail",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1395,7 +1395,7 @@
       }
     },
     {
-      "id": "4329b213-f8ab-4e9b-ac33-32e50d76fc77",
+      "id": "105e5050-595d-4a8c-8a12-715cecc0658b",
       "name": "Tem e-mail válido?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1413,7 +1413,7 @@
           },
           "conditions": [
             {
-              "id": "57b97209-94a5-4404-95cd-6cac0296a432",
+              "id": "110a5bce-828b-4f48-9a16-fd43b8a9bfed",
               "leftValue": "={{ $json.tem_email === true }}",
               "rightValue": "",
               "operator": {
@@ -1430,7 +1430,7 @@
       }
     },
     {
-      "id": "201085ef-856a-43e3-b3c0-08384fab3e18",
+      "id": "59f138c0-ae6e-4037-aa8a-bcc634fd960a",
       "name": "Descartar lead",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1444,7 +1444,7 @@
       }
     },
     {
-      "id": "06604995-510d-4616-a761-d9385f5ef9fd",
+      "id": "c4f07d92-ce1c-4113-b02a-d1f032709a39",
       "name": "E-mail definido",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1458,7 +1458,7 @@
       }
     },
     {
-      "id": "dc1088aa-c3f6-4a21-b1ba-614816c6e3f7",
+      "id": "56834de3-a0ff-40b0-a1ce-9ffe380ed714",
       "name": "Checar bloqueio LGPD",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1510,7 +1510,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "99dbad63-a4b0-4461-95ba-f898622da790",
+      "id": "60d2d71b-c2f6-44b2-9c07-75172eab781d",
       "name": "Montar e-mail final",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1524,7 +1524,7 @@
       }
     },
     {
-      "id": "daeb47d4-db8b-41be-88af-cc1fa535eca8",
+      "id": "c0d67b21-4c3b-4d32-824a-4745a8d7f881",
       "name": "Bloqueado?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1542,7 +1542,7 @@
           },
           "conditions": [
             {
-              "id": "bab2ec13-1dda-495e-b3dd-5905ab002d3b",
+              "id": "793c8921-10b4-4677-862f-0a46f139592f",
               "leftValue": "={{ $json.bloqueado === true }}",
               "rightValue": "",
               "operator": {
@@ -1559,7 +1559,7 @@
       }
     },
     {
-      "id": "1a63d570-b76e-45ec-9112-fc01fa48e0be",
+      "id": "aec4cee8-e3fe-4619-a055-d6edb39b5f71",
       "name": "Dry-run?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1577,7 +1577,7 @@
           },
           "conditions": [
             {
-              "id": "3c42b737-57f6-4be1-93a1-06dc82e4cf71",
+              "id": "cc4780b1-d4ef-4240-8093-5b44cd81aad3",
               "leftValue": "={{ false === true }}",
               "rightValue": "",
               "operator": {
@@ -1594,7 +1594,7 @@
       }
     },
     {
-      "id": "d91e8397-7bad-43e6-a2af-fce795ef3669",
+      "id": "35c2f209-762a-45d8-97ad-99022cf7e4dd",
       "name": "Dry-run: não envia",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -1605,7 +1605,7 @@
       "parameters": {}
     },
     {
-      "id": "e70bdd01-c935-44c5-88ca-6b28243d0f60",
+      "id": "8efdeff0-eaea-40ae-afef-c67cbcb836a4",
       "name": "Upsert contato",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1644,7 +1644,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "839eb566-7b54-4043-9f7b-ec0dcca7a45c",
+      "id": "bd397029-4913-4193-9b37-d62df484f148",
       "name": "Enviar e-mail (SMTP)",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -1673,7 +1673,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "9d21e943-4f71-4fd5-ae21-eec08f9fd77f",
+      "id": "9c2fc5f3-9f61-4a70-b997-0f74c86f824c",
       "name": "Resultado envio",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1687,7 +1687,7 @@
       }
     },
     {
-      "id": "0a7df89f-8447-4dc0-99e9-0e9b596b9008",
+      "id": "27fd80e0-8ec0-47fa-958c-a2af97d0ad79",
       "name": "Saída (B)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1701,7 +1701,7 @@
       }
     },
     {
-      "id": "cf6d60b8-3df1-404d-b2ce-64fc7c586b84",
+      "id": "bfd0be6e-417d-4eb8-bc75-37ed68c9650f",
       "name": "Houve envio? (B)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1719,7 +1719,7 @@
           },
           "conditions": [
             {
-              "id": "8e5bd624-ff6d-4a3c-91df-4c2b9b37d325",
+              "id": "527f543b-6617-4401-bc2c-4ee860a92a03",
               "leftValue": "={{ ($('Saída (B)').first().json.envio || {}).status === 'enviado' }}",
               "rightValue": "",
               "operator": {
@@ -1736,7 +1736,7 @@
       }
     },
     {
-      "id": "4d80feed-4ebc-4b98-acf5-f8349fe7fbe5",
+      "id": "7c136112-c1df-487e-ab65-41710e4b09cf",
       "name": "Espaçar envios",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -1749,10 +1749,10 @@
         "amount": "={{ 30 + Math.floor(Math.random() * 30) }}",
         "unit": "seconds"
       },
-      "webhookId": "c1d76ec4-24b1-4807-ad5c-c784e39f613b"
+      "webhookId": "170f5ede-8ce6-4cc7-8e90-a8ffab9b9f18"
     },
     {
-      "id": "1fb982f0-d84e-4b7c-b4a2-a5f8940e18a3",
+      "id": "c18f6b5f-a2ff-4288-b2c4-2d0eb0957197",
       "name": "Registrar envio? (B)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1770,7 +1770,7 @@
           },
           "conditions": [
             {
-              "id": "822b3c7c-ed8b-4665-b156-6b0cf92d9271",
+              "id": "be13b466-b80f-488b-8c60-20fc25177e60",
               "leftValue": "={{ !!$('Saída (B)').first().json.envio }}",
               "rightValue": "",
               "operator": {
@@ -1787,7 +1787,7 @@
       }
     },
     {
-      "id": "8f6fb71a-bd00-48be-a6dc-09d83311354d",
+      "id": "5a6cab85-218d-43d8-9f99-dea3ea532c59",
       "name": "Registrar envio (B)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1826,7 +1826,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "a37ee450-229a-45fb-aefd-4c75fbe6e511",
+      "id": "9152aa50-20bf-4045-b49b-e9c25b4d67df",
       "name": "Atualizar lead (B)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -1865,7 +1865,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "4b08820d-c695-42e0-bf6f-bdb5ea7e1fb6",
+      "id": "7fc68f3b-b50b-4282-bf7c-b4eb4d6cf29f",
       "name": "Registrar no Trello? (B)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1883,7 +1883,7 @@
           },
           "conditions": [
             {
-              "id": "0439e93d-a33e-45c6-8804-1c1019a3f2ec",
+              "id": "ec4d2100-f69c-43f3-b1bf-88c05d05d409",
               "leftValue": "={{ !!$('Saída (B)').first().json.trello_lista }}",
               "rightValue": "",
               "operator": {
@@ -1900,7 +1900,7 @@
       }
     },
     {
-      "id": "851f533e-4a73-42c1-96f2-05175f977ef1",
+      "id": "99b60aa3-a127-4953-969b-4171d6f43931",
       "name": "Tem card? (B)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -1918,7 +1918,7 @@
           },
           "conditions": [
             {
-              "id": "782c4a19-67e8-4059-8d39-97f05ae8db1d",
+              "id": "e8665b57-2a3c-4100-9d6b-aebd4e47a7b7",
               "leftValue": "={{ !!$('Saída (B)').first().json.lead.trello_card_id }}",
               "rightValue": "",
               "operator": {
@@ -1935,7 +1935,7 @@
       }
     },
     {
-      "id": "e8a81669-dd80-451a-b786-ebc02562271b",
+      "id": "f8f0ae41-4769-4ab9-a50c-01af5402c788",
       "name": "Trello - mover card (B)",
       "type": "n8n-nodes-base.trello",
       "typeVersion": 1,
@@ -1964,7 +1964,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "f73cc31c-a4d6-4bd3-b3da-00d9a91c4595",
+      "id": "c817a6b0-5e13-42fd-a09a-83958810b0ba",
       "name": "Trello - criar card (B)",
       "type": "n8n-nodes-base.trello",
       "typeVersion": 1,
@@ -1991,7 +1991,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "1e85b9be-6fd0-4e12-81cb-610e59f33650",
+      "id": "52fe4db0-1cd6-489c-b4b7-db4316236b9a",
       "name": "Salvar card no lead (B)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2030,7 +2030,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "c709fe17-c5f9-403e-9595-7b94e3d461fb",
+      "id": "7301c30c-5512-46f8-bc87-ced917ffdbf0",
       "name": "Gmail IMAP - respostas",
       "type": "n8n-nodes-base.emailReadImap",
       "typeVersion": 2.2,
@@ -2056,7 +2056,7 @@
       }
     },
     {
-      "id": "47eff109-8a23-4504-babc-c0e03cd1bf34",
+      "id": "034bd483-767c-46a4-8e96-a597ca4e4725",
       "name": "Loop respostas",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
@@ -2070,7 +2070,7 @@
       }
     },
     {
-      "id": "b626ac2a-ddf0-40de-9cb1-42db60efeabc",
+      "id": "1de0b511-a1bf-4a80-842a-be4f51c96dc4",
       "name": "Extrair resposta",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2084,7 +2084,7 @@
       }
     },
     {
-      "id": "c9d7109d-0f03-4f67-aa38-3899f54dd30c",
+      "id": "98764ed7-d772-4cec-b3eb-3011967b7ace",
       "name": "É resposta do agente?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2102,7 +2102,7 @@
           },
           "conditions": [
             {
-              "id": "058a3d93-ca8a-4aa4-bf5f-3a4d820321c3",
+              "id": "eb8235a9-5a8c-4850-81d0-45ae6d66d080",
               "leftValue": "={{ $json.ignorar === false }}",
               "rightValue": "",
               "operator": {
@@ -2119,7 +2119,7 @@
       }
     },
     {
-      "id": "d9901ef6-776a-4cc1-9c8f-7dd40f2f7b38",
+      "id": "6f6a9a5c-8c86-42ef-9c8b-3f502deb967f",
       "name": "Buscar envio original",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2175,7 +2175,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "db967c6e-53ad-4ccc-83e1-7266ac65499f",
+      "id": "1971049f-b3b8-4753-823c-fb0952ce8e52",
       "name": "Contexto da resposta",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2189,7 +2189,7 @@
       }
     },
     {
-      "id": "3af9a277-e523-4b45-be5a-2d7956591449",
+      "id": "1a2ed1b8-f0d6-458f-942a-11699425edcb",
       "name": "Ignorar? (C)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2207,7 +2207,7 @@
           },
           "conditions": [
             {
-              "id": "b10ddf99-da98-49be-9292-1798c1ebe9f6",
+              "id": "8acb8b30-22a6-4b3d-9465-3c6ad82c269e",
               "leftValue": "={{ $json.acao === 'ignorar' }}",
               "rightValue": "",
               "operator": {
@@ -2224,7 +2224,7 @@
       }
     },
     {
-      "id": "ad491aaf-c5e6-477c-a60b-24d5aaeb3d0a",
+      "id": "0355c720-1a56-495e-9180-7664480b5630",
       "name": "Registrar resposta no envio",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2263,7 +2263,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "3a83d974-93b4-4665-9b6b-ee07d0a4b633",
+      "id": "d3cd2f73-18f1-44de-b4fa-e255d59d00fa",
       "name": "É descadastro?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2281,7 +2281,7 @@
           },
           "conditions": [
             {
-              "id": "15c88d4f-da50-49f8-b73f-e6ec735dc6de",
+              "id": "f8023c82-491f-4d86-8ada-aea42178569d",
               "leftValue": "={{ $('Contexto da resposta').first().json.acao === 'optout' }}",
               "rightValue": "",
               "operator": {
@@ -2298,7 +2298,7 @@
       }
     },
     {
-      "id": "eab9e98b-396d-4b61-b413-55ce737902bb",
+      "id": "c7dc4529-1f85-4d3d-b13a-c8c79e5b6a48",
       "name": "Pedido IA - qualificação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2312,7 +2312,7 @@
       }
     },
     {
-      "id": "2f6eb96f-f52e-4087-927b-f92f8c95501e",
+      "id": "985800fa-e148-4f48-8419-4deb9c217dd2",
       "name": "Reservar cota IA (resposta)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2351,7 +2351,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "13e76050-5d2e-4699-8622-d27a820683a3",
+      "id": "7792e2d5-c2a0-41fa-9be5-3db5e83fc5ad",
       "name": "Cota IA ok? (resposta)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2369,7 +2369,7 @@
           },
           "conditions": [
             {
-              "id": "fe3214df-beef-42d8-8836-a521c2e28cb1",
+              "id": "0d673b53-324c-4d25-b163-19148bfeea48",
               "leftValue": "={{ $json.ok === true }}",
               "rightValue": "",
               "operator": {
@@ -2386,7 +2386,7 @@
       }
     },
     {
-      "id": "4fa5ed92-7e0a-42cf-ba06-a04b2dd6f249",
+      "id": "e8e645a7-8003-4ecd-8f3c-26b190ddffc3",
       "name": "OpenRouter - qualificar",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2429,7 +2429,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "fe17b1fc-07e5-433c-ae18-604c1ec61e5d",
+      "id": "7da76b50-348d-4645-9e77-7979c94c86ff",
       "name": "Validar resposta IA - qualificação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2443,7 +2443,7 @@
       }
     },
     {
-      "id": "ba1e7244-d152-410e-aa97-2a718c568b8a",
+      "id": "571e8302-29ac-4372-8cd0-e10a2710e06d",
       "name": "JSON válido? (resposta)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2461,7 +2461,7 @@
           },
           "conditions": [
             {
-              "id": "3dfd0710-8745-4f61-8e7a-82a7be230cda",
+              "id": "4b286f7e-b932-4cf9-a796-fa3788b7c28f",
               "leftValue": "={{ $json.ok === true }}",
               "rightValue": "",
               "operator": {
@@ -2478,7 +2478,7 @@
       }
     },
     {
-      "id": "3ddd24f4-b1cb-4cf3-b212-3d51a626a018",
+      "id": "810c1df5-0a31-44bb-bdb7-1d18c1c202ae",
       "name": "Ainda tem tentativa? (resposta)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2496,7 +2496,7 @@
           },
           "conditions": [
             {
-              "id": "9c8a822b-6e38-4bc6-bfd1-41c520d11716",
+              "id": "25af273d-8504-4203-a896-85ec812ebbb6",
               "leftValue": "={{ $json.tentativa < 3 }}",
               "rightValue": "",
               "operator": {
@@ -2513,7 +2513,7 @@
       }
     },
     {
-      "id": "68a9cbdf-fb08-47fd-b4ff-008ff2e9d258",
+      "id": "050e8a69-0c9a-410b-ace9-4f34db6012e1",
       "name": "Pausa retry (resposta)",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -2526,10 +2526,10 @@
         "amount": 15,
         "unit": "seconds"
       },
-      "webhookId": "14326bab-d25e-4815-ad55-f2f1eef97e40"
+      "webhookId": "e33bb2cd-91c5-47a6-8c90-6910a9775388"
     },
     {
-      "id": "1cf5cf0a-240c-4dd6-b613-526694c4065c",
+      "id": "67ac6098-2c55-4f09-a0c1-b6a11c4d2670",
       "name": "Preparar retry - qualificação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2543,7 +2543,7 @@
       }
     },
     {
-      "id": "4970f3a2-4906-4989-9619-95fd6ef5ee99",
+      "id": "9144fe4c-516e-4b4e-8624-969e346420c5",
       "name": "Revisão manual (resposta)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2557,7 +2557,7 @@
       }
     },
     {
-      "id": "f53ddcdb-cab5-47d6-b20e-019188e863f7",
+      "id": "bc2bace9-2914-4c86-a6e1-6123ea573ec6",
       "name": "Salvar classificação",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2596,7 +2596,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "77809bcf-f1f8-4526-bdf3-7ed9ea102ba2",
+      "id": "d0814a46-47a8-4cb3-815f-3133d6eb59a5",
       "name": "Decidir próxima ação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2610,7 +2610,7 @@
       }
     },
     {
-      "id": "6cb60478-04a5-4369-8c3f-4f27057f28a0",
+      "id": "4aa07b58-1b8c-43b9-8497-6c05878ec88b",
       "name": "Agendar?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2628,7 +2628,7 @@
           },
           "conditions": [
             {
-              "id": "8a2da2bf-3699-493c-984d-7db09638840d",
+              "id": "3536326d-9318-42d8-8a6c-a64e6e2c5131",
               "leftValue": "={{ $json.acao === 'agendar' }}",
               "rightValue": "",
               "operator": {
@@ -2645,7 +2645,7 @@
       }
     },
     {
-      "id": "4a6c8c9d-508d-43d6-914e-09686ecc4f21",
+      "id": "23e95cc6-4686-4368-ad65-210602124f2c",
       "name": "Propor?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2663,7 +2663,7 @@
           },
           "conditions": [
             {
-              "id": "20996a95-9005-451d-92a1-3c39f8af32c4",
+              "id": "bd43d07f-238b-4fa8-84bb-49f8e408584d",
               "leftValue": "={{ $json.acao === 'propor' }}",
               "rightValue": "",
               "operator": {
@@ -2680,7 +2680,7 @@
       }
     },
     {
-      "id": "e3d8d641-0fad-4656-b0e8-675e8142e5c4",
+      "id": "c3c07faf-8ce6-4d4d-8519-b787a5a84b6e",
       "name": "Revisão? (C)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2698,7 +2698,7 @@
           },
           "conditions": [
             {
-              "id": "284462fa-2628-4164-869e-d7e26aad3ffe",
+              "id": "67f9c7c5-cece-4810-9610-64874ff7dd08",
               "leftValue": "={{ $json.acao === 'revisao' }}",
               "rightValue": "",
               "operator": {
@@ -2715,7 +2715,7 @@
       }
     },
     {
-      "id": "bf2278cb-7b90-459a-a40e-d788e6a65367",
+      "id": "d9177518-8064-4d2e-8732-2e84275029e9",
       "name": "Dados bloqueio",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2729,7 +2729,7 @@
       }
     },
     {
-      "id": "01d74010-d78b-4926-9758-f4c98e273d89",
+      "id": "abbf46c5-4db7-48d5-85d3-a4e7c25da82a",
       "name": "Bloquear contatos",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2768,7 +2768,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "dea4ee3e-1b8f-4d54-9ca6-aa32657109fa",
+      "id": "8ee53413-e6ce-4a4a-8042-46b34a065fe1",
       "name": "Calendar - checar horário",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2798,7 +2798,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "3348663f-5f62-4ba2-98cb-2f52b897fa4a",
+      "id": "a74790e0-69d9-4f3a-ad86-c56a6bbbe848",
       "name": "Horário ainda livre?",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2812,7 +2812,7 @@
       }
     },
     {
-      "id": "362a7cd9-6ee8-465d-8961-8d2f53937424",
+      "id": "f708f972-7ea6-4475-96ae-301c964ca61e",
       "name": "Livre?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2830,7 +2830,7 @@
           },
           "conditions": [
             {
-              "id": "dea733ca-3b1d-4ec8-8675-fb147773e244",
+              "id": "78039ffc-5805-4318-a85a-56485be27a78",
               "leftValue": "={{ $json.livre === true }}",
               "rightValue": "",
               "operator": {
@@ -2847,7 +2847,7 @@
       }
     },
     {
-      "id": "9738932f-65a3-4001-b645-a9ec2124f405",
+      "id": "5358514e-a4b2-471c-8e15-1193acadea71",
       "name": "Montar evento",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2861,7 +2861,7 @@
       }
     },
     {
-      "id": "3a3fd67f-ab03-4efe-8798-b2d1456bd92a",
+      "id": "df487e87-d238-4193-b559-442d68f3424f",
       "name": "Calendar - criar evento",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -2904,7 +2904,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "78c8e064-7e24-4a40-8624-50a968cc0736",
+      "id": "e39edf02-a75a-4502-b505-088e0467e01b",
       "name": "Montar confirmação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2918,7 +2918,7 @@
       }
     },
     {
-      "id": "cf24f74a-9621-4b3f-b99d-3cfc26d1b5cb",
+      "id": "1240afcc-4b58-46eb-b41b-a9e891dd381b",
       "name": "Evento criado?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -2936,7 +2936,7 @@
           },
           "conditions": [
             {
-              "id": "0e32b59e-934d-4693-94a9-0650e5225a5e",
+              "id": "c036404d-5486-433f-8fae-712d0f984e8d",
               "leftValue": "={{ $json.evento_ok === true }}",
               "rightValue": "",
               "operator": {
@@ -2953,7 +2953,7 @@
       }
     },
     {
-      "id": "26424aab-9dd5-47b2-a2ec-287df3d2d12a",
+      "id": "3419491a-5376-4231-9e1d-a9d5d3446c7b",
       "name": "Enviar confirmação (SMTP)",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -2982,7 +2982,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "c9ad1f34-db12-4a28-808e-4ac35031a817",
+      "id": "5c0a1b72-bfeb-4c9d-b853-3e6ea95b289d",
       "name": "Resultado confirmação",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -2996,7 +2996,7 @@
       }
     },
     {
-      "id": "6738f91a-3d3f-4a55-bc0e-6118dbaee492",
+      "id": "cd1918a5-1aba-47fa-981c-db112f49f8b5",
       "name": "Calendar - freeBusy (proposta)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -3026,7 +3026,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "33ceff4f-a291-4c4c-b8fc-9e3a0ccaf530",
+      "id": "e8695fd6-adee-4611-8f07-af09bb02b3c6",
       "name": "Montar proposta de horários",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3040,7 +3040,7 @@
       }
     },
     {
-      "id": "73ff00ff-df4c-4533-a42f-d6c70f784862",
+      "id": "10e7e19d-9f30-4853-8169-9e2a64d7a950",
       "name": "Enviar proposta (SMTP)",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -3069,7 +3069,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "12eaeec1-7e67-497d-8435-217eab6f0c48",
+      "id": "e7b0e3bc-445a-41b2-bb5b-e11e661cae53",
       "name": "Resultado proposta",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3083,7 +3083,7 @@
       }
     },
     {
-      "id": "72247c12-eac8-493d-95fa-2d548026aa79",
+      "id": "bf2dc19d-b578-48c2-8aa2-14b7db94d154",
       "name": "Saída (C)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3097,7 +3097,7 @@
       }
     },
     {
-      "id": "b0a9e47a-da17-4057-a122-9ef0aa473ee2",
+      "id": "21b973db-483c-4457-a16d-d40a29eb3461",
       "name": "Registrar envio? (C)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -3115,7 +3115,7 @@
           },
           "conditions": [
             {
-              "id": "d289fbdb-63ca-4b43-96eb-0ca9af7e45d0",
+              "id": "e7dec06d-b19b-4820-8d74-1b6d47fd3b85",
               "leftValue": "={{ !!$('Saída (C)').first().json.envio }}",
               "rightValue": "",
               "operator": {
@@ -3132,7 +3132,7 @@
       }
     },
     {
-      "id": "335bb013-9f12-484e-87af-0d29fcecd7f5",
+      "id": "097d7da6-b3cb-4b66-ac49-9ad73d0b82b8",
       "name": "Registrar envio (C)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -3171,7 +3171,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "e74595b3-5be1-4aec-be4b-c2948e5cadb0",
+      "id": "450403e9-d4ba-466f-bf40-7f401a90d758",
       "name": "Atualizar lead (C)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -3210,7 +3210,7 @@
       "alwaysOutputData": true
     },
     {
-      "id": "03030fd9-4268-4eab-a978-3ec76851edf2",
+      "id": "4ddc1a84-7019-4999-92c6-dc27bbd27384",
       "name": "Registrar no Trello? (C)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -3228,7 +3228,7 @@
           },
           "conditions": [
             {
-              "id": "6eefc68e-9253-4c18-a96a-aa85de26e1a6",
+              "id": "1da486f0-2e28-464d-a4bd-e0126cac13a3",
               "leftValue": "={{ !!$('Saída (C)').first().json.trello_lista }}",
               "rightValue": "",
               "operator": {
@@ -3245,7 +3245,7 @@
       }
     },
     {
-      "id": "d0093046-03c8-47fd-8499-81feb2c3b758",
+      "id": "1c9b2a85-2696-4772-9ece-8c23f0688214",
       "name": "Tem card? (C)",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -3263,7 +3263,7 @@
           },
           "conditions": [
             {
-              "id": "66cc4353-b12b-4d40-8464-b11147c34649",
+              "id": "19ef907c-0a71-4b64-8f66-5ff56a824427",
               "leftValue": "={{ !!$('Saída (C)').first().json.lead.trello_card_id }}",
               "rightValue": "",
               "operator": {
@@ -3280,7 +3280,7 @@
       }
     },
     {
-      "id": "618ac806-0997-40aa-acc5-164fc3c43e20",
+      "id": "6700133c-1fad-450c-b332-8dd505e15690",
       "name": "Trello - mover card (C)",
       "type": "n8n-nodes-base.trello",
       "typeVersion": 1,
@@ -3309,7 +3309,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "a3fc5b03-7dd6-438b-a514-6abb101c1f13",
+      "id": "dee07d23-8557-404a-8ca3-2f3933a82682",
       "name": "Trello - criar card (C)",
       "type": "n8n-nodes-base.trello",
       "typeVersion": 1,
@@ -3336,7 +3336,7 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "533fdb8b-4daa-488d-80c3-347543275957",
+      "id": "a6fa0451-ce41-4a9c-9083-7cc6d431c54c",
       "name": "Salvar card no lead (C)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
