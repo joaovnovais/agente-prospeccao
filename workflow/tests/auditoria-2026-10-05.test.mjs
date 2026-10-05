@@ -1,6 +1,7 @@
-// Regressão dos patches da auditoria (branch auditoria/2026-10-05) — offline.
+// Regressão dos patches da auditoria 2026-10-05 — offline (sem rede, IA ou banco). Uso: node workflow/tests/auditoria-2026-10-05.test.mjs
 import { readFileSync } from 'node:fs';
-const R = new URL('..', import.meta.url).pathname.replace(/^/([A-Za-z]:)/, '$1').replace(//$/, '');
+import { fileURLToPath } from 'node:url';
+const R = fileURLToPath(new URL('..', import.meta.url)).replace(/[\/]$/, '');
 const CONFIG = JSON.parse(readFileSync(`${R}/config.json`, 'utf8'));
 const LIB = readFileSync(`${R}/code/_lib.js`, 'utf8');
 const lib = new Function('CONFIG', LIB + '; return { variantesEmail, emailPossivel, emailIdentificaEmpresa, checarFatos, fmtNota };')(CONFIG);
