@@ -163,7 +163,7 @@ schedule('Diário - Envio', '30 9 * * 1-5', [0, 4]);
 supa('Status envios (dia)', [1, 4], { path: '/prospeccao_status_envio?select=*' });
 code('Calcular limite do dia', 'b_limite_dia.js', [2, 4]);
 
-supa('Buscar leads p/ verificação', [3, 2.4], { path: '/prospeccao_leads?select=*&status=eq.novo&verificacao_codigo_em=is.null&order=created_at.asc,id.asc&limit={{ $json.loteVerificacao }}' });
+supa('Buscar leads p/ verificação', [3, 2.4], { path: '/prospeccao_leads?select=*&status=eq.novo&verificacao_codigo_em=is.null&order=updated_at.asc,id.asc&limit={{ $json.loteVerificacao }}' });
 iff('Há leads p/ verificar?', '!!$json.id', [4, 2.4]);
 loop('Loop verificação', [5, 2.4]);
 code('Variações do nome', 'b_variacoes.js', [6, 2.4]);
@@ -171,7 +171,7 @@ iff('Tem variação?', '!!$json.email', [7, 2.4]);
 http('Reacher - variações do nome', [8, 2], { method: 'POST', url: CONFIG.reacherUrl, timeout: 90000, soft: true,
   body: '={{ JSON.stringify({ to_email: $json.email }) }}' });
 code('Resultado verificação (código)', 'b_resultado_verificacao.js', [9, 2.4]);
-iff('Reacher travou?', '$json.incompleto === true', [10, 1.6]);
+iff('Reacher travou?', '$json.disjuntor === true', [10, 1.6]);
 iff('E-mail do nome confirmado?', '$json.safe === true', [10, 2.4]);
 wait('Pausa entre verificações', CONFIG.pausaEntreVerificacoesSeg, [13, 2.4]);
 supa('Salvar contato verificado', [11, 2], { method: 'POST', path: '/prospeccao_contatos?on_conflict=email',

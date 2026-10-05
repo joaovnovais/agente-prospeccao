@@ -215,5 +215,6 @@
     "varejo_local": "pequeno varejo local (lojas de roupas, cosméticos, pet shops)"
   },
   "verificacaoPorExecucao": 15,
+  "reacherFalhasSeguidasMax": 3,
   "pausaEntreVerificacoesSeg": 10
 }
