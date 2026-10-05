@@ -5,7 +5,7 @@ if (!env || !env.id || !env.lead) return [{ json: { acao: 'ignorar' } }];
 if (env.resposta_message_id && env.resposta_message_id === r.message_id) return [{ json: { acao: 'ignorar' } }];
 
 // Descadastro explícito é tratado por regra fixa (não depende da IA).
-const OPTOUT_RE = /(^\s*(sair|descadastrar|remover|pare|stop|unsubscribe)\s*[.!]?\s*$)|descadastr|me (remova|retire|tire) d|remov(a|er|am) (o )?(meu|nosso) (e-?mail|contato)|n[aã]o (quero|desejo) (mais )?receber|parem? de (me )?(enviar|mandar)|unsubscribe/im;
+const OPTOUT_RE = /(^\s*(sair|descadastrar|remover|pare|stop|unsubscribe)\s*[.!]?\s*$)|descadastr|me (remova|retire|tire) d|remov(a|er|am) (o )?(meu|nosso) (e-?mail|contato)|n[aã]o (quero|desejo) (mais )?receber|parem? de (me )?(enviar|mandar)|unsubscribe|tir(a|e|ar|em) (o )?(meu|nosso) (e-?mail|contato|nome)|sair da (sua |vossa )?lista|me (exclua|excluam|retirem)/im;
 const optout = OPTOUT_RE.test(r.texto);
 
 return [{ json: {

@@ -6,11 +6,12 @@ if (j.messages) return [{ json: { lead: j.lead, tentativa: j.tentativa, messages
 
 const lead = j.lead;
 const fallback = lead.fila?.modo !== 'texto';
-const tentadas = variantesEmail(lead.nome).filter(emailPossivel);
+const tentadas = variantesEmail(lead.nome, lead.cidade).filter(emailPossivel);
 const formato = fallback ? '{"candidatos_email": ["..."], "assunto": "...", "corpo": "..."}' : '{"assunto": "...", "corpo": "..."}';
 const regrasEmail = !fallback ? '' : `
 Regras para "candidatos_email" (2 a 5 itens):
-- Endereços prováveis da própria empresa. Ela NÃO tem site, então priorize gmail.com (é o provedor mais usado por PMEs no Brasil).
+- Endereços prováveis da própria empresa, SOMENTE no domínio gmail.com (outros provedores não podem ser verificados).
+- Use pelo menos duas palavras do nome da empresa; nunca só um primeiro nome de pessoa.
 - Estes já foram testados e NÃO existem, não repita: ${tentadas.join(', ') || 'nenhum'}.
 - Tente abreviações e formas curtas do nome (usuário do Gmail tem no máximo 30 caracteres), sem acentos, espaços ou pontuação.
 - Somente letras minúsculas. Nunca invente nomes de pessoas.

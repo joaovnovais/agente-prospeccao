@@ -1,7 +1,7 @@
 // Gera workflow/dist/novax-agente-prospeccao.json a partir de config.json + code/*.js.
 // Uso: node workflow/build.mjs   (não contém nenhum segredo — credenciais são referenciadas por ID)
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
+import { randomUUID, createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -9,6 +9,12 @@ const DIR = dirname(fileURLToPath(import.meta.url));
 const CONFIG = JSON.parse(readFileSync(join(DIR, 'config.json'), 'utf8'));
 const LIB = readFileSync(join(DIR, 'code', '_lib.js'), 'utf8');
 const REST = CONFIG.supabaseRest;
+// Impressão digital do build (auditoria 2026-10-05): o deploy.sh confere que a versão no banco do n8n é ESTE build.
+const BUILD_ID = (() => {
+  const h = createHash('sha256').update(readFileSync(join(DIR, 'config.json'))).update(readFileSync(fileURLToPath(import.meta.url)));
+  for (const f of readdirSync(join(DIR, 'code')).sort()) h.update(f).update(readFileSync(join(DIR, 'code', f)));
+  return h.digest('hex').slice(0, 12);
+})();
 
 if (!CONFIG.modelos.every((m) => m.endsWith(':free'))) throw new Error('todo modelo precisa terminar em ":free"');
 
@@ -43,12 +49,14 @@ const chain = (...names) => names.slice(1).forEach((n, i) => link(names[i], n));
 // ---------- fábricas de nós ----------
 function code(name, file, pos, pre = '') {
   const src = readFileSync(join(DIR, 'code', file), 'utf8');
-  const jsCode = `// ⚠ Gerado por workflow/build.mjs — edite o repo (config.json / code/${file}) e reimporte.\n` +
+  const jsCode = `// ⚠ Gerado por workflow/build.mjs — edite o repo (config.json / code/${file}) e reimporte. build: ${BUILD_ID}\n` +
     `const CONFIG = ${JSON.stringify(CONFIG)};\n${pre}\n${LIB}\n${src}`;
   return add(name, 'n8n-nodes-base.code', 2, { mode: 'runOnceForAllItems', jsCode }, pos);
 }
-function http(name, pos, { method = 'GET', url, cred, credType, body, query, headers, timeout = 30000, always = false, soft = false }) {
+function http(name, pos, { method = 'GET', url, cred, credType, body, query, headers, timeout = 30000, always = false, soft = false, intervaloMs = 0 }) {
   const p = { method, url: url.includes('{{') && !url.startsWith('=') ? '=' + url : url, options: { timeout } };
+  // Uma requisição por vez com pausa entre elas (rajadas de consulta SMTP fazem o Gmail segurar o IP: 141 timeouts/258 consultas).
+  if (intervaloMs) p.options.batching = { batch: { batchSize: 1, batchInterval: intervaloMs } };
   if (cred === 'places') Object.assign(p, { authentication: 'genericCredentialType', genericAuthType: 'httpHeaderAuth' });
   else if (credType) Object.assign(p, { authentication: 'predefinedCredentialType', nodeCredentialType: credType });
   if (query) Object.assign(p, { sendQuery: true, queryParameters: { parameters: Object.entries(query).map(([name, value]) => ({ name, value })) } });
@@ -168,7 +176,7 @@ iff('Há leads p/ verificar?', '!!$json.id', [4, 2.4]);
 loop('Loop verificação', [5, 2.4]);
 code('Variações do nome', 'b_variacoes.js', [6, 2.4]);
 iff('Tem variação?', '!!$json.email', [7, 2.4]);
-http('Reacher - variações do nome', [8, 2], { method: 'POST', url: CONFIG.reacherUrl, timeout: 90000, soft: true,
+http('Reacher - variações do nome', [8, 2], { method: 'POST', url: CONFIG.reacherUrl, timeout: 90000, soft: true, intervaloMs: CONFIG.reacherIntervaloMs,
   body: '={{ JSON.stringify({ to_email: $json.email }) }}' });
 code('Resultado verificação (código)', 'b_resultado_verificacao.js', [9, 2.4]);
 iff('Reacher travou?', '$json.disjuntor === true', [10, 1.6]);
@@ -182,7 +190,7 @@ supa('Marcar verificação (lead)', [12, 2.4], { method: 'PATCH',
   body: `={{ JSON.stringify({ verificacao_codigo_em: $('Resultado verificação (código)').first().json.incompleto ? null : new Date().toISOString() }) }}` });
 code('Fim da verificação', 'b_resumo_verificacao.js', [6, 3.2]);
 supa('Buscar fila com e-mail', [7, 3.2], { path: `/prospeccao_leads?select=*,contatos:prospeccao_contatos!inner(id,email,reacher_status,reacher_raw,bloqueado)&status=eq.novo&contatos.reacher_status=eq.safe&contatos.bloqueado=is.false&order=created_at.asc,id.asc&limit={{ $('Calcular limite do dia').first().json.lote }}` });
-supa('Buscar fila fallback', [8, 3.2], { path: `/prospeccao_leads?select=*&status=eq.novo&verificacao_codigo_em=not.is.null&order=verificacao_codigo_em.asc,id.asc&limit={{ $('Calcular limite do dia').first().json.lote }}` });
+supa('Buscar fila fallback', [8, 3.2], { path: `/prospeccao_leads?select=*&status=eq.novo&verificacao_codigo_em=not.is.null&order=updated_at.asc,id.asc&limit={{ $('Calcular limite do dia').first().json.lote }}` });
 code('Montar fila de envio', 'b_montar_fila.js', [9, 3.2]);
 
 loop('Loop leads', [4, 4]);
@@ -203,7 +211,7 @@ code('Revisão manual (e-mail)', 'b_revisao.js', [14, 7]);
 iff('E-mail já confirmado?', `!!$json.lead.fila && $json.lead.fila.modo === 'texto'`, [14, 4]);
 iff('Há candidatos novos?', '!!$json.candidatos && $json.candidatos.length > 0', [14, 5.2]);
 code('Separar candidatos', 'b_separar_candidatos.js', [15, 5.2]);
-http('Reacher - candidatos da IA', [16, 5.2], { method: 'POST', url: CONFIG.reacherUrl, timeout: 90000, soft: true,
+http('Reacher - candidatos da IA', [16, 5.2], { method: 'POST', url: CONFIG.reacherUrl, timeout: 90000, soft: true, intervaloMs: CONFIG.reacherIntervaloMs,
   body: '={{ JSON.stringify({ to_email: $json.email }) }}' });
 code('Escolher melhor e-mail', 'b_escolher_email.js', [17, 5.2]);
 iff('Tem e-mail válido?', '$json.tem_email === true', [18, 5.2]);
@@ -353,8 +361,9 @@ const wf = {
   nodes,
   connections,
   pinData: {},
+  meta: { buildId: BUILD_ID },
   settings: { executionOrder: 'v1', timezone: CONFIG.agenda.fuso, saveManualExecutions: true, saveDataErrorExecution: 'all', saveDataSuccessExecution: 'all', callerPolicy: 'workflowsFromSameOwner' },
 };
 mkdirSync(join(DIR, 'dist'), { recursive: true });
 writeFileSync(join(DIR, 'dist', 'novax-agente-prospeccao.json'), JSON.stringify(wf, null, 2));
-console.log(`ok: ${nodes.length} nós, ${Object.values(connections).reduce((a, c) => a + c.main.flat().length, 0)} conexões`);
+console.log(`build ${BUILD_ID} · ok: ${nodes.length} nós, ${Object.values(connections).reduce((a, c) => a + c.main.flat().length, 0)} conexões`);
