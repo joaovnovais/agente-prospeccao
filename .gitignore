@@ -8,3 +8,9 @@ dashboard/.streamlit/secrets.toml
 dashboard/__pycache__/
 dashboard/.venv/
 dashboard/venv/
+
+# Dados de leads/terceiros (o repositório é público): relatórios de dry-run e anexos locais da execução
+revisao/
+docs/local/
+AUDITORIA_CLAUDE_CODE.md
+EXECUTAR_CORRECOES_CLAUDE_CODE.md
