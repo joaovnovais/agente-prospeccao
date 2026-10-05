@@ -19,10 +19,10 @@ let cands = [];
 if (fallback) {
   const limparEmail = (e) => String(e).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '').toLowerCase();
   if (!Array.isArray(o.candidatos_email)) erros.push('candidatos_email ausente');
-  const jaTestadas = new Set(variantesEmail(L.nome));
+  const jaTestadas = new Set(variantesEmail(L.nome, L.cidade));
   // Só e-mails novos (as variações do nome já falharam na fase 1), sem duplicatas e sem Gmail impossível.
   cands = [...new Set((o.candidatos_email || []).map(limparEmail))]
-    .filter((e) => EMAIL_RE.test(e) && emailPossivel(e) && !jaTestadas.has(e) && emailIdentificaEmpresa(e, L.nome));
+    .filter((e) => EMAIL_RE.test(e) && emailPossivel(e) && !jaTestadas.has(e) && emailIdentificaEmpresa(e, L.nome, L.cidade));
 }
 if (typeof o.assunto !== 'string' || o.assunto.trim().length < 5 || o.assunto.length > 90) erros.push('assunto ausente ou fora de 5-90 caracteres');
 if (typeof o.corpo !== 'string' || o.corpo.trim().length < 300 || o.corpo.length > 1800) erros.push('corpo ausente ou fora de 300-1800 caracteres');

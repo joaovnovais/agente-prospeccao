@@ -105,6 +105,11 @@
       "nomeOuEndereco": [
         "garavelo"
       ]
+    },
+    {
+      "nome": [
+        "ordem dos advogados"
+      ]
     }
   ],
   "inicioRotacao": "2026-09-28",
@@ -216,5 +221,7 @@
   },
   "verificacaoPorExecucao": 15,
   "reacherFalhasSeguidasMax": 3,
-  "pausaEntreVerificacoesSeg": 10
+  "pausaEntreVerificacoesSeg": 10,
+  "reacherIntervaloMs": 6000,
+  "maxTentativasFallback": 2
 }

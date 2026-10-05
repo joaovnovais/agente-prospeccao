@@ -77,18 +77,22 @@ const FRASES_PROIBIDAS = [
   [/credibilidade/i, 'promessa vaga "credibilidade"'], [/garant/i, 'promessa "garantia"'], [/(dobrar|triplicar|multiplicar)/i, 'promessa de multiplicar resultados'],
   [/aumentar (as |suas |seu |o )?(vendas|faturamento|lucro)/i, 'promessa de aumento de vendas'],
 ];
-const fmtNota = (r) => String(r).replace('.', ',');
+// Sempre 1 casa decimal ("5,0"), coerente com a regra do prompt — antes a entrada dizia "5" e a IA escrevia "nota de 4".
+const fmtNota = (r) => Number(r).toFixed(1).replace('.', ',');
 
 // Todo número de nota/avaliações citado precisa bater com o Google Maps.
-const SEM_ACENTO_RE = /\b(nao|voce|voces|servicos|horarios|reuniao|avaliacoes|informacoes|clinica|estetica|pratica|diagnostico)\b/i;
+// Ampliado na auditoria (7/37 palavras comuns eram pegas; "Gostariamos" e "vincado" saíram em produção).
+const SEM_ACENTO_RE = /\b(nao|voce|voces|servicos?|horarios?|reuni[ao]o|reunioes|avaliac(ao|oes)|informac(ao|oes)|clinicas?|esteticas?|pratica|diagnostico|gostariamos|tambem|atencao|soluc(ao|oes)|comunicacao|presenca|negocios?|otim[oa]s?|proxim[oa]s?|estao|sera|possivel|disponivel|facil|automatic[oa]s?|juridic[oa]s?|escritorio|previdenciari[oa]|familia|ja|ate|vincad[oa])\b/i;
 function checarFatos(texto, lead) {
   const erros = [];
-  const semNome = texto.split(lead.nome || '0000').join(' '); // o nome pode estar cadastrado sem acento no Google
+  // O nome pode estar cadastrado sem acento no Google (e a IA pode reescrevê-lo em outra caixa): removido sem diferenciar maiúsculas.
+  const semNome = lead.nome ? texto.replace(new RegExp(String(lead.nome).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), ' ') : texto;
   if (SEM_ACENTO_RE.test(semNome)) erros.push('texto sem acentuação (ex.: "' + semNome.match(SEM_ACENTO_RE)[0] + '")');
   for (const [re, nome] of FRASES_PROIBIDAS) if (re.test(texto)) erros.push('contém ' + nome);
   const t = texto.replace(/(\d)\.(\d)/g, '$1,$2');
   const notas = [...t.matchAll(/(\d(?:,\d)?)\s*estrelas|nota\s*(?:de\s*)?(\d(?:,\d)?)|(\d,\d)/gi)].map((m) => m[1] || m[2] || m[3]);
   for (const n of notas) if (lead.rating == null || Number(n.replace(',', '.')) !== Number(lead.rating)) erros.push(`nota "${n}" não bate com o Google (${lead.rating ?? 'sem nota'})`);
+  for (const m of t.matchAll(/nota\s*(?:de\s*)?(\d)(?![,\d])/gi)) erros.push(`nota "${m[1]}" sem casa decimal (use "${fmtNota(lead.rating ?? m[1])}")`);
   for (const m of t.matchAll(/(\d+)\s*avalia/gi)) if (Number(m[1]) !== Number(lead.total_avaliacoes)) erros.push(`"${m[1]} avaliações" não bate com o Google (${lead.total_avaliacoes ?? 0})`);
   return erros;
 }
@@ -97,26 +101,53 @@ function checarFatos(texto, lead) {
 const GENERICAS = new Set(['clinica', 'clinicas', 'estetica', 'esteticas', 'odontologia', 'odontologica', 'odontologicas', 'odonto',
   'dentista', 'dentaria', 'consultorio', 'instituto', 'centro', 'espaco', 'studio', 'estudio', 'loja', 'lojas', 'advocacia',
   'advogados', 'advogado', 'escritorio', 'associados', 'avancada', 'integrada', 'especializada', 'saude', 'beauty', 'clinic',
-  'imagem', 'facial', 'corporal', 'implantes', 'sorriso', 'ltda', 'eireli']);
-const palavrasDistintivas = (nome) => norm(nome).split(' ')
-  .filter((w) => w.length >= 3 && !GENERICAS.has(w) && !['de', 'da', 'do', 'das', 'dos', 'dra', 'dr', 'the'].includes(w));
-// Candidato só vale se o usuário do e-mail contém pelo menos uma palavra distintiva do nome.
-const emailIdentificaEmpresa = (email, nome) => {
+  'imagem', 'facial', 'corporal', 'implantes', 'sorriso', 'ltda', 'eireli',
+  // auditoria 2026-10-05: vocabulário jurídico e de serviços (semana de advocacia)
+  'advogada', 'advogadas', 'consultoria', 'juridica', 'juridico', 'assessoria', 'direito', 'sociedade', 'individual', 'criminal',
+  'criminalista', 'especialista', 'especializado', 'previdenciario', 'previdenciaria', 'familia', 'trabalhista', 'civil', 'tributario',
+  'empresarial', 'regiao', 'matriz', 'filial', 'unidade', 'contato']);
+// A cidade do lead não identifica a empresa ("Gou Odonto Rio Verde" → só "gou" é distintivo).
+const palavrasDistintivas = (nome, cidade = '') => {
+  const daCidade = new Set(norm(cidade).split(' '));
+  return norm(nome).split(' ')
+    .filter((w) => w.length >= 3 && !GENERICAS.has(w) && !daCidade.has(w) && !['de', 'da', 'do', 'das', 'dos', 'dra', 'dr', 'the'].includes(w));
+};
+// Candidato só vale se o usuário do e-mail contém palavras distintivas do nome: 2 delas quando o nome tem 2+
+// (auditoria: "kemile@gmail.com" p/ "Dra Kemile Teles" passava com 1 palavra = primeiro nome de qualquer pessoa).
+const emailIdentificaEmpresa = (email, nome, cidade = '') => {
   const u = email.split('@')[0].replace(/[^a-z0-9]/g, '');
-  return palavrasDistintivas(nome).some((w) => u.includes(w));
+  const ds = palavrasDistintivas(nome, cidade);
+  return ds.filter((w) => u.includes(w)).length >= Math.min(2, ds.length) && ds.length > 0;
 };
 
+// Advocacia: só escritórios (decisão do João, 05/10/2026). Pessoa física (autônomo) e entidade de classe/órgão não são capturados.
+// Ordem: entidade → marcador de banca (escritório) → pessoa física com alta confiança → ambíguo (mantido, conservador).
+const ENTIDADE_RE = /\b(ordem dos advogados|oab|conselho|defensoria|procuradoria|forum|tribunal|cartorio|sindicato|subsecao)\b/;
+const BANCA_RE = /\b(advocacia|advogados|associados|sociedade|escritorio|juridic[ao]s?|law|partners)\b/;
+function classificarAdvocacia(nome) {
+  const n = norm(nome);
+  if (ENTIDADE_RE.test(n)) return 'entidade';
+  if (BANCA_RE.test(n) || nome.includes('&')) return 'escritorio';
+  if (/^(dr|dra|adv)\b/.test(n) || /\b(advogad[oa]|criminalista)\b/.test(n)) return 'pessoa_fisica';
+  const palavras = n.split(' ').filter(Boolean);
+  if (palavras.length >= 2 && palavras.length <= 4 && palavras.every((w) => /^[a-z]+$/.test(w))) return 'pessoa_fisica';
+  return 'ambiguo';
+}
+
 // Ajuste 5: variações determinísticas a partir do nome EXATO (só Gmail: é o único provedor que o Reacher confirma).
-function variantesEmail(nome) {
+function variantesEmail(nome, cidade = '') {
   const palavras = norm(nome).split(' ').filter(Boolean);
   const semConectivos = palavras.filter((w) => !['de', 'da', 'do', 'das', 'dos', 'e', 'dra', 'dr'].includes(w));
   const slugs = [...new Set([palavras.join(''), semConectivos.join('')])];
   const out = [];
   for (const s of slugs) out.push(`${s}@gmail.com`, `contato.${s}@gmail.com`);
-  return out.filter((e) => emailIdentificaEmpresa(e, nome));
+  return out.filter((e) => emailIdentificaEmpresa(e, nome, cidade));
 }
 // Gmail só aceita usuário de 6 a 30 caracteres: descarta candidatos impossíveis antes do Reacher.
+// Reacher nunca conclui Hotmail/Outlook/Yahoo (50/50 HeadlessError): consultar só gasta tempo e tarpit.
+const PROVEDOR_SEM_VERIFICACAO = /@(hotmail|outlook|live|msn|yahoo)\./;
 const emailPossivel = (e) => {
+  if (PROVEDOR_SEM_VERIFICACAO.test(e)) return false;
   if (!e.endsWith('@gmail.com')) return true;
   const u = e.split('@')[0];
   return u.length >= 6 && u.length <= 30;

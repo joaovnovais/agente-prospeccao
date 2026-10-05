@@ -24,6 +24,10 @@ itens.forEach((it, i) => {
     const nome = p.displayName?.text || '';
     if (!nome) continue;
     if (excluida(nome, p.formattedAddress)) { excluidos.push(nome); continue; }
+    if (ctx.nicho === 'advocacia') {
+      const perfil = classificarAdvocacia(nome);
+      if (perfil === 'pessoa_fisica' || perfil === 'entidade') { excluidos.push(`${nome} [fora do perfil: ${perfil}]`); continue; }
+    }
     rows.push({
       place_id: p.id,
       nome,
