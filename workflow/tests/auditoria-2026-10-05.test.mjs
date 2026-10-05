@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 const R = fileURLToPath(new URL('..', import.meta.url)).replace(/[\/]$/, '');
 const CONFIG = JSON.parse(readFileSync(`${R}/config.json`, 'utf8'));
 const LIB = readFileSync(`${R}/code/_lib.js`, 'utf8');
-const lib = new Function('CONFIG', LIB + '; return { variantesEmail, emailPossivel, emailIdentificaEmpresa, checarFatos, fmtNota };')(CONFIG);
+const lib = new Function('CONFIG', LIB + '; return { variantesEmail, emailPossivel, emailIdentificaEmpresa, checarFatos, fmtNota, classificarAdvocacia };')(CONFIG);
 const rodar = (f, input) => new Function('$input', '$', 'CONFIG', LIB + '\n' + readFileSync(`${R}/code/${f}`, 'utf8'))({ first: () => input[0], all: () => input }, () => ({ first: () => undefined }), CONFIG);
 let falhas = 0; const ok = (c, m) => { console.log((c ? '  ✔ ' : '  ✘ ') + m); if (!c) falhas++; };
 console.log('A4 trava de e-mail / provedores');
@@ -37,5 +37,12 @@ const r3 = rodar('b_descarte.js', [{ json: { tem_email: false, lead, verificados
 ok(r3.lead_patch.status === 'sem_email', 'mistura com invalid continua sem_email (comportamento atual)');
 const r4 = rodar('b_descarte.js', [{ json: { bloqueado: true, lead, motivo: 'bloqueado: x' } }])[0].json;
 ok(r4.lead_patch.status === 'descartado', 'bloqueio LGPD inalterado');
+console.log('Fase 2 advocacia só escritórios');
+for (const [nome, esp] of [['Ordem dos Advogados do Brasil', 'entidade'], ['Dr. João Silva Advogado', 'pessoa_fisica'], ['Silva & Souza Advogados Associados', 'escritorio'],
+  ['Escritório Pereira', 'escritorio'], ['Macohin Advogados Associados', 'escritorio'], ['Thiago Farias', 'pessoa_fisica'], ['Hellen Greffin Advogada', 'pessoa_fisica'],
+  ['Dra. Larissa dos Passos Sipriano - Advogada especialista em família e sucessões.', 'pessoa_fisica'], ['Defensoria Pública de SC', 'entidade'], ['Baltazar Advocacia', 'escritorio']]) {
+  ok(lib.classificarAdvocacia(nome) === esp, `"${nome}" → ${esp}`);
+}
+ok(lib.checarFatos('O Escritorio Advocacia Pereira Mafra não tem site.', { nome: 'ESCRITORIO ADVOCACIA PEREIRA MAFRA', rating: 5, total_avaliacoes: 2 }).length === 0, 'nome sem acento em outra caixa não gera falso positivo');
 console.log('config'); ok(CONFIG.exclusoes.some((e) => (e.nome || []).includes('ordem dos advogados')), 'OAB na lista de exclusão');
 console.log(`\nfalhas: ${falhas}`); process.exit(falhas ? 1 : 0);

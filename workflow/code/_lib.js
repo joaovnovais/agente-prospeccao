@@ -85,7 +85,8 @@ const fmtNota = (r) => Number(r).toFixed(1).replace('.', ',');
 const SEM_ACENTO_RE = /\b(nao|voce|voces|servicos?|horarios?|reuni[ao]o|reunioes|avaliac(ao|oes)|informac(ao|oes)|clinicas?|esteticas?|pratica|diagnostico|gostariamos|tambem|atencao|soluc(ao|oes)|comunicacao|presenca|negocios?|otim[oa]s?|proxim[oa]s?|estao|sera|possivel|disponivel|facil|automatic[oa]s?|juridic[oa]s?|escritorio|previdenciari[oa]|familia|ja|ate|vincad[oa])\b/i;
 function checarFatos(texto, lead) {
   const erros = [];
-  const semNome = texto.split(lead.nome || '0000').join(' '); // o nome pode estar cadastrado sem acento no Google
+  // O nome pode estar cadastrado sem acento no Google (e a IA pode reescrevê-lo em outra caixa): removido sem diferenciar maiúsculas.
+  const semNome = lead.nome ? texto.replace(new RegExp(String(lead.nome).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), ' ') : texto;
   if (SEM_ACENTO_RE.test(semNome)) erros.push('texto sem acentuação (ex.: "' + semNome.match(SEM_ACENTO_RE)[0] + '")');
   for (const [re, nome] of FRASES_PROIBIDAS) if (re.test(texto)) erros.push('contém ' + nome);
   const t = texto.replace(/(\d)\.(\d)/g, '$1,$2');
@@ -118,6 +119,20 @@ const emailIdentificaEmpresa = (email, nome, cidade = '') => {
   const ds = palavrasDistintivas(nome, cidade);
   return ds.filter((w) => u.includes(w)).length >= Math.min(2, ds.length) && ds.length > 0;
 };
+
+// Advocacia: só escritórios (decisão do João, 05/10/2026). Pessoa física (autônomo) e entidade de classe/órgão não são capturados.
+// Ordem: entidade → marcador de banca (escritório) → pessoa física com alta confiança → ambíguo (mantido, conservador).
+const ENTIDADE_RE = /\b(ordem dos advogados|oab|conselho|defensoria|procuradoria|forum|tribunal|cartorio|sindicato|subsecao)\b/;
+const BANCA_RE = /\b(advocacia|advogados|associados|sociedade|escritorio|juridic[ao]s?|law|partners)\b/;
+function classificarAdvocacia(nome) {
+  const n = norm(nome);
+  if (ENTIDADE_RE.test(n)) return 'entidade';
+  if (BANCA_RE.test(n) || nome.includes('&')) return 'escritorio';
+  if (/^(dr|dra|adv)\b/.test(n) || /\b(advogad[oa]|criminalista)\b/.test(n)) return 'pessoa_fisica';
+  const palavras = n.split(' ').filter(Boolean);
+  if (palavras.length >= 2 && palavras.length <= 4 && palavras.every((w) => /^[a-z]+$/.test(w))) return 'pessoa_fisica';
+  return 'ambiguo';
+}
 
 // Ajuste 5: variações determinísticas a partir do nome EXATO (só Gmail: é o único provedor que o Reacher confirma).
 function variantesEmail(nome, cidade = '') {
