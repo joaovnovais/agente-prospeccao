@@ -3,9 +3,32 @@ import pandas as pd
 import plotly.express as px
 from supabase import create_client
 from datetime import datetime
+import hmac
 import pytz
 
 st.set_page_config(page_title="Robson - Painel de Prospeccao", page_icon="📈", layout="wide")
+
+
+def exigir_senha():
+    """Trava fail-closed: sem [painel] senha nos Secrets, o painel não carrega dado nenhum.
+    O app usa a service_role (acesso total ao projeto Supabase, inclusive tabelas da Claudia)."""
+    senha_cfg = st.secrets.get("painel", {}).get("senha")
+    if not senha_cfg:
+        st.error("Painel bloqueado: defina [painel] senha nos Secrets do Streamlit.")
+        st.stop()
+    if st.session_state.get("autenticado"):
+        return
+    with st.form("login"):
+        senha = st.text_input("Senha do painel", type="password")
+        if st.form_submit_button("Entrar"):
+            if hmac.compare_digest(senha.encode(), str(senha_cfg).encode()):
+                st.session_state["autenticado"] = True
+                st.rerun()
+            st.error("Senha incorreta.")
+    st.stop()
+
+
+exigir_senha()
 
 TZ = pytz.timezone("America/Sao_Paulo")
 COTA_IA_DIARIA = 45
