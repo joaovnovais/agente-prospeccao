@@ -130,7 +130,8 @@ function classificarAdvocacia(nome) {
   if (BANCA_RE.test(n) || nome.includes('&')) return 'escritorio';
   if (/^(dr|dra|adv)\b/.test(n) || /\b(advogad[oa]|criminalista)\b/.test(n)) return 'pessoa_fisica';
   const palavras = n.split(' ').filter(Boolean);
-  if (palavras.length >= 2 && palavras.length <= 4 && palavras.every((w) => /^[a-z]+$/.test(w))) return 'pessoa_fisica';
+  // Só 2–3 prenomes/sobrenomes soltos (critério do João); 4+ palavras sem marcador ficam como ambíguo (mantidos).
+  if (palavras.length >= 2 && palavras.length <= 3 && palavras.every((w) => /^[a-z]+$/.test(w))) return 'pessoa_fisica';
   return 'ambiguo';
 }
 

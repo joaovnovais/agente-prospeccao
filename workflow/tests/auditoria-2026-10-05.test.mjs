@@ -40,7 +40,7 @@ ok(r4.lead_patch.status === 'descartado', 'bloqueio LGPD inalterado');
 console.log('Fase 2 advocacia só escritórios');
 for (const [nome, esp] of [['Ordem dos Advogados do Brasil', 'entidade'], ['Dr. João Silva Advogado', 'pessoa_fisica'], ['Silva & Souza Advogados Associados', 'escritorio'],
   ['Escritório Pereira', 'escritorio'], ['Macohin Advogados Associados', 'escritorio'], ['Thiago Farias', 'pessoa_fisica'], ['Hellen Greffin Advogada', 'pessoa_fisica'],
-  ['Dra. Larissa dos Passos Sipriano - Advogada especialista em família e sucessões.', 'pessoa_fisica'], ['Defensoria Pública de SC', 'entidade'], ['Baltazar Advocacia', 'escritorio']]) {
+  ['Dra. Larissa dos Passos Sipriano - Advogada especialista em família e sucessões.', 'pessoa_fisica'], ['Defensoria Pública de SC', 'entidade'], ['Veridiana Mendes Lazzari Zaine', 'ambiguo'], ['Baltazar Advocacia', 'escritorio']]) {
   ok(lib.classificarAdvocacia(nome) === esp, `"${nome}" → ${esp}`);
 }
 ok(lib.checarFatos('O Escritorio Advocacia Pereira Mafra não tem site.', { nome: 'ESCRITORIO ADVOCACIA PEREIRA MAFRA', rating: 5, total_avaliacoes: 2 }).length === 0, 'nome sem acento em outra caixa não gera falso positivo');
