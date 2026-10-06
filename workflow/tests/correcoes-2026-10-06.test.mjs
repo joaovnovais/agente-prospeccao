@@ -103,6 +103,11 @@ console.log('Watchdog (w_resumo.js)');
   const vazio = cen({});
   ok(vazio.assunto.includes('0 e-mails hoje') && vazio.assunto.includes('0 leads verificados'), 'banco sem dados → alerta de 0 envios e 0 verificados');
   ok(cinco.destino === CONFIG.alertaDestino && !!CONFIG.alertaDestino, 'destinatário vem só de config.alertaDestino');
+  // Regressão da 1ª prova (06/10 19:28): sem executeOnce o n8n repetia cada consulta por item recebido (números multiplicados).
+  const wd = JSON.parse(readFileSync(`${R}/dist/novax-robson-watchdog.json`, 'utf8'));
+  const https = wd.nodes.filter((n) => n.type === 'n8n-nodes-base.httpRequest');
+  ok(https.length === 8 && https.every((n) => n.executeOnce === true && n.parameters.method === 'GET'), 'watchdog: 8 consultas GET, cada uma com executeOnce');
+  ok(wd.id === 'prspWatchdog01' && wd.id !== '6NJ7fIsgaBsWh1iX', 'watchdog tem ID próprio');
 }
 
 console.log(`\nfalhas: ${falhas}`); process.exit(falhas ? 1 : 0);

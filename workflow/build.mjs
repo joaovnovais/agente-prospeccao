@@ -389,6 +389,8 @@ smtp('Enviar resumo (SMTP)', 'Montar resumo', [11, 0]);
 chain('Diário - Watchdog', 'Janela de hoje', 'W: status envio', 'W: envios hoje', 'W: verificados hoje', 'W: contatos hoje',
   'W: uso API hoje', 'W: respostas hoje', 'W: fila sem verificação', 'W: contatos pendentes', 'Montar resumo', 'Enviar resumo (SMTP)');
 link('Teste manual (watchdog)', 'Janela de hoje');
+// Cada consulta roda UMA vez: sem isso o n8n repete o nó para cada item recebido do anterior e os números se multiplicam.
+for (const n of nodes) if (n.type === 'n8n-nodes-base.httpRequest') n.executeOnce = true;
 const wd = { ...wf, id: 'prspWatchdog01', name: 'NOVAX - Robson Watchdog', nodes, connections };
 writeFileSync(join(DIR, 'dist', 'novax-robson-watchdog.json'), JSON.stringify(wd, null, 2));
 console.log(`watchdog ${BUILD_ID} · ok: ${nodes.length} nós, ${Object.values(connections).reduce((a, c) => a + c.main.flat().length, 0)} conexões`);
