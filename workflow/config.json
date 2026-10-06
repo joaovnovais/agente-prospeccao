@@ -73,42 +73,42 @@
   "exclusoes": [
     {
       "nome": [
-        "estetica marista"
+        "63efa8e5f4362902"
       ]
     },
     {
       "nome": [
-        "evolve",
-        "estetica"
+        "5f793cff866624d0",
+        "186418182ead4091"
       ]
     },
     {
       "nome": [
-        "fabiana rodrigues"
+        "2dc7d7f8a262b8a9"
       ]
     },
     {
       "nome": [
-        "meluz"
+        "f79801c7dec183c2"
       ]
     },
     {
       "nome": [
-        "iso",
-        "odontologica"
+        "2bcc06192bfa0f0e",
+        "76117b3c70d803f3"
       ]
     },
     {
       "nome": [
-        "nao mais pelo"
+        "bccac859626beda1"
       ],
       "nomeOuEndereco": [
-        "garavelo"
+        "9f40f8e3c10ec7c8"
       ]
     },
     {
       "nome": [
-        "ordem dos advogados"
+        "c7f981ed0a582b30"
       ]
     }
   ],
@@ -223,5 +223,151 @@
   "reacherFalhasSeguidasMax": 3,
   "pausaEntreVerificacoesSeg": 10,
   "reacherIntervaloMs": 6000,
-  "maxTentativasFallback": 2
+  "maxTentativasFallback": 2,
+  "exclusoesJanelaMax": 4,
+  "sobrenomesComuns": [
+    "abreu",
+    "aguiar",
+    "almeida",
+    "alves",
+    "amaral",
+    "andrade",
+    "antunes",
+    "aquino",
+    "aragao",
+    "araujo",
+    "assis",
+    "azevedo",
+    "barbosa",
+    "barros",
+    "bastos",
+    "batista",
+    "bento",
+    "bezerra",
+    "borges",
+    "brandao",
+    "brito",
+    "bueno",
+    "cabral",
+    "calixto",
+    "camargo",
+    "campos",
+    "cardoso",
+    "carvalho",
+    "castro",
+    "cavalcanti",
+    "cavalheiro",
+    "chaves",
+    "coelho",
+    "conceicao",
+    "cordeiro",
+    "correia",
+    "costa",
+    "couto",
+    "cruz",
+    "cunha",
+    "dantas",
+    "dias",
+    "diniz",
+    "domingues",
+    "duarte",
+    "fagundes",
+    "farias",
+    "fernandes",
+    "ferreira",
+    "figueiredo",
+    "fonseca",
+    "franca",
+    "franco",
+    "frança",
+    "freitas",
+    "galvao",
+    "garcia",
+    "godoy",
+    "gomes",
+    "goncalves",
+    "guimaraes",
+    "honorato",
+    "jesus",
+    "lacerda",
+    "leal",
+    "leite",
+    "lima",
+    "lins",
+    "lopes",
+    "lopez",
+    "macedo",
+    "machado",
+    "magalhaes",
+    "maia",
+    "marques",
+    "martinez",
+    "martins",
+    "matos",
+    "medeiros",
+    "meireles",
+    "melo",
+    "mendes",
+    "mesquita",
+    "miranda",
+    "monteiro",
+    "moraes",
+    "morais",
+    "moreira",
+    "mota",
+    "moura",
+    "muniz",
+    "nascimento",
+    "neves",
+    "nogueira",
+    "nunes",
+    "oliveira",
+    "pacheco",
+    "paiva",
+    "paula",
+    "paz",
+    "peixoto",
+    "pereira",
+    "pimentel",
+    "pinto",
+    "pires",
+    "porto",
+    "prado",
+    "queiroz",
+    "quintino",
+    "ramos",
+    "rangel",
+    "reis",
+    "rezende",
+    "ribeiro",
+    "rios",
+    "rocha",
+    "rodrigues",
+    "sales",
+    "sampaio",
+    "santana",
+    "santos",
+    "sena",
+    "serra",
+    "silva",
+    "siqueira",
+    "soares",
+    "sousa",
+    "souza",
+    "tavares",
+    "teixeira",
+    "toledo",
+    "torres",
+    "trindade",
+    "valente",
+    "vargas",
+    "vasconcelos",
+    "veloso",
+    "ventura",
+    "viana",
+    "vieira",
+    "xavier"
+  ],
+  "minAvaliacoesParaCitarNota": 10,
+  "alertaDestino": "joaovictornovais8@gmail.com"
 }

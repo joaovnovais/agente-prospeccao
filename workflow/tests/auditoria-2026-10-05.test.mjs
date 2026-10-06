@@ -44,5 +44,6 @@ for (const [nome, esp] of [['Ordem dos Advogados do Brasil', 'entidade'], ['Dr. 
   ok(lib.classificarAdvocacia(nome) === esp, `"${nome}" → ${esp}`);
 }
 ok(lib.checarFatos('O Escritorio Advocacia Torquato não tem site.', { nome: 'ESCRITORIO ADVOCACIA TORQUATO', rating: 5, total_avaliacoes: 2 }).length === 0, 'nome sem acento em outra caixa não gera falso positivo');
-console.log('config'); ok(CONFIG.exclusoes.some((e) => (e.nome || []).includes('ordem dos advogados')), 'OAB na lista de exclusão');
+console.log('config'); { const h = (s) => { let x = 0xcbf29ce484222325n; for (const ch of s) { x ^= BigInt(ch.charCodeAt(0)); x = (x * 0x100000001b3n) & 0xffffffffffffffffn; } return x.toString(16).padStart(16, '0'); };
+  ok(CONFIG.exclusoes.some((e) => (e.nome || []).includes(h('ordem dos advogados'))), 'OAB na lista de exclusão (hash fnv64 desde 06/10)'); }
 console.log(`\nfalhas: ${falhas}`); process.exit(falhas ? 1 : 0);

@@ -1,0 +1,521 @@
+{
+  "id": "prspWatchdog01",
+  "name": "NOVAX - Robson Watchdog",
+  "active": true,
+  "nodes": [
+    {
+      "id": "e142ae53-ca89-448a-9f40-6c1ee3ed0c12",
+      "name": "Teste manual (watchdog)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        180
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "5e46e65a-8d62-40a4-8bc2-9f6b5c391c53",
+      "name": "Diário - Watchdog",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "15 10 * * 1-5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "95f8d878-afcc-4151-a065-11bf01d689e8",
+      "name": "Janela de hoje",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ⚠ Gerado por workflow/build.mjs — edite o repo (config.json / code/w_janela.js) e reimporte. build: 88fe8ea107a8\nconst CONFIG = {\"supabaseRest\":\"https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1\",\"reacherUrl\":\"http://novax-prospeccao-reacher:8080/v0/check_email\",\"openRouterUrl\":\"https://openrouter.ai/api/v1/chat/completions\",\"modelos\":[\"qwen/qwen3.8-27b:free\",\"nvidia/nemotron-3-super-120b-a12b:free\"],\"limiteDiarioOpenRouter\":45,\"limiteMensalPlaces\":900,\"limitePlacesPorExecucao\":80,\"cidadesPorSemana\":26,\"maxTentativasIA\":3,\"maxCandidatosEmail\":6,\"rampUpEnviosPorDia\":[5,10,15,18,20],\"esperaEntreEnviosSeg\":[30,60],\"modoTeste\":{\"ativo\":false,\"redirecionarPara\":\"joaovictornovais8@gmail.com\",\"limiteEnviosDia\":5,\"forcarRespostaMalformadaNaTentativa\":0,\"etapaManual\":\"envio\",\"respostaSimulada\":{\"inReplyTo\":\"\",\"from\":\"\",\"texto\":\"\"},\"dryRun\":{\"ativo\":false,\"maxLeads\":5}},\"remetente\":{\"nome\":\"Novax\",\"email\":\"novax.ia.br@gmail.com\",\"assinatura\":\"Equipe Novax\\nnovax.ia.br | instagram.com/novax.ia.br\",\"links\":{\"novax.ia.br\":\"https://novax.ia.br\",\"instagram.com/novax.ia.br\":\"https://instagram.com/novax.ia.br\"}},\"oferta\":\"A Novax cria presença digital para pequenas empresas: site profissional e atendimento automatizado com IA (recepcionista digital que responde clientes e agenda horários 24h).\",\"agenda\":{\"duracaoMin\":45,\"horarios\":[\"09:00\",\"10:30\",\"14:00\",\"15:30\"],\"diasAFrente\":7,\"opcoes\":3,\"fusoOffset\":\"-03:00\",\"fuso\":\"America/Sao_Paulo\"},\"trello\":{\"novoLead\":\"6ab85a3648fbab359491f407\",\"emailEnviado\":\"6ab85a3971205aefff7a80f1\",\"respondeu\":\"6ab85a40444d93556683362b\",\"reuniaoAgendada\":\"6ab85a43059b33df471a03a2\",\"fechadoPerdido\":\"6ab85a450dcaa1e915dc602e\",\"revisaoManual\":\"6ab87828c92db39a520decab\"},\"exclusoes\":[{\"nome\":[\"63efa8e5f4362902\"]},{\"nome\":[\"5f793cff866624d0\",\"186418182ead4091\"]},{\"nome\":[\"2dc7d7f8a262b8a9\"]},{\"nome\":[\"f79801c7dec183c2\"]},{\"nome\":[\"2bcc06192bfa0f0e\",\"76117b3c70d803f3\"]},{\"nome\":[\"bccac859626beda1\"],\"nomeOuEndereco\":[\"9f40f8e3c10ec7c8\"]},{\"nome\":[\"c7f981ed0a582b30\"]}],\"inicioRotacao\":\"2026-09-28\",\"rotacao\":[{\"nicho\":\"odontologia_estetica\",\"estado\":\"GO\",\"offset\":0,\"buscas\":[\"clínica odontológica\",\"clínica de estética\"]},{\"nicho\":\"advocacia\",\"estado\":\"SC\",\"offset\":0,\"buscas\":[\"escritório de advocacia\"]},{\"nicho\":\"estetica_harmonizacao\",\"estado\":\"SC\",\"offset\":6,\"buscas\":[\"harmonização facial\",\"clínica de estética\"]},{\"nicho\":\"varejo_local\",\"estado\":\"GO\",\"offset\":6,\"buscas\":[\"loja de roupas\",\"loja de cosméticos\",\"pet shop\"]}],\"cidades\":{\"GO\":[\"Goiânia\",\"Aparecida de Goiânia\",\"Anápolis\",\"Senador Canedo\",\"Trindade\",\"Rio Verde\",\"Luziânia\",\"Águas Lindas de Goiás\",\"Valparaíso de Goiás\",\"Formosa\",\"Novo Gama\",\"Itumbiara\",\"Catalão\",\"Jataí\",\"Planaltina\",\"Caldas Novas\",\"Santo Antônio do Descoberto\",\"Goianésia\",\"Cidade Ocidental\",\"Mineiros\",\"Inhumas\",\"Cristalina\",\"Jaraguá\",\"Quirinópolis\",\"Porangatu\",\"Uruaçu\"],\"SC\":[\"Florianópolis\",\"São José\",\"Palhoça\",\"Joinville\",\"Blumenau\",\"Itajaí\",\"Chapecó\",\"Criciúma\",\"Balneário Camboriú\",\"Jaraguá do Sul\",\"Lages\",\"Brusque\",\"Tubarão\",\"Camboriú\",\"Navegantes\",\"Caçador\",\"Concórdia\",\"Rio do Sul\",\"Araranguá\",\"Gaspar\",\"Biguaçu\",\"Indaial\",\"Mafra\",\"Canoinhas\",\"Itapema\",\"São Bento do Sul\",\"Videira\",\"Xanxerê\",\"Içara\",\"Porto Belo\"]},\"nichos\":{\"odontologia_estetica\":\"clínicas odontológicas e clínicas de estética\",\"advocacia\":\"escritórios de advocacia\",\"estetica_harmonizacao\":\"clínicas de estética e harmonização facial\",\"varejo_local\":\"pequeno varejo local (lojas de roupas, cosméticos, pet shops)\"},\"verificacaoPorExecucao\":15,\"reacherFalhasSeguidasMax\":3,\"pausaEntreVerificacoesSeg\":10,\"reacherIntervaloMs\":6000,\"maxTentativasFallback\":2,\"exclusoesJanelaMax\":4,\"sobrenomesComuns\":[\"abreu\",\"aguiar\",\"almeida\",\"alves\",\"amaral\",\"andrade\",\"antunes\",\"aquino\",\"aragao\",\"araujo\",\"assis\",\"azevedo\",\"barbosa\",\"barros\",\"bastos\",\"batista\",\"bento\",\"bezerra\",\"borges\",\"brandao\",\"brito\",\"bueno\",\"cabral\",\"calixto\",\"camargo\",\"campos\",\"cardoso\",\"carvalho\",\"castro\",\"cavalcanti\",\"cavalheiro\",\"chaves\",\"coelho\",\"conceicao\",\"cordeiro\",\"correia\",\"costa\",\"couto\",\"cruz\",\"cunha\",\"dantas\",\"dias\",\"diniz\",\"domingues\",\"duarte\",\"fagundes\",\"farias\",\"fernandes\",\"ferreira\",\"figueiredo\",\"fonseca\",\"franca\",\"franco\",\"frança\",\"freitas\",\"galvao\",\"garcia\",\"godoy\",\"gomes\",\"goncalves\",\"guimaraes\",\"honorato\",\"jesus\",\"lacerda\",\"leal\",\"leite\",\"lima\",\"lins\",\"lopes\",\"lopez\",\"macedo\",\"machado\",\"magalhaes\",\"maia\",\"marques\",\"martinez\",\"martins\",\"matos\",\"medeiros\",\"meireles\",\"melo\",\"mendes\",\"mesquita\",\"miranda\",\"monteiro\",\"moraes\",\"morais\",\"moreira\",\"mota\",\"moura\",\"muniz\",\"nascimento\",\"neves\",\"nogueira\",\"nunes\",\"oliveira\",\"pacheco\",\"paiva\",\"paula\",\"paz\",\"peixoto\",\"pereira\",\"pimentel\",\"pinto\",\"pires\",\"porto\",\"prado\",\"queiroz\",\"quintino\",\"ramos\",\"rangel\",\"reis\",\"rezende\",\"ribeiro\",\"rios\",\"rocha\",\"rodrigues\",\"sales\",\"sampaio\",\"santana\",\"santos\",\"sena\",\"serra\",\"silva\",\"siqueira\",\"soares\",\"sousa\",\"souza\",\"tavares\",\"teixeira\",\"toledo\",\"torres\",\"trindade\",\"valente\",\"vargas\",\"vasconcelos\",\"veloso\",\"ventura\",\"viana\",\"vieira\",\"xavier\"],\"minAvaliacoesParaCitarNota\":10,\"alertaDestino\":\"joaovictornovais8@gmail.com\"};\n\n// ---- biblioteca compartilhada (injetada pelo build.mjs em todo Code node) ----\r\n\r\nconst norm = (s) => (s || '')\r\n  .normalize('NFD').replace(/[̀-ͯ]/g, '')\r\n  .toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\\s+/g, ' ').trim();\r\n\r\nconst EMAIL_RE = /^[a-z0-9._%+-]+@[a-z0-9-]+(\\.[a-z0-9-]+)*\\.[a-z]{2,}$/;\r\n\r\n// Frases típicas de recusa/desvio de modelos instrucionais (pt/en).\r\nconst RECUSA_RE = /(n[aã]o posso (ajudar|atender|criar|gerar|fazer)|como (um|uma) (modelo|ia|assistente)|modelo de linguagem|sinto muito, mas|i can(no|')t (help|assist|do)|i('| a)m sorry|as an ai|i('| a)m unable|against (my|the) (guidelines|policy))/i;\r\n\r\n// Saída de IA → {ok, erro, tipo_falha, obj}. Salvaguardas 1 e 2 do projeto:\r\n// só aceita JSON puro (cercas ``` são toleradas); texto antes do \"{\" é tratado como desvio.\r\nfunction parseRespostaIA(resp) {\r\n  if (!resp || resp.error || !resp.choices) {\r\n    const msg = resp?.error?.message || resp?.error || 'sem choices na resposta';\r\n    return { ok: false, tipo_falha: 'api', erro: 'erro da API: ' + String(typeof msg === 'string' ? msg : JSON.stringify(msg)).slice(0, 300), raw: '' };\r\n  }\r\n  let raw = resp.choices?.[0]?.message?.content ?? '';\r\n  if (typeof raw !== 'string') raw = JSON.stringify(raw);\r\n  const p = parseTextoIA(raw);\r\n  // Resposta cortada pelo limite de tokens nunca é aceita, mesmo que pareça JSON.\r\n  if (resp.choices?.[0]?.finish_reason === 'length') {\r\n    return { ok: false, tipo_falha: 'formato', erro: 'resposta truncada no limite de tokens' + (p.ok ? '' : ' — ' + p.erro), raw };\r\n  }\r\n  return p;\r\n}\r\n\r\nfunction parseTextoIA(raw) {\r\n  const t = raw.trim().replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/, '').trim();\r\n  if (!t) return { ok: false, tipo_falha: 'formato', erro: 'resposta vazia', raw };\r\n  if (!t.startsWith('{')) {\r\n    const recusa = RECUSA_RE.test(t.slice(0, 600));\r\n    return { ok: false, tipo_falha: recusa ? 'recusa' : 'formato',\r\n             erro: recusa ? 'modelo recusou/desviou (texto de recusa em vez de JSON)' : 'resposta não é JSON (texto explicativo antes/no lugar do objeto)', raw };\r\n  }\r\n  try {\r\n    return { ok: true, obj: JSON.parse(t), raw };\r\n  } catch (e) {\r\n    return { ok: false, tipo_falha: 'formato', erro: 'JSON malformado: ' + e.message, raw };\r\n  }\r\n}\r\n\r\nconst RESPOSTA_MALFORMADA_TESTE =\r\n  'Claro! Aqui está uma sugestão de e-mail para essa empresa:\\n\\nOlá, tudo bem? Vi que vocês ainda não têm site...\\n\\n(Espero que ajude!)';\r\n\r\nconst escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\r\nconst linkificar = (html) => {\r\n  let out = html;\r\n  // Mais longo primeiro, para \"instagram.com/novax.ia.br\" não ser quebrado pelo link de \"novax.ia.br\".\r\n  const links = Object.entries(CONFIG.remetente.links || {}).sort((a, b) => b[0].length - a[0].length);\r\n  const marcas = [];\r\n  for (const [txt, url] of links) {\r\n    const re = new RegExp('(?<![\\\\w@./])' + txt.replace(/[.*+?^${}()|[\\]\\\\/]/g, '\\\\$&') + '(?![\\\\w@])', 'g');\r\n    out = out.replace(re, () => { marcas.push(`<a href=\"${url}\">${txt}</a>`); return `\\u0000${marcas.length - 1}\\u0000`; });\r\n  }\r\n  return out.replace(/\\u0000(\\d+)\\u0000/g, (_, i) => marcas[Number(i)]);\r\n};\r\nconst textoParaHtml = (t) => '<div style=\"font-family:Arial,sans-serif;font-size:14px;line-height:1.5\">'\r\n  + linkificar(escHtml(t)).split('\\n').join('<br>') + '</div>';\r\n\r\nconst assuntoResposta = (a) => 'Re: ' + String(a || '').replace(/^\\s*(\\[TESTE[^\\]]*\\]\\s*)?((re|res|fw|enc):\\s*)*/i, '');\r\n\r\nconst rodapeLGPD = (lead) =>\r\n  `\\n\\n${CONFIG.remetente.assinatura}\\n\\n—\\nVocê recebeu esta mensagem porque ${lead.nome} aparece como empresa no Google Maps em ${lead.cidade}/${lead.estado}. ` +\r\n  'Se não quiser receber novos contatos da Novax, responda com a palavra SAIR e removemos seu e-mail imediatamente.';\r\n\r\nconst agoraISO = () => new Date().toISOString();\r\n\r\n// Ajustes de revisão (1-2): nada de elogio/qualificação sem base nos dados, nada de promessa genérica.\r\nconst FRASES_PROIBIDAS = [\r\n  [/[óo]tim[oa]s?\\b/i, 'elogio \"ótimo\"'], [/excelen/i, 'elogio \"excelente\"'], [/incr[ií]vel/i, 'elogio \"incrível\"'],\r\n  [/maravilh/i, 'elogio \"maravilhoso\"'], [/renomad/i, 'elogio \"renomado\"'], [/refer[êe]ncia/i, 'elogio \"referência\"'],\r\n  [/conceituad/i, 'elogio \"conceituado\"'], [/reconhecid/i, 'elogio \"reconhecido\"'], [/tradicional/i, 'elogio \"tradicional\"'],\r\n  [/de qualidade/i, 'elogio \"de qualidade\"'], [/(boas|muitas|diversas|v[áa]rias) avalia/i, 'qualificação vaga das avaliações (use o número)'],\r\n  [/equipe extra/i, 'promessa \"sem equipe extra\"'], [/resultados reais/i, 'promessa \"resultados reais\"'], [/focad[oa] em resultado/i, 'promessa \"focado em resultados\"'],\r\n  [/credibilidade/i, 'promessa vaga \"credibilidade\"'], [/garant/i, 'promessa \"garantia\"'], [/(dobrar|triplicar|multiplicar)/i, 'promessa de multiplicar resultados'],\r\n  [/aumentar (as |suas |seu |o )?(vendas|faturamento|lucro)/i, 'promessa de aumento de vendas'],\r\n  // 06/10: \"boa avaliação\" (singular) passava; a única afirmação permitida sobre avaliação é nota e quantidade.\r\n  [/\\bboas?\\s+(avalia|nota|reputa)/i, 'elogio \"boa avaliação\"'], [/\\bbem\\s+avaliad/i, 'elogio \"bem avaliada\"'],\r\n  [/\\breputa[çc][ãa]o/i, 'qualificação \"reputação\"'], [/\\b(nota\\s+alta|alta\\s+nota|altamente\\s+avaliad)/i, 'qualificação \"nota alta\"'],\r\n];\r\n// 06/10: assunto não pode dizer/sugerir que a empresa já tem site (\"… ganha site profissional\" saiu em produção).\r\nconst ASSUNTO_SITE_EXISTE_RE = /(ganh(a|ou|e)|lan[çc](a|ou)|estreia|inaugura)\\s+(o\\s+|um\\s+|seu\\s+|novo\\s+)*site|\\bnovo\\s+site\\b|\\bsite\\s+(pronto|novo|no\\s+ar|lan[çc]ado|j[áa]\\s+est[áa])|(?<!n[ãa]o\\s)(?<!sem\\s)\\b(tem|possui|j[áa]\\s+tem)\\s+(um\\s+)?site\\b/i;\r\n// Sempre 1 casa decimal (\"5,0\"), coerente com a regra do prompt — antes a entrada dizia \"5\" e a IA escrevia \"nota de 4\".\r\nconst fmtNota = (r) => Number(r).toFixed(1).replace('.', ',');\r\n\r\n// Todo número de nota/avaliações citado precisa bater com o Google Maps.\r\n// Ampliado na auditoria (7/37 palavras comuns eram pegas; \"Gostariamos\" e \"vincado\" saíram em produção).\r\nconst SEM_ACENTO_RE = /\\b(nao|voce|voces|servicos?|horarios?|reuni[ao]o|reunioes|avaliac(ao|oes)|informac(ao|oes)|clinicas?|esteticas?|pratica|diagnostico|gostariamos|tambem|atencao|soluc(ao|oes)|comunicacao|presenca|negocios?|otim[oa]s?|proxim[oa]s?|estao|sera|possivel|disponivel|facil|automatic[oa]s?|juridic[oa]s?|escritorio|previdenciari[oa]|familia|ja|ate|vincad[oa])\\b/i;\r\nfunction checarFatos(texto, lead) {\r\n  const erros = [];\r\n  // O nome pode estar cadastrado sem acento no Google (e a IA pode reescrevê-lo em outra caixa): removido sem diferenciar maiúsculas.\r\n  const semNome = lead.nome ? texto.replace(new RegExp(String(lead.nome).replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&'), 'gi'), ' ') : texto;\r\n  if (SEM_ACENTO_RE.test(semNome)) erros.push('texto sem acentuação (ex.: \"' + semNome.match(SEM_ACENTO_RE)[0] + '\")');\r\n  for (const [re, nome] of FRASES_PROIBIDAS) if (re.test(texto)) erros.push('contém ' + nome);\r\n  const t = texto.replace(/(\\d)\\.(\\d)/g, '$1,$2');\r\n  const notas = [...t.matchAll(/(\\d(?:,\\d)?)\\s*estrelas|nota\\s*(?:de\\s*)?(\\d(?:,\\d)?)|(\\d,\\d)/gi)].map((m) => m[1] || m[2] || m[3]);\r\n  for (const n of notas) if (lead.rating == null || Number(n.replace(',', '.')) !== Number(lead.rating)) erros.push(`nota \"${n}\" não bate com o Google (${lead.rating ?? 'sem nota'})`);\r\n  for (const m of t.matchAll(/nota\\s*(?:de\\s*)?(\\d)(?!\\d|,\\d)/gi)) erros.push(`nota \"${m[1]}\" sem casa decimal (use \"${fmtNota(lead.rating ?? m[1])}\")`);\r\n  for (const m of t.matchAll(/(\\d+)\\s*avalia/gi)) if (Number(m[1]) !== Number(lead.total_avaliacoes)) erros.push(`\"${m[1]} avaliações\" não bate com o Google (${lead.total_avaliacoes ?? 0})`);\r\n  // 06/10: com poucas avaliações, citar nota/quantidade enfraquece a abordagem (\"nota 5,0 com 4 avaliações\").\r\n  const minAv = CONFIG.minAvaliacoesParaCitarNota || 0;\r\n  if (lead.total_avaliacoes != null && Number(lead.total_avaliacoes) < minAv && (notas.length || /\\d+\\s*avalia/i.test(t) || /\\bestrelas\\b/i.test(t))) {\r\n    erros.push(`cita nota/avaliações com só ${lead.total_avaliacoes} avaliações (mínimo ${minAv})`);\r\n  }\r\n  return erros;\r\n}\r\n\r\n// Exclusões de clientes guardadas só como hash (o repositório é público): FNV-1a 64 bits em JS puro (BigInt, sem crypto)\r\n// sobre o texto normalizado. Equivale ao \"contém a frase\" antigo: o nome vira o conjunto de hashes de todas as janelas\r\n// contíguas de 1..exclusoesJanelaMax tokens, e cada frase da regra precisa estar nesse conjunto.\r\nconst fnv64 = (s) => {\r\n  let h = 0xcbf29ce484222325n;\r\n  for (let i = 0; i < s.length; i++) { h ^= BigInt(s.charCodeAt(i)); h = (h * 0x100000001b3n) & 0xffffffffffffffffn; }\r\n  return h.toString(16).padStart(16, '0');\r\n};\r\nconst janelasHash = (texto, max) => {\r\n  const t = norm(texto).split(' ').filter(Boolean);\r\n  const out = new Set();\r\n  for (let i = 0; i < t.length; i++) for (let k = 1; k <= max && i + k <= t.length; k++) out.add(fnv64(t.slice(i, i + k).join(' ')));\r\n  return out;\r\n};\r\n\r\n// Palavras genéricas de ramo: sozinhas não identificam a empresa (clinica@gmail.com é de outra pessoa).\r\nconst GENERICAS = new Set(['clinica', 'clinicas', 'estetica', 'esteticas', 'odontologia', 'odontologica', 'odontologicas', 'odonto',\r\n  'dentista', 'dentaria', 'consultorio', 'instituto', 'centro', 'espaco', 'studio', 'estudio', 'loja', 'lojas', 'advocacia',\r\n  'advogados', 'advogado', 'escritorio', 'associados', 'avancada', 'integrada', 'especializada', 'saude', 'beauty', 'clinic',\r\n  'imagem', 'facial', 'corporal', 'implantes', 'sorriso', 'ltda', 'eireli',\r\n  // auditoria 2026-10-05: vocabulário jurídico e de serviços (semana de advocacia)\r\n  'advogada', 'advogadas', 'consultoria', 'juridica', 'juridico', 'assessoria', 'direito', 'sociedade', 'individual', 'criminal',\r\n  'criminalista', 'especialista', 'especializado', 'previdenciario', 'previdenciaria', 'familia', 'trabalhista', 'civil', 'tributario',\r\n  'empresarial', 'regiao', 'matriz', 'filial', 'unidade', 'contato']);\r\n// A cidade do lead não identifica a empresa (em \"<Marca> Odonto <Cidade>\" só a marca é distintiva).\r\nconst palavrasDistintivas = (nome, cidade = '') => {\r\n  const daCidade = new Set(norm(cidade).split(' '));\r\n  return norm(nome).split(' ')\r\n    .filter((w) => w.length >= 3 && !GENERICAS.has(w) && !daCidade.has(w) && !['de', 'da', 'do', 'das', 'dos', 'dra', 'dr', 'the'].includes(w));\r\n};\r\n// Candidato só vale se o usuário do e-mail contém palavras distintivas do nome: 2 delas quando o nome tem 2+\r\n// (auditoria 05/10: um endereço só com o primeiro nome de uma pessoa passava com 1 palavra).\r\n// Homônimo (06/10): em provedor gratuito, um endereço apoiado numa ÚNICA palavra que é sobrenome comum\r\n// (\"<sobrenome>advocacia@…\") pode ser de qualquer xará no país — o Reacher só prova que a caixa existe, não de quem é.\r\nconst PROVEDOR_GRATUITO = /@(gmail|googlemail|hotmail|outlook|live|msn|yahoo|bol|uol|terra|ig|icloud)\\./;\r\nconst SOBRENOMES_COMUNS = new Set((CONFIG.sobrenomesComuns || []).map((s) => norm(s)));\r\nconst emailIdentificaEmpresa = (email, nome, cidade = '') => {\r\n  const u = email.split('@')[0].replace(/[^a-z0-9]/g, '');\r\n  const ds = palavrasDistintivas(nome, cidade);\r\n  const achadas = ds.filter((w) => u.includes(w));\r\n  if (!ds.length || achadas.length < Math.min(2, ds.length)) return false;\r\n  if (PROVEDOR_GRATUITO.test(email) && achadas.length === 1 && SOBRENOMES_COMUNS.has(achadas[0])) return false;\r\n  return true;\r\n};\r\n\r\n// Advocacia: só escritórios (decisão do João, 05/10/2026). Pessoa física (autônomo) e entidade de classe/órgão não são capturados.\r\n// Ordem: entidade → marcador de banca (escritório) → pessoa física com alta confiança → ambíguo (mantido, conservador).\r\nconst ENTIDADE_RE = /\\b(ordem dos advogados|oab|conselho|defensoria|procuradoria|forum|tribunal|cartorio|sindicato|subsecao)\\b/;\r\nconst BANCA_RE = /\\b(advocacia|advogados|associados|sociedade|escritorio|juridic[ao]s?|law|partners)\\b/;\r\nfunction classificarAdvocacia(nome) {\r\n  const n = norm(nome);\r\n  if (ENTIDADE_RE.test(n)) return 'entidade';\r\n  if (BANCA_RE.test(n) || nome.includes('&')) return 'escritorio';\r\n  if (/^(dr|dra|adv)\\b/.test(n) || /\\b(advogad[oa]|criminalista)\\b/.test(n)) return 'pessoa_fisica';\r\n  const palavras = n.split(' ').filter(Boolean);\r\n  // Só 2–3 prenomes/sobrenomes soltos (critério do João); 4+ palavras sem marcador ficam como ambíguo (mantidos).\r\n  if (palavras.length >= 2 && palavras.length <= 3 && palavras.every((w) => /^[a-z]+$/.test(w))) return 'pessoa_fisica';\r\n  return 'ambiguo';\r\n}\r\n\r\n// Ajuste 5: variações determinísticas a partir do nome EXATO (só Gmail: é o único provedor que o Reacher confirma).\r\nfunction variantesEmail(nome, cidade = '') {\r\n  const palavras = norm(nome).split(' ').filter(Boolean);\r\n  const semConectivos = palavras.filter((w) => !['de', 'da', 'do', 'das', 'dos', 'e', 'dra', 'dr'].includes(w));\r\n  const slugs = [...new Set([palavras.join(''), semConectivos.join('')])];\r\n  const out = [];\r\n  for (const s of slugs) out.push(`${s}@gmail.com`, `contato.${s}@gmail.com`);\r\n  return out.filter((e) => emailIdentificaEmpresa(e, nome, cidade));\r\n}\r\n// Gmail só aceita usuário de 6 a 30 caracteres: descarta candidatos impossíveis antes do Reacher.\r\n// Reacher nunca conclui Hotmail/Outlook/Yahoo (50/50 HeadlessError): consultar só gasta tempo e tarpit.\r\nconst PROVEDOR_SEM_VERIFICACAO = /@(hotmail|outlook|live|msn|yahoo)\\./;\r\nconst emailPossivel = (e) => {\r\n  if (PROVEDOR_SEM_VERIFICACAO.test(e)) return false;\r\n  if (!e.endsWith('@gmail.com')) return true;\r\n  const u = e.split('@')[0];\r\n  return u.length >= 6 && u.length <= 30;\r\n};\r\n// ---- fim da biblioteca ----\r\n\n// Watchdog: janela \"hoje\" em America/Sao_Paulo (roda 10:15 BRT, depois do envio das 09:30).\nconst ymd = new Intl.DateTimeFormat('en-CA', { timeZone: CONFIG.agenda.fuso, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());\nconst inicio = new Date(`${ymd}T00:00:00${CONFIG.agenda.fusoOffset}`).toISOString();\nconst dow = new Date(`${ymd}T12:00:00${CONFIG.agenda.fusoOffset}`).getUTCDay();\nreturn [{ json: { dia: ymd, inicio, diaUtil: dow >= 1 && dow <= 5 } }];\n"
+      }
+    },
+    {
+      "id": "0c6e6d8c-ace7-4519-a723-51b4dbd3a891",
+      "name": "W: status envio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1/prospeccao_status_envio?select=*",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "prspSupabase0001",
+          "name": "Supabase - Prospeccao"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "660bdabb-f5e0-4cce-9868-ec7307ea2f02",
+      "name": "W: envios hoje",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1/prospeccao_envios?select=tipo,status,teste&enviado_em=gte.{{ $('Janela de hoje').first().json.inicio }}",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "prspSupabase0001",
+          "name": "Supabase - Prospeccao"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "2cd06442-1709-4315-b771-fe12366b54f5",
+      "name": "W: verificados hoje",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1/prospeccao_leads?select=id&verificacao_codigo_em=gte.{{ $('Janela de hoje').first().json.inicio }}",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "prspSupabase0001",
+          "name": "Supabase - Prospeccao"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "82ab7fe6-b48b-4ce5-8d5a-99d90be82ed7",
+      "name": "W: contatos hoje",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1/prospeccao_contatos?select=reacher_status&verificado_em=gte.{{ $('Janela de hoje').first().json.inicio }}",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "prspSupabase0001",
+          "name": "Supabase - Prospeccao"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "a9f5b260-025e-449a-b6cc-0c4c45202f0a",
+      "name": "W: uso API hoje",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1/prospeccao_uso_api?select=servico,chamadas&periodo=eq.{{ $('Janela de hoje').first().json.dia }}",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "prspSupabase0001",
+          "name": "Supabase - Prospeccao"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "394ee2db-4492-44ac-828e-780daa49286e",
+      "name": "W: respostas hoje",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1/prospeccao_envios?select=id&resposta_recebida_em=gte.{{ $('Janela de hoje').first().json.inicio }}",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "prspSupabase0001",
+          "name": "Supabase - Prospeccao"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "8ccf0f97-357b-45f8-bef1-649b098fbd08",
+      "name": "W: fila sem verificação",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1/prospeccao_leads?select=id&status=eq.novo&verificacao_codigo_em=is.null",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "prspSupabase0001",
+          "name": "Supabase - Prospeccao"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "37465dcb-109e-496e-881d-430b22e53553",
+      "name": "W: contatos pendentes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2160,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1/prospeccao_leads?select=id,contatos:prospeccao_contatos!inner(id)&status=eq.novo&contatos.reacher_status=eq.safe&contatos.bloqueado=is.false",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "prspSupabase0001",
+          "name": "Supabase - Prospeccao"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "6d63de18-e5c2-4d7a-9bb4-b1e7e2e5b7a1",
+      "name": "Montar resumo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ⚠ Gerado por workflow/build.mjs — edite o repo (config.json / code/w_resumo.js) e reimporte. build: 88fe8ea107a8\nconst CONFIG = {\"supabaseRest\":\"https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1\",\"reacherUrl\":\"http://novax-prospeccao-reacher:8080/v0/check_email\",\"openRouterUrl\":\"https://openrouter.ai/api/v1/chat/completions\",\"modelos\":[\"qwen/qwen3.8-27b:free\",\"nvidia/nemotron-3-super-120b-a12b:free\"],\"limiteDiarioOpenRouter\":45,\"limiteMensalPlaces\":900,\"limitePlacesPorExecucao\":80,\"cidadesPorSemana\":26,\"maxTentativasIA\":3,\"maxCandidatosEmail\":6,\"rampUpEnviosPorDia\":[5,10,15,18,20],\"esperaEntreEnviosSeg\":[30,60],\"modoTeste\":{\"ativo\":false,\"redirecionarPara\":\"joaovictornovais8@gmail.com\",\"limiteEnviosDia\":5,\"forcarRespostaMalformadaNaTentativa\":0,\"etapaManual\":\"envio\",\"respostaSimulada\":{\"inReplyTo\":\"\",\"from\":\"\",\"texto\":\"\"},\"dryRun\":{\"ativo\":false,\"maxLeads\":5}},\"remetente\":{\"nome\":\"Novax\",\"email\":\"novax.ia.br@gmail.com\",\"assinatura\":\"Equipe Novax\\nnovax.ia.br | instagram.com/novax.ia.br\",\"links\":{\"novax.ia.br\":\"https://novax.ia.br\",\"instagram.com/novax.ia.br\":\"https://instagram.com/novax.ia.br\"}},\"oferta\":\"A Novax cria presença digital para pequenas empresas: site profissional e atendimento automatizado com IA (recepcionista digital que responde clientes e agenda horários 24h).\",\"agenda\":{\"duracaoMin\":45,\"horarios\":[\"09:00\",\"10:30\",\"14:00\",\"15:30\"],\"diasAFrente\":7,\"opcoes\":3,\"fusoOffset\":\"-03:00\",\"fuso\":\"America/Sao_Paulo\"},\"trello\":{\"novoLead\":\"6ab85a3648fbab359491f407\",\"emailEnviado\":\"6ab85a3971205aefff7a80f1\",\"respondeu\":\"6ab85a40444d93556683362b\",\"reuniaoAgendada\":\"6ab85a43059b33df471a03a2\",\"fechadoPerdido\":\"6ab85a450dcaa1e915dc602e\",\"revisaoManual\":\"6ab87828c92db39a520decab\"},\"exclusoes\":[{\"nome\":[\"63efa8e5f4362902\"]},{\"nome\":[\"5f793cff866624d0\",\"186418182ead4091\"]},{\"nome\":[\"2dc7d7f8a262b8a9\"]},{\"nome\":[\"f79801c7dec183c2\"]},{\"nome\":[\"2bcc06192bfa0f0e\",\"76117b3c70d803f3\"]},{\"nome\":[\"bccac859626beda1\"],\"nomeOuEndereco\":[\"9f40f8e3c10ec7c8\"]},{\"nome\":[\"c7f981ed0a582b30\"]}],\"inicioRotacao\":\"2026-09-28\",\"rotacao\":[{\"nicho\":\"odontologia_estetica\",\"estado\":\"GO\",\"offset\":0,\"buscas\":[\"clínica odontológica\",\"clínica de estética\"]},{\"nicho\":\"advocacia\",\"estado\":\"SC\",\"offset\":0,\"buscas\":[\"escritório de advocacia\"]},{\"nicho\":\"estetica_harmonizacao\",\"estado\":\"SC\",\"offset\":6,\"buscas\":[\"harmonização facial\",\"clínica de estética\"]},{\"nicho\":\"varejo_local\",\"estado\":\"GO\",\"offset\":6,\"buscas\":[\"loja de roupas\",\"loja de cosméticos\",\"pet shop\"]}],\"cidades\":{\"GO\":[\"Goiânia\",\"Aparecida de Goiânia\",\"Anápolis\",\"Senador Canedo\",\"Trindade\",\"Rio Verde\",\"Luziânia\",\"Águas Lindas de Goiás\",\"Valparaíso de Goiás\",\"Formosa\",\"Novo Gama\",\"Itumbiara\",\"Catalão\",\"Jataí\",\"Planaltina\",\"Caldas Novas\",\"Santo Antônio do Descoberto\",\"Goianésia\",\"Cidade Ocidental\",\"Mineiros\",\"Inhumas\",\"Cristalina\",\"Jaraguá\",\"Quirinópolis\",\"Porangatu\",\"Uruaçu\"],\"SC\":[\"Florianópolis\",\"São José\",\"Palhoça\",\"Joinville\",\"Blumenau\",\"Itajaí\",\"Chapecó\",\"Criciúma\",\"Balneário Camboriú\",\"Jaraguá do Sul\",\"Lages\",\"Brusque\",\"Tubarão\",\"Camboriú\",\"Navegantes\",\"Caçador\",\"Concórdia\",\"Rio do Sul\",\"Araranguá\",\"Gaspar\",\"Biguaçu\",\"Indaial\",\"Mafra\",\"Canoinhas\",\"Itapema\",\"São Bento do Sul\",\"Videira\",\"Xanxerê\",\"Içara\",\"Porto Belo\"]},\"nichos\":{\"odontologia_estetica\":\"clínicas odontológicas e clínicas de estética\",\"advocacia\":\"escritórios de advocacia\",\"estetica_harmonizacao\":\"clínicas de estética e harmonização facial\",\"varejo_local\":\"pequeno varejo local (lojas de roupas, cosméticos, pet shops)\"},\"verificacaoPorExecucao\":15,\"reacherFalhasSeguidasMax\":3,\"pausaEntreVerificacoesSeg\":10,\"reacherIntervaloMs\":6000,\"maxTentativasFallback\":2,\"exclusoesJanelaMax\":4,\"sobrenomesComuns\":[\"abreu\",\"aguiar\",\"almeida\",\"alves\",\"amaral\",\"andrade\",\"antunes\",\"aquino\",\"aragao\",\"araujo\",\"assis\",\"azevedo\",\"barbosa\",\"barros\",\"bastos\",\"batista\",\"bento\",\"bezerra\",\"borges\",\"brandao\",\"brito\",\"bueno\",\"cabral\",\"calixto\",\"camargo\",\"campos\",\"cardoso\",\"carvalho\",\"castro\",\"cavalcanti\",\"cavalheiro\",\"chaves\",\"coelho\",\"conceicao\",\"cordeiro\",\"correia\",\"costa\",\"couto\",\"cruz\",\"cunha\",\"dantas\",\"dias\",\"diniz\",\"domingues\",\"duarte\",\"fagundes\",\"farias\",\"fernandes\",\"ferreira\",\"figueiredo\",\"fonseca\",\"franca\",\"franco\",\"frança\",\"freitas\",\"galvao\",\"garcia\",\"godoy\",\"gomes\",\"goncalves\",\"guimaraes\",\"honorato\",\"jesus\",\"lacerda\",\"leal\",\"leite\",\"lima\",\"lins\",\"lopes\",\"lopez\",\"macedo\",\"machado\",\"magalhaes\",\"maia\",\"marques\",\"martinez\",\"martins\",\"matos\",\"medeiros\",\"meireles\",\"melo\",\"mendes\",\"mesquita\",\"miranda\",\"monteiro\",\"moraes\",\"morais\",\"moreira\",\"mota\",\"moura\",\"muniz\",\"nascimento\",\"neves\",\"nogueira\",\"nunes\",\"oliveira\",\"pacheco\",\"paiva\",\"paula\",\"paz\",\"peixoto\",\"pereira\",\"pimentel\",\"pinto\",\"pires\",\"porto\",\"prado\",\"queiroz\",\"quintino\",\"ramos\",\"rangel\",\"reis\",\"rezende\",\"ribeiro\",\"rios\",\"rocha\",\"rodrigues\",\"sales\",\"sampaio\",\"santana\",\"santos\",\"sena\",\"serra\",\"silva\",\"siqueira\",\"soares\",\"sousa\",\"souza\",\"tavares\",\"teixeira\",\"toledo\",\"torres\",\"trindade\",\"valente\",\"vargas\",\"vasconcelos\",\"veloso\",\"ventura\",\"viana\",\"vieira\",\"xavier\"],\"minAvaliacoesParaCitarNota\":10,\"alertaDestino\":\"joaovictornovais8@gmail.com\"};\n\n// ---- biblioteca compartilhada (injetada pelo build.mjs em todo Code node) ----\r\n\r\nconst norm = (s) => (s || '')\r\n  .normalize('NFD').replace(/[̀-ͯ]/g, '')\r\n  .toLowerCase().replace(/[^a-z0-9 ]/g, ' ').replace(/\\s+/g, ' ').trim();\r\n\r\nconst EMAIL_RE = /^[a-z0-9._%+-]+@[a-z0-9-]+(\\.[a-z0-9-]+)*\\.[a-z]{2,}$/;\r\n\r\n// Frases típicas de recusa/desvio de modelos instrucionais (pt/en).\r\nconst RECUSA_RE = /(n[aã]o posso (ajudar|atender|criar|gerar|fazer)|como (um|uma) (modelo|ia|assistente)|modelo de linguagem|sinto muito, mas|i can(no|')t (help|assist|do)|i('| a)m sorry|as an ai|i('| a)m unable|against (my|the) (guidelines|policy))/i;\r\n\r\n// Saída de IA → {ok, erro, tipo_falha, obj}. Salvaguardas 1 e 2 do projeto:\r\n// só aceita JSON puro (cercas ``` são toleradas); texto antes do \"{\" é tratado como desvio.\r\nfunction parseRespostaIA(resp) {\r\n  if (!resp || resp.error || !resp.choices) {\r\n    const msg = resp?.error?.message || resp?.error || 'sem choices na resposta';\r\n    return { ok: false, tipo_falha: 'api', erro: 'erro da API: ' + String(typeof msg === 'string' ? msg : JSON.stringify(msg)).slice(0, 300), raw: '' };\r\n  }\r\n  let raw = resp.choices?.[0]?.message?.content ?? '';\r\n  if (typeof raw !== 'string') raw = JSON.stringify(raw);\r\n  const p = parseTextoIA(raw);\r\n  // Resposta cortada pelo limite de tokens nunca é aceita, mesmo que pareça JSON.\r\n  if (resp.choices?.[0]?.finish_reason === 'length') {\r\n    return { ok: false, tipo_falha: 'formato', erro: 'resposta truncada no limite de tokens' + (p.ok ? '' : ' — ' + p.erro), raw };\r\n  }\r\n  return p;\r\n}\r\n\r\nfunction parseTextoIA(raw) {\r\n  const t = raw.trim().replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/, '').trim();\r\n  if (!t) return { ok: false, tipo_falha: 'formato', erro: 'resposta vazia', raw };\r\n  if (!t.startsWith('{')) {\r\n    const recusa = RECUSA_RE.test(t.slice(0, 600));\r\n    return { ok: false, tipo_falha: recusa ? 'recusa' : 'formato',\r\n             erro: recusa ? 'modelo recusou/desviou (texto de recusa em vez de JSON)' : 'resposta não é JSON (texto explicativo antes/no lugar do objeto)', raw };\r\n  }\r\n  try {\r\n    return { ok: true, obj: JSON.parse(t), raw };\r\n  } catch (e) {\r\n    return { ok: false, tipo_falha: 'formato', erro: 'JSON malformado: ' + e.message, raw };\r\n  }\r\n}\r\n\r\nconst RESPOSTA_MALFORMADA_TESTE =\r\n  'Claro! Aqui está uma sugestão de e-mail para essa empresa:\\n\\nOlá, tudo bem? Vi que vocês ainda não têm site...\\n\\n(Espero que ajude!)';\r\n\r\nconst escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\r\nconst linkificar = (html) => {\r\n  let out = html;\r\n  // Mais longo primeiro, para \"instagram.com/novax.ia.br\" não ser quebrado pelo link de \"novax.ia.br\".\r\n  const links = Object.entries(CONFIG.remetente.links || {}).sort((a, b) => b[0].length - a[0].length);\r\n  const marcas = [];\r\n  for (const [txt, url] of links) {\r\n    const re = new RegExp('(?<![\\\\w@./])' + txt.replace(/[.*+?^${}()|[\\]\\\\/]/g, '\\\\$&') + '(?![\\\\w@])', 'g');\r\n    out = out.replace(re, () => { marcas.push(`<a href=\"${url}\">${txt}</a>`); return `\\u0000${marcas.length - 1}\\u0000`; });\r\n  }\r\n  return out.replace(/\\u0000(\\d+)\\u0000/g, (_, i) => marcas[Number(i)]);\r\n};\r\nconst textoParaHtml = (t) => '<div style=\"font-family:Arial,sans-serif;font-size:14px;line-height:1.5\">'\r\n  + linkificar(escHtml(t)).split('\\n').join('<br>') + '</div>';\r\n\r\nconst assuntoResposta = (a) => 'Re: ' + String(a || '').replace(/^\\s*(\\[TESTE[^\\]]*\\]\\s*)?((re|res|fw|enc):\\s*)*/i, '');\r\n\r\nconst rodapeLGPD = (lead) =>\r\n  `\\n\\n${CONFIG.remetente.assinatura}\\n\\n—\\nVocê recebeu esta mensagem porque ${lead.nome} aparece como empresa no Google Maps em ${lead.cidade}/${lead.estado}. ` +\r\n  'Se não quiser receber novos contatos da Novax, responda com a palavra SAIR e removemos seu e-mail imediatamente.';\r\n\r\nconst agoraISO = () => new Date().toISOString();\r\n\r\n// Ajustes de revisão (1-2): nada de elogio/qualificação sem base nos dados, nada de promessa genérica.\r\nconst FRASES_PROIBIDAS = [\r\n  [/[óo]tim[oa]s?\\b/i, 'elogio \"ótimo\"'], [/excelen/i, 'elogio \"excelente\"'], [/incr[ií]vel/i, 'elogio \"incrível\"'],\r\n  [/maravilh/i, 'elogio \"maravilhoso\"'], [/renomad/i, 'elogio \"renomado\"'], [/refer[êe]ncia/i, 'elogio \"referência\"'],\r\n  [/conceituad/i, 'elogio \"conceituado\"'], [/reconhecid/i, 'elogio \"reconhecido\"'], [/tradicional/i, 'elogio \"tradicional\"'],\r\n  [/de qualidade/i, 'elogio \"de qualidade\"'], [/(boas|muitas|diversas|v[áa]rias) avalia/i, 'qualificação vaga das avaliações (use o número)'],\r\n  [/equipe extra/i, 'promessa \"sem equipe extra\"'], [/resultados reais/i, 'promessa \"resultados reais\"'], [/focad[oa] em resultado/i, 'promessa \"focado em resultados\"'],\r\n  [/credibilidade/i, 'promessa vaga \"credibilidade\"'], [/garant/i, 'promessa \"garantia\"'], [/(dobrar|triplicar|multiplicar)/i, 'promessa de multiplicar resultados'],\r\n  [/aumentar (as |suas |seu |o )?(vendas|faturamento|lucro)/i, 'promessa de aumento de vendas'],\r\n  // 06/10: \"boa avaliação\" (singular) passava; a única afirmação permitida sobre avaliação é nota e quantidade.\r\n  [/\\bboas?\\s+(avalia|nota|reputa)/i, 'elogio \"boa avaliação\"'], [/\\bbem\\s+avaliad/i, 'elogio \"bem avaliada\"'],\r\n  [/\\breputa[çc][ãa]o/i, 'qualificação \"reputação\"'], [/\\b(nota\\s+alta|alta\\s+nota|altamente\\s+avaliad)/i, 'qualificação \"nota alta\"'],\r\n];\r\n// 06/10: assunto não pode dizer/sugerir que a empresa já tem site (\"… ganha site profissional\" saiu em produção).\r\nconst ASSUNTO_SITE_EXISTE_RE = /(ganh(a|ou|e)|lan[çc](a|ou)|estreia|inaugura)\\s+(o\\s+|um\\s+|seu\\s+|novo\\s+)*site|\\bnovo\\s+site\\b|\\bsite\\s+(pronto|novo|no\\s+ar|lan[çc]ado|j[áa]\\s+est[áa])|(?<!n[ãa]o\\s)(?<!sem\\s)\\b(tem|possui|j[áa]\\s+tem)\\s+(um\\s+)?site\\b/i;\r\n// Sempre 1 casa decimal (\"5,0\"), coerente com a regra do prompt — antes a entrada dizia \"5\" e a IA escrevia \"nota de 4\".\r\nconst fmtNota = (r) => Number(r).toFixed(1).replace('.', ',');\r\n\r\n// Todo número de nota/avaliações citado precisa bater com o Google Maps.\r\n// Ampliado na auditoria (7/37 palavras comuns eram pegas; \"Gostariamos\" e \"vincado\" saíram em produção).\r\nconst SEM_ACENTO_RE = /\\b(nao|voce|voces|servicos?|horarios?|reuni[ao]o|reunioes|avaliac(ao|oes)|informac(ao|oes)|clinicas?|esteticas?|pratica|diagnostico|gostariamos|tambem|atencao|soluc(ao|oes)|comunicacao|presenca|negocios?|otim[oa]s?|proxim[oa]s?|estao|sera|possivel|disponivel|facil|automatic[oa]s?|juridic[oa]s?|escritorio|previdenciari[oa]|familia|ja|ate|vincad[oa])\\b/i;\r\nfunction checarFatos(texto, lead) {\r\n  const erros = [];\r\n  // O nome pode estar cadastrado sem acento no Google (e a IA pode reescrevê-lo em outra caixa): removido sem diferenciar maiúsculas.\r\n  const semNome = lead.nome ? texto.replace(new RegExp(String(lead.nome).replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&'), 'gi'), ' ') : texto;\r\n  if (SEM_ACENTO_RE.test(semNome)) erros.push('texto sem acentuação (ex.: \"' + semNome.match(SEM_ACENTO_RE)[0] + '\")');\r\n  for (const [re, nome] of FRASES_PROIBIDAS) if (re.test(texto)) erros.push('contém ' + nome);\r\n  const t = texto.replace(/(\\d)\\.(\\d)/g, '$1,$2');\r\n  const notas = [...t.matchAll(/(\\d(?:,\\d)?)\\s*estrelas|nota\\s*(?:de\\s*)?(\\d(?:,\\d)?)|(\\d,\\d)/gi)].map((m) => m[1] || m[2] || m[3]);\r\n  for (const n of notas) if (lead.rating == null || Number(n.replace(',', '.')) !== Number(lead.rating)) erros.push(`nota \"${n}\" não bate com o Google (${lead.rating ?? 'sem nota'})`);\r\n  for (const m of t.matchAll(/nota\\s*(?:de\\s*)?(\\d)(?!\\d|,\\d)/gi)) erros.push(`nota \"${m[1]}\" sem casa decimal (use \"${fmtNota(lead.rating ?? m[1])}\")`);\r\n  for (const m of t.matchAll(/(\\d+)\\s*avalia/gi)) if (Number(m[1]) !== Number(lead.total_avaliacoes)) erros.push(`\"${m[1]} avaliações\" não bate com o Google (${lead.total_avaliacoes ?? 0})`);\r\n  // 06/10: com poucas avaliações, citar nota/quantidade enfraquece a abordagem (\"nota 5,0 com 4 avaliações\").\r\n  const minAv = CONFIG.minAvaliacoesParaCitarNota || 0;\r\n  if (lead.total_avaliacoes != null && Number(lead.total_avaliacoes) < minAv && (notas.length || /\\d+\\s*avalia/i.test(t) || /\\bestrelas\\b/i.test(t))) {\r\n    erros.push(`cita nota/avaliações com só ${lead.total_avaliacoes} avaliações (mínimo ${minAv})`);\r\n  }\r\n  return erros;\r\n}\r\n\r\n// Exclusões de clientes guardadas só como hash (o repositório é público): FNV-1a 64 bits em JS puro (BigInt, sem crypto)\r\n// sobre o texto normalizado. Equivale ao \"contém a frase\" antigo: o nome vira o conjunto de hashes de todas as janelas\r\n// contíguas de 1..exclusoesJanelaMax tokens, e cada frase da regra precisa estar nesse conjunto.\r\nconst fnv64 = (s) => {\r\n  let h = 0xcbf29ce484222325n;\r\n  for (let i = 0; i < s.length; i++) { h ^= BigInt(s.charCodeAt(i)); h = (h * 0x100000001b3n) & 0xffffffffffffffffn; }\r\n  return h.toString(16).padStart(16, '0');\r\n};\r\nconst janelasHash = (texto, max) => {\r\n  const t = norm(texto).split(' ').filter(Boolean);\r\n  const out = new Set();\r\n  for (let i = 0; i < t.length; i++) for (let k = 1; k <= max && i + k <= t.length; k++) out.add(fnv64(t.slice(i, i + k).join(' ')));\r\n  return out;\r\n};\r\n\r\n// Palavras genéricas de ramo: sozinhas não identificam a empresa (clinica@gmail.com é de outra pessoa).\r\nconst GENERICAS = new Set(['clinica', 'clinicas', 'estetica', 'esteticas', 'odontologia', 'odontologica', 'odontologicas', 'odonto',\r\n  'dentista', 'dentaria', 'consultorio', 'instituto', 'centro', 'espaco', 'studio', 'estudio', 'loja', 'lojas', 'advocacia',\r\n  'advogados', 'advogado', 'escritorio', 'associados', 'avancada', 'integrada', 'especializada', 'saude', 'beauty', 'clinic',\r\n  'imagem', 'facial', 'corporal', 'implantes', 'sorriso', 'ltda', 'eireli',\r\n  // auditoria 2026-10-05: vocabulário jurídico e de serviços (semana de advocacia)\r\n  'advogada', 'advogadas', 'consultoria', 'juridica', 'juridico', 'assessoria', 'direito', 'sociedade', 'individual', 'criminal',\r\n  'criminalista', 'especialista', 'especializado', 'previdenciario', 'previdenciaria', 'familia', 'trabalhista', 'civil', 'tributario',\r\n  'empresarial', 'regiao', 'matriz', 'filial', 'unidade', 'contato']);\r\n// A cidade do lead não identifica a empresa (em \"<Marca> Odonto <Cidade>\" só a marca é distintiva).\r\nconst palavrasDistintivas = (nome, cidade = '') => {\r\n  const daCidade = new Set(norm(cidade).split(' '));\r\n  return norm(nome).split(' ')\r\n    .filter((w) => w.length >= 3 && !GENERICAS.has(w) && !daCidade.has(w) && !['de', 'da', 'do', 'das', 'dos', 'dra', 'dr', 'the'].includes(w));\r\n};\r\n// Candidato só vale se o usuário do e-mail contém palavras distintivas do nome: 2 delas quando o nome tem 2+\r\n// (auditoria 05/10: um endereço só com o primeiro nome de uma pessoa passava com 1 palavra).\r\n// Homônimo (06/10): em provedor gratuito, um endereço apoiado numa ÚNICA palavra que é sobrenome comum\r\n// (\"<sobrenome>advocacia@…\") pode ser de qualquer xará no país — o Reacher só prova que a caixa existe, não de quem é.\r\nconst PROVEDOR_GRATUITO = /@(gmail|googlemail|hotmail|outlook|live|msn|yahoo|bol|uol|terra|ig|icloud)\\./;\r\nconst SOBRENOMES_COMUNS = new Set((CONFIG.sobrenomesComuns || []).map((s) => norm(s)));\r\nconst emailIdentificaEmpresa = (email, nome, cidade = '') => {\r\n  const u = email.split('@')[0].replace(/[^a-z0-9]/g, '');\r\n  const ds = palavrasDistintivas(nome, cidade);\r\n  const achadas = ds.filter((w) => u.includes(w));\r\n  if (!ds.length || achadas.length < Math.min(2, ds.length)) return false;\r\n  if (PROVEDOR_GRATUITO.test(email) && achadas.length === 1 && SOBRENOMES_COMUNS.has(achadas[0])) return false;\r\n  return true;\r\n};\r\n\r\n// Advocacia: só escritórios (decisão do João, 05/10/2026). Pessoa física (autônomo) e entidade de classe/órgão não são capturados.\r\n// Ordem: entidade → marcador de banca (escritório) → pessoa física com alta confiança → ambíguo (mantido, conservador).\r\nconst ENTIDADE_RE = /\\b(ordem dos advogados|oab|conselho|defensoria|procuradoria|forum|tribunal|cartorio|sindicato|subsecao)\\b/;\r\nconst BANCA_RE = /\\b(advocacia|advogados|associados|sociedade|escritorio|juridic[ao]s?|law|partners)\\b/;\r\nfunction classificarAdvocacia(nome) {\r\n  const n = norm(nome);\r\n  if (ENTIDADE_RE.test(n)) return 'entidade';\r\n  if (BANCA_RE.test(n) || nome.includes('&')) return 'escritorio';\r\n  if (/^(dr|dra|adv)\\b/.test(n) || /\\b(advogad[oa]|criminalista)\\b/.test(n)) return 'pessoa_fisica';\r\n  const palavras = n.split(' ').filter(Boolean);\r\n  // Só 2–3 prenomes/sobrenomes soltos (critério do João); 4+ palavras sem marcador ficam como ambíguo (mantidos).\r\n  if (palavras.length >= 2 && palavras.length <= 3 && palavras.every((w) => /^[a-z]+$/.test(w))) return 'pessoa_fisica';\r\n  return 'ambiguo';\r\n}\r\n\r\n// Ajuste 5: variações determinísticas a partir do nome EXATO (só Gmail: é o único provedor que o Reacher confirma).\r\nfunction variantesEmail(nome, cidade = '') {\r\n  const palavras = norm(nome).split(' ').filter(Boolean);\r\n  const semConectivos = palavras.filter((w) => !['de', 'da', 'do', 'das', 'dos', 'e', 'dra', 'dr'].includes(w));\r\n  const slugs = [...new Set([palavras.join(''), semConectivos.join('')])];\r\n  const out = [];\r\n  for (const s of slugs) out.push(`${s}@gmail.com`, `contato.${s}@gmail.com`);\r\n  return out.filter((e) => emailIdentificaEmpresa(e, nome, cidade));\r\n}\r\n// Gmail só aceita usuário de 6 a 30 caracteres: descarta candidatos impossíveis antes do Reacher.\r\n// Reacher nunca conclui Hotmail/Outlook/Yahoo (50/50 HeadlessError): consultar só gasta tempo e tarpit.\r\nconst PROVEDOR_SEM_VERIFICACAO = /@(hotmail|outlook|live|msn|yahoo)\\./;\r\nconst emailPossivel = (e) => {\r\n  if (PROVEDOR_SEM_VERIFICACAO.test(e)) return false;\r\n  if (!e.endsWith('@gmail.com')) return true;\r\n  const u = e.split('@')[0];\r\n  return u.length >= 6 && u.length <= 30;\r\n};\r\n// ---- fim da biblioteca ----\r\n\n// Watchdog: resumo diário do Robson para o João (nunca para prospect). Se este e-mail não chegar, o silêncio é o alerta.\nif (!CONFIG.alertaDestino) throw new Error('config.alertaDestino vazio: watchdog sem destinatário.');\nconst linhasDe = (no) => $(no).all().map((i) => i.json).filter((r) => r && Object.keys(r).length);\nconst j = $('Janela de hoje').first().json;\nconst st = linhasDe('W: status envio')[0] || {};\nconst envios = linhasDe('W: envios hoje').filter((e) => e.tipo === 'prospeccao');\nconst reais = envios.filter((e) => !e.teste && e.status === 'enviado').length;\nconst comErro = envios.filter((e) => e.status !== 'enviado').length;\nconst verificados = linhasDe('W: verificados hoje').length;\nconst contatos = linhasDe('W: contatos hoje');\nconst safeHoje = contatos.filter((c) => c.reacher_status === 'safe').length;\nconst ia = Number((linhasDe('W: uso API hoje').find((u) => u.servico === 'openrouter') || {}).chamadas || 0);\nconst respostas = linhasDe('W: respostas hoje').length;\nconst filaSemVerificacao = linhasDe('W: fila sem verificação').length;\nconst contatosPendentes = linhasDe('W: contatos pendentes').length;\n\n// Limite do dia pela mesma regra de b_limite_dia.js, medida no horário do envio (09:30 BRT).\nconst r = CONFIG.rampUpEnviosPorDia;\nlet limite = r[0];\nif (st.primeiro_envio) {\n  const envio930 = new Date(`${j.dia}T09:30:00${CONFIG.agenda.fusoOffset}`).getTime();\n  const semana = Math.floor((envio930 - new Date(st.primeiro_envio).getTime()) / (7 * 864e5)) + 1;\n  limite = r[Math.min(Math.max(semana, 1), r.length) - 1];\n}\n\nconst alertas = [];\nif (j.diaUtil && reais === 0) alertas.push('0 e-mails hoje');\nif (j.diaUtil && verificados === 0) alertas.push('0 leads verificados hoje');\nif (comErro) alertas.push(`${comErro} envio(s) com erro`);\nif (ia >= CONFIG.limiteDiarioOpenRouter) alertas.push('cota de IA esgotada');\nconst assunto = alertas.length ? `[ALERTA Robson] ${alertas.join(' · ')}` : `[Robson] ${reais} e-mail${reais === 1 ? '' : 's'} hoje`;\n\nconst texto = [\n  `Resumo do Robson — ${j.dia.split('-').reverse().join('/')}${j.diaUtil ? '' : ' (fim de semana)'}`,\n  '',\n  `E-mails enviados (reais): ${reais} de ${limite} (limite do ramp-up)`,\n  `Envios com erro: ${comErro}`,\n  `Leads verificados: ${verificados}`,\n  `Contatos confirmados (safe) hoje: ${safeHoje}`,\n  `Chamadas de IA: ${ia} de ${CONFIG.limiteDiarioOpenRouter}`,\n  `Respostas recebidas: ${respostas}`,\n  '',\n  `Fila para o próximo envio: ${contatosPendentes} contato(s) confirmado(s) · ${filaSemVerificacao} lead(s) sem verificação`,\n  alertas.length ? `\\nALERTAS: ${alertas.join('; ')}` : '',\n  '',\n  'Painel de execuções: https://hooks.novax.ia.br/workflow/prspAgenteProsp1/executions',\n].join('\\n');\n\nreturn [{ json: { destino: CONFIG.alertaDestino, assunto, texto, html: textoParaHtml(texto), alertas,\n  numeros: { reais, comErro, limite, verificados, safeHoje, ia, respostas, filaSemVerificacao, contatosPendentes } } }];\n"
+      }
+    },
+    {
+      "id": "9ec3b2c0-32f2-49ee-b6d9-a360337195f5",
+      "name": "Enviar resumo (SMTP)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2640,
+        0
+      ],
+      "parameters": {
+        "fromEmail": "Novax <novax.ia.br@gmail.com>",
+        "toEmail": "={{ $('Montar resumo').first().json.destino }}",
+        "subject": "={{ $('Montar resumo').first().json.assunto }}",
+        "emailFormat": "both",
+        "text": "={{ $('Montar resumo').first().json.texto }}",
+        "html": "={{ $('Montar resumo').first().json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "replyTo": "novax.ia.br@gmail.com"
+        }
+      },
+      "credentials": {
+        "smtp": {
+          "id": "prspSmtpGmail001",
+          "name": "Gmail SMTP - Prospeccao"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Diário - Watchdog": {
+      "main": [
+        [
+          {
+            "node": "Janela de hoje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Janela de hoje": {
+      "main": [
+        [
+          {
+            "node": "W: status envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "W: status envio": {
+      "main": [
+        [
+          {
+            "node": "W: envios hoje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "W: envios hoje": {
+      "main": [
+        [
+          {
+            "node": "W: verificados hoje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "W: verificados hoje": {
+      "main": [
+        [
+          {
+            "node": "W: contatos hoje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "W: contatos hoje": {
+      "main": [
+        [
+          {
+            "node": "W: uso API hoje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "W: uso API hoje": {
+      "main": [
+        [
+          {
+            "node": "W: respostas hoje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "W: respostas hoje": {
+      "main": [
+        [
+          {
+            "node": "W: fila sem verificação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "W: fila sem verificação": {
+      "main": [
+        [
+          {
+            "node": "W: contatos pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "W: contatos pendentes": {
+      "main": [
+        [
+          {
+            "node": "Montar resumo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar resumo": {
+      "main": [
+        [
+          {
+            "node": "Enviar resumo (SMTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Teste manual (watchdog)": {
+      "main": [
+        [
+          {
+            "node": "Janela de hoje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "buildId": "88fe8ea107a8"
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "saveManualExecutions": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "callerPolicy": "workflowsFromSameOwner"
+  }
+}

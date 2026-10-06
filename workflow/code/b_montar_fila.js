@@ -10,6 +10,8 @@ for (const l of com) {
   vistos.add(l.id);
   const { contatos, ...lead } = l;
   const c = (contatos || [])[0];
+  // Contato salvo antes de uma regra nova da guarda (ex.: homônimo 06/10) não entra na fila: nem texto, nem fallback.
+  if (!emailIdentificaEmpresa(c.email, lead.nome, lead.cidade)) continue;
   fila.push({ ...lead, fila: { modo: 'texto', email: c.email, contato_id: c.id, reacher: c.reacher_raw } });
 }
 for (const l of fb) {

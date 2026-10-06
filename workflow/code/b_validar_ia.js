@@ -41,6 +41,7 @@ if (typeof o.assunto === 'string') {
                  L.total_avaliacoes ? String(L.total_avaliacoes) : null].filter(Boolean);
   if (!dados.some((d) => a.includes(d))) erros.push('assunto sem dado específico do lead (cidade, nome, nota ou avaliações)');
   if (/^presenca digital para/.test(a)) erros.push('assunto no padrão repetitivo "Presença digital para"');
+  if (ASSUNTO_SITE_EXISTE_RE.test(o.assunto)) erros.push('assunto sugere que a empresa já tem site');
   erros.push(...checarFatos(o.assunto, L).map((e) => 'assunto ' + e));
 }
 if (erros.length) {

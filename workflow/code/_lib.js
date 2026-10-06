@@ -76,7 +76,12 @@ const FRASES_PROIBIDAS = [
   [/equipe extra/i, 'promessa "sem equipe extra"'], [/resultados reais/i, 'promessa "resultados reais"'], [/focad[oa] em resultado/i, 'promessa "focado em resultados"'],
   [/credibilidade/i, 'promessa vaga "credibilidade"'], [/garant/i, 'promessa "garantia"'], [/(dobrar|triplicar|multiplicar)/i, 'promessa de multiplicar resultados'],
   [/aumentar (as |suas |seu |o )?(vendas|faturamento|lucro)/i, 'promessa de aumento de vendas'],
+  // 06/10: "boa avaliação" (singular) passava; a única afirmação permitida sobre avaliação é nota e quantidade.
+  [/\bboas?\s+(avalia|nota|reputa)/i, 'elogio "boa avaliação"'], [/\bbem\s+avaliad/i, 'elogio "bem avaliada"'],
+  [/\breputa[çc][ãa]o/i, 'qualificação "reputação"'], [/\b(nota\s+alta|alta\s+nota|altamente\s+avaliad)/i, 'qualificação "nota alta"'],
 ];
+// 06/10: assunto não pode dizer/sugerir que a empresa já tem site ("… ganha site profissional" saiu em produção).
+const ASSUNTO_SITE_EXISTE_RE = /(ganh(a|ou|e)|lan[çc](a|ou)|estreia|inaugura)\s+(o\s+|um\s+|seu\s+|novo\s+)*site|\bnovo\s+site\b|\bsite\s+(pronto|novo|no\s+ar|lan[çc]ado|j[áa]\s+est[áa])|(?<!n[ãa]o\s)(?<!sem\s)\b(tem|possui|j[áa]\s+tem)\s+(um\s+)?site\b/i;
 // Sempre 1 casa decimal ("5,0"), coerente com a regra do prompt — antes a entrada dizia "5" e a IA escrevia "nota de 4".
 const fmtNota = (r) => Number(r).toFixed(1).replace('.', ',');
 
@@ -92,10 +97,30 @@ function checarFatos(texto, lead) {
   const t = texto.replace(/(\d)\.(\d)/g, '$1,$2');
   const notas = [...t.matchAll(/(\d(?:,\d)?)\s*estrelas|nota\s*(?:de\s*)?(\d(?:,\d)?)|(\d,\d)/gi)].map((m) => m[1] || m[2] || m[3]);
   for (const n of notas) if (lead.rating == null || Number(n.replace(',', '.')) !== Number(lead.rating)) erros.push(`nota "${n}" não bate com o Google (${lead.rating ?? 'sem nota'})`);
-  for (const m of t.matchAll(/nota\s*(?:de\s*)?(\d)(?![,\d])/gi)) erros.push(`nota "${m[1]}" sem casa decimal (use "${fmtNota(lead.rating ?? m[1])}")`);
+  for (const m of t.matchAll(/nota\s*(?:de\s*)?(\d)(?!\d|,\d)/gi)) erros.push(`nota "${m[1]}" sem casa decimal (use "${fmtNota(lead.rating ?? m[1])}")`);
   for (const m of t.matchAll(/(\d+)\s*avalia/gi)) if (Number(m[1]) !== Number(lead.total_avaliacoes)) erros.push(`"${m[1]} avaliações" não bate com o Google (${lead.total_avaliacoes ?? 0})`);
+  // 06/10: com poucas avaliações, citar nota/quantidade enfraquece a abordagem ("nota 5,0 com 4 avaliações").
+  const minAv = CONFIG.minAvaliacoesParaCitarNota || 0;
+  if (lead.total_avaliacoes != null && Number(lead.total_avaliacoes) < minAv && (notas.length || /\d+\s*avalia/i.test(t) || /\bestrelas\b/i.test(t))) {
+    erros.push(`cita nota/avaliações com só ${lead.total_avaliacoes} avaliações (mínimo ${minAv})`);
+  }
   return erros;
 }
+
+// Exclusões de clientes guardadas só como hash (o repositório é público): FNV-1a 64 bits em JS puro (BigInt, sem crypto)
+// sobre o texto normalizado. Equivale ao "contém a frase" antigo: o nome vira o conjunto de hashes de todas as janelas
+// contíguas de 1..exclusoesJanelaMax tokens, e cada frase da regra precisa estar nesse conjunto.
+const fnv64 = (s) => {
+  let h = 0xcbf29ce484222325n;
+  for (let i = 0; i < s.length; i++) { h ^= BigInt(s.charCodeAt(i)); h = (h * 0x100000001b3n) & 0xffffffffffffffffn; }
+  return h.toString(16).padStart(16, '0');
+};
+const janelasHash = (texto, max) => {
+  const t = norm(texto).split(' ').filter(Boolean);
+  const out = new Set();
+  for (let i = 0; i < t.length; i++) for (let k = 1; k <= max && i + k <= t.length; k++) out.add(fnv64(t.slice(i, i + k).join(' ')));
+  return out;
+};
 
 // Palavras genéricas de ramo: sozinhas não identificam a empresa (clinica@gmail.com é de outra pessoa).
 const GENERICAS = new Set(['clinica', 'clinicas', 'estetica', 'esteticas', 'odontologia', 'odontologica', 'odontologicas', 'odonto',
@@ -106,18 +131,25 @@ const GENERICAS = new Set(['clinica', 'clinicas', 'estetica', 'esteticas', 'odon
   'advogada', 'advogadas', 'consultoria', 'juridica', 'juridico', 'assessoria', 'direito', 'sociedade', 'individual', 'criminal',
   'criminalista', 'especialista', 'especializado', 'previdenciario', 'previdenciaria', 'familia', 'trabalhista', 'civil', 'tributario',
   'empresarial', 'regiao', 'matriz', 'filial', 'unidade', 'contato']);
-// A cidade do lead não identifica a empresa ("Gou Odonto Rio Verde" → só "gou" é distintivo).
+// A cidade do lead não identifica a empresa (em "<Marca> Odonto <Cidade>" só a marca é distintiva).
 const palavrasDistintivas = (nome, cidade = '') => {
   const daCidade = new Set(norm(cidade).split(' '));
   return norm(nome).split(' ')
     .filter((w) => w.length >= 3 && !GENERICAS.has(w) && !daCidade.has(w) && !['de', 'da', 'do', 'das', 'dos', 'dra', 'dr', 'the'].includes(w));
 };
 // Candidato só vale se o usuário do e-mail contém palavras distintivas do nome: 2 delas quando o nome tem 2+
-// (auditoria: "kemile@gmail.com" p/ "Dra Kemile Teles" passava com 1 palavra = primeiro nome de qualquer pessoa).
+// (auditoria 05/10: um endereço só com o primeiro nome de uma pessoa passava com 1 palavra).
+// Homônimo (06/10): em provedor gratuito, um endereço apoiado numa ÚNICA palavra que é sobrenome comum
+// ("<sobrenome>advocacia@…") pode ser de qualquer xará no país — o Reacher só prova que a caixa existe, não de quem é.
+const PROVEDOR_GRATUITO = /@(gmail|googlemail|hotmail|outlook|live|msn|yahoo|bol|uol|terra|ig|icloud)\./;
+const SOBRENOMES_COMUNS = new Set((CONFIG.sobrenomesComuns || []).map((s) => norm(s)));
 const emailIdentificaEmpresa = (email, nome, cidade = '') => {
   const u = email.split('@')[0].replace(/[^a-z0-9]/g, '');
   const ds = palavrasDistintivas(nome, cidade);
-  return ds.filter((w) => u.includes(w)).length >= Math.min(2, ds.length) && ds.length > 0;
+  const achadas = ds.filter((w) => u.includes(w));
+  if (!ds.length || achadas.length < Math.min(2, ds.length)) return false;
+  if (PROVEDOR_GRATUITO.test(email) && achadas.length === 1 && SOBRENOMES_COMUNS.has(achadas[0])) return false;
+  return true;
 };
 
 // Advocacia: só escritórios (decisão do João, 05/10/2026). Pessoa física (autônomo) e entidade de classe/órgão não são capturados.

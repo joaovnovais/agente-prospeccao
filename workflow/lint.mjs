@@ -1,6 +1,6 @@
 // Checagens estáticas do workflow gerado: refs $('Nó') existentes, sintaxe dos Code nodes, nós órfãos.
 import { readFileSync } from 'node:fs';
-const w = JSON.parse(readFileSync(new URL('./dist/novax-agente-prospeccao.json', import.meta.url)));
+const w = JSON.parse(readFileSync(new URL(process.argv[2] || './dist/novax-agente-prospeccao.json', import.meta.url)));
 const names = new Set(w.nodes.map((n) => n.name));
 const miss = new Set(); let erros = 0;
 for (const n of w.nodes) {

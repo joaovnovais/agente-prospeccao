@@ -367,3 +367,28 @@ const wf = {
 mkdirSync(join(DIR, 'dist'), { recursive: true });
 writeFileSync(join(DIR, 'dist', 'novax-agente-prospeccao.json'), JSON.stringify(wf, null, 2));
 console.log(`build ${BUILD_ID} · ok: ${nodes.length} nós, ${Object.values(connections).reduce((a, c) => a + c.main.flat().length, 0)} conexões`);
+
+// ====================== WATCHDOG (workflow separado, prspWatchdog01) ======================
+// Resumo diário 10:15 BRT para o João (CONFIG.alertaDestino). Só GET no Supabase + 1 e-mail; não toca o Robson.
+nodes.length = 0;
+for (const k of Object.keys(connections)) delete connections[k];
+const HOJE = "$('Janela de hoje').first().json";
+add('Teste manual (watchdog)', 'n8n-nodes-base.manualTrigger', 1, {}, [0, 1]);
+schedule('Diário - Watchdog', '15 10 * * 1-5', [0, 0]);
+code('Janela de hoje', 'w_janela.js', [1, 0]);
+supa('W: status envio', [2, 0], { path: '/prospeccao_status_envio?select=*' });
+supa('W: envios hoje', [3, 0], { path: `/prospeccao_envios?select=tipo,status,teste&enviado_em=gte.{{ ${HOJE}.inicio }}` });
+supa('W: verificados hoje', [4, 0], { path: `/prospeccao_leads?select=id&verificacao_codigo_em=gte.{{ ${HOJE}.inicio }}` });
+supa('W: contatos hoje', [5, 0], { path: `/prospeccao_contatos?select=reacher_status&verificado_em=gte.{{ ${HOJE}.inicio }}` });
+supa('W: uso API hoje', [6, 0], { path: `/prospeccao_uso_api?select=servico,chamadas&periodo=eq.{{ ${HOJE}.dia }}` });
+supa('W: respostas hoje', [7, 0], { path: `/prospeccao_envios?select=id&resposta_recebida_em=gte.{{ ${HOJE}.inicio }}` });
+supa('W: fila sem verificação', [8, 0], { path: '/prospeccao_leads?select=id&status=eq.novo&verificacao_codigo_em=is.null' });
+supa('W: contatos pendentes', [9, 0], { path: '/prospeccao_leads?select=id,contatos:prospeccao_contatos!inner(id)&status=eq.novo&contatos.reacher_status=eq.safe&contatos.bloqueado=is.false' });
+code('Montar resumo', 'w_resumo.js', [10, 0]);
+smtp('Enviar resumo (SMTP)', 'Montar resumo', [11, 0]);
+chain('Diário - Watchdog', 'Janela de hoje', 'W: status envio', 'W: envios hoje', 'W: verificados hoje', 'W: contatos hoje',
+  'W: uso API hoje', 'W: respostas hoje', 'W: fila sem verificação', 'W: contatos pendentes', 'Montar resumo', 'Enviar resumo (SMTP)');
+link('Teste manual (watchdog)', 'Janela de hoje');
+const wd = { ...wf, id: 'prspWatchdog01', name: 'NOVAX - Robson Watchdog', nodes, connections };
+writeFileSync(join(DIR, 'dist', 'novax-robson-watchdog.json'), JSON.stringify(wd, null, 2));
+console.log(`watchdog ${BUILD_ID} · ok: ${nodes.length} nós, ${Object.values(connections).reduce((a, c) => a + c.main.flat().length, 0)} conexões`);

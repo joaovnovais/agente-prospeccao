@@ -1,10 +1,11 @@
 // Passo 2: mantém só PMEs operando, SEM website, fora da lista de exclusão (leads manuais em andamento).
+// Regras de exclusão em config.json são hashes (fnv64) de frases normalizadas — ver janelasHash em _lib.js.
 const excluida = (nome, endereco) => {
-  const n = ' ' + norm(nome) + ' ';
-  const ne = ' ' + norm(nome + ' ' + (endereco || '')) + ' ';
+  const jn = janelasHash(nome, CONFIG.exclusoesJanelaMax);
+  const jne = janelasHash(nome + ' ' + (endereco || ''), CONFIG.exclusoesJanelaMax);
   return CONFIG.exclusoes.some((e) =>
-    (e.nome || []).every((t) => n.includes(' ' + t + ' ')) &&
-    (e.nomeOuEndereco || []).every((t) => ne.includes(' ' + t + ' ')));
+    (e.nome || []).every((h) => jn.has(h)) &&
+    (e.nomeOuEndereco || []).every((h) => jne.has(h)));
 };
 
 const vistos = new Set();
