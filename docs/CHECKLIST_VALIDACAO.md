@@ -1,6 +1,9 @@
 # Checklist de validação — antes e depois de cada melhoria do Robson
 
 Linha de base: tag `baseline-2026-10-06` (build `3c5576806d72`). Procedimento de deploy: `docs/DEPLOY.md`.
+Último build no banco: `ce975f23e384` (06/10, ver `docs/correcoes-2026-10-06.md`). Ele só vale depois da recarga pela interface.
+
+São dois workflows do Robson: `prspAgenteProsp1` (Robson) e `prspWatchdog01` (resumo diário às 10:15). O deploy é `bash workflow/deploy.sh robson|watchdog`, e cada um precisa da sua recarga.
 
 ## Janela segura (BRT)
 - **Sem deploy nem recarga** de 08:30 a 10:00 em dias úteis (envio às 09:30) e às segundas de 06:30 a 07:30 (captação às 07:00).
@@ -10,8 +13,10 @@ Linha de base: tag `baseline-2026-10-06` (build `3c5576806d72`). Procedimento de
 
 ## Antes do deploy
 - [ ] `node workflow/build.mjs` → anotar `build <id>`, nº de nós e nº de conexões.
-- [ ] `node workflow/lint.mjs` → `refs inexistentes: []`, `segredos no JSON? não`.
-- [ ] `node workflow/tests/auditoria-2026-10-05.test.mjs` (e qualquer teste novo) → `falhas: 0`.
+- [ ] `node workflow/lint.mjs` e `node workflow/lint.mjs ./dist/novax-robson-watchdog.json` → `refs inexistentes: []`, `segredos no JSON? não`.
+- [ ] `for t in workflow/tests/*.test.mjs; do node $t; done` → `falhas: 0` em todos (83 testes em 06/10).
+- [ ] Exclusões de clientes: `config.json` guarda só **hashes**. Os originais ficam em `docs/local/exclusoes-originais.json`. Para incluir um cliente, gere o hash com `janelasHash` do `_lib.js` e confira com `docs/local/equivalencia-exclusoes.mjs`.
+- [ ] Mudou regra de texto ou de filtro? Rode-a contra os envios reais anteriores (SELECT) e anote quantos passariam a ser rejeitados.
 - [ ] `git diff --stat`:
   - só os arquivos esperados;
   - nenhum arquivo com centenas de linhas por troca de fim de linha. Os 13 arquivos CRLF continuam CRLF: `git ls-files --eol`.
@@ -33,7 +38,8 @@ Linha de base: tag `baseline-2026-10-06` (build `3c5576806d72`). Procedimento de
   - ativos: Robson + Claudia.
 - [ ] Prova de conteúdo via `n8n export:workflow` (arquivo temporário com nome único, apagado depois):
   - build ID e nº de nós e conexões iguais ao `dist`;
-  - itens críticos presentes. Hoje: `reacherFalhasSeguidasMax`, `$json.disjuntor === true` em "Reacher travou?" e `order=updated_at.asc,id.asc`.
+  - itens críticos presentes. Hoje: `reacherFalhasSeguidasMax`, `$json.disjuntor === true` em "Reacher travou?", `order=updated_at.asc,id.asc`, `janelasHash`, `sobrenomesComuns`, `minAvaliacoesParaCitarNota` e `ASSUNTO_SITE_EXISTE_RE`;
+  - watchdog: todos os nós HTTP com `executeOnce: true`. Sem isso, cada consulta roda uma vez por item e os números saem multiplicados, como aconteceu na 1ª prova de 06/10.
 - [ ] **Recarga dos gatilhos:**
   - F5 no editor;
   - **Unpublish → Publish**. Pode exigir clique humano se o ambiente não tiver sessão nem API key;
@@ -62,6 +68,23 @@ Linha de base: tag `baseline-2026-10-06` (build `3c5576806d72`). Procedimento de
   - acentuação certa;
   - rodapé SAIR presente.
 - [ ] IMAP: há execução do fluxo de respostas desde a recarga, ou um e-mail de teste enviado para a caixa gerou execução.
+  - O teste deve ser um e-mail **novo**, fora de thread, e terminar em "ignorar".
+  - **Nunca** responda aos envios `teste=true`: eles apontam para contatos de leads reais. "SAIR" bloquearia o prospect, e "interesse" dispararia proposta, Calendar e Trello.
+
+## Watchdog (10:15 BRT, dias úteis)
+- [ ] Chegou o e-mail `[Robson] N e-mails hoje` ou `[ALERTA Robson] …` em `CONFIG.alertaDestino`.
+- [ ] Os números batem com o Supabase:
+  - envios reais ≤ limite do dia;
+  - verificados;
+  - `safe`;
+  - chamadas à IA;
+  - respostas;
+  - fila sem verificação;
+  - contatos pendentes.
+- [ ] Se não chegou: a execução das 10:15 existe em `prspWatchdog01`? Se não existe, falta a recarga (Unpublish → Publish).
+
+## Dados de produção
+- Bloqueios manuais de contato usam `bloqueado_motivo` com data (ex.: `revisao_homonimo_06/10`). IDs e SQL de reversão ficam em `docs/local/`.
 
 ## Rollback
 - Código: `git revert` do commit + build + `deploy.sh` + recarga.
