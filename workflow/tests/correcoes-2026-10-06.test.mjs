@@ -106,7 +106,8 @@ console.log('Watchdog (w_resumo.js)');
   // Regressão da 1ª prova (06/10 19:28): sem executeOnce o n8n repetia cada consulta por item recebido (números multiplicados).
   const wd = JSON.parse(readFileSync(`${R}/dist/novax-robson-watchdog.json`, 'utf8'));
   const https = wd.nodes.filter((n) => n.type === 'n8n-nodes-base.httpRequest');
-  ok(https.length === 8 && https.every((n) => n.executeOnce === true && n.parameters.method === 'GET'), 'watchdog: 8 consultas GET, cada uma com executeOnce');
+  // 13/10: 9ª consulta = bloco semanal (taxa de e-mail confirmado por nicho).
+  ok(https.length === 9 && https.every((n) => n.executeOnce === true && n.parameters.method === 'GET'), 'watchdog: 9 consultas GET, cada uma com executeOnce');
   ok(wd.id === 'prspWatchdog01' && wd.id !== '6NJ7fIsgaBsWh1iX', 'watchdog tem ID próprio');
 }
 

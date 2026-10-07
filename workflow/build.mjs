@@ -197,8 +197,10 @@ supa('Marcar verificação (lead)', [12, 2.4], { method: 'PATCH',
   body: `={{ JSON.stringify({ verificacao_codigo_em: $('Resultado verificação (código)').first().json.incompleto ? null : new Date().toISOString() }) }}` });
 code('Fim da verificação', 'b_resumo_verificacao.js', [6, 3.2]);
 supa('Buscar fila com e-mail', [7, 3.2], { path: `/prospeccao_leads?select=*,contatos:prospeccao_contatos!inner(id,email,reacher_status,reacher_raw,bloqueado)&status=eq.novo&contatos.reacher_status=eq.safe&contatos.bloqueado=is.false&order=created_at.asc,id.asc&limit={{ $('Calcular limite do dia').first().json.lote }}` });
-supa('Buscar fila fallback', [8, 3.2], { path: `/prospeccao_leads?select=*&status=eq.novo&verificacao_codigo_em=not.is.null&order=updated_at.asc,id.asc&limit={{ $('Calcular limite do dia').first().json.lote }}` });
+supa('Buscar fila fallback', [8, 3.2], { path: `/prospeccao_leads?select=*&status=eq.novo&verificacao_codigo_em=not.is.null&order=total_avaliacoes.desc.nullslast,updated_at.asc,id.asc&limit={{ $('Calcular limite do dia').first().json.lote }}` });
 code('Montar fila de envio', 'b_montar_fila.js', [9, 3.2]);
+// 07/10: "Buscar fila fallback" recebe 1 item por lead com e-mail e rodava uma vez por item (120 itens para 30 leads).
+for (const n of nodes) if (n.name === 'Buscar fila com e-mail' || n.name === 'Buscar fila fallback') n.executeOnce = true;
 
 loop('Loop leads', [4, 4]);
 supa('Status envios (lead)', [5, 4], { path: '/prospeccao_status_envio?select=*' });
@@ -208,6 +210,8 @@ code('Pedido IA - e-mail', 'b_pedido_ia.js', [8, 4]);
 reservarIA('Reservar cota IA (e-mail)', [9, 4]);
 iff('Cota IA ok? (e-mail)', '$json.ok === true', [10, 4]);
 noop('Parar: cota IA esgotada', [11, 5]);
+iff('Teto do fallback?', '$json.teto_fallback === true', [8.5, 5]);
+noop('Parar: teto do fallback', [9.5, 5.6]);
 openrouter('OpenRouter - gerar e-mail', 'Pedido IA - e-mail', [11, 4]);
 code('Validar resposta IA - e-mail', 'b_validar_ia.js', [12, 4]);
 iff('JSON válido? (e-mail)', '$json.ok === true', [13, 4]);
@@ -255,7 +259,9 @@ chain('Fim da verificação', 'Buscar fila com e-mail', 'Buscar fila fallback', 
 link('Loop leads', 'Status envios (lead)', 1);
 chain('Status envios (lead)', 'Checar limite (lead)', 'Cabe no limite?');
 link('Cabe no limite?', 'Pedido IA - e-mail', 0); link('Cabe no limite?', 'Loop leads', 1);
-chain('Pedido IA - e-mail', 'Reservar cota IA (e-mail)', 'Cota IA ok? (e-mail)');
+chain('Pedido IA - e-mail', 'Teto do fallback?');
+link('Teto do fallback?', 'Parar: teto do fallback', 0); link('Teto do fallback?', 'Reservar cota IA (e-mail)', 1);
+chain('Reservar cota IA (e-mail)', 'Cota IA ok? (e-mail)');
 link('Cota IA ok? (e-mail)', 'OpenRouter - gerar e-mail', 0); link('Cota IA ok? (e-mail)', 'Parar: cota IA esgotada', 1);
 chain('OpenRouter - gerar e-mail', 'Validar resposta IA - e-mail', 'JSON válido? (e-mail)');
 link('JSON válido? (e-mail)', 'E-mail já confirmado?', 0); link('JSON válido? (e-mail)', 'Ainda tem tentativa? (e-mail)', 1);
@@ -418,10 +424,13 @@ supa('W: uso API hoje', [6, 0], { path: `/prospeccao_uso_api?select=servico,cham
 supa('W: respostas hoje', [7, 0], { path: `/prospeccao_envios?select=id&resposta_recebida_em=gte.{{ ${HOJE}.inicio }}` });
 supa('W: fila sem verificação', [8, 0], { path: '/prospeccao_leads?select=id&status=eq.novo&verificacao_codigo_em=is.null' });
 supa('W: contatos pendentes', [9, 0], { path: '/prospeccao_leads?select=id,contatos:prospeccao_contatos!inner(id)&status=eq.novo&contatos.reacher_status=eq.safe&contatos.bloqueado=is.false' });
+// Bloco semanal (segundas): view da migration 006. Falha suave: sem a view, o resumo diário sai normalmente.
+supa('W: confirmação por nicho', [9.5, 1], { path: '/prospeccao_confirmacao_nicho?select=*&order=captados.desc', soft: true });
 code('Montar resumo', 'w_resumo.js', [10, 0]);
 smtp('Enviar resumo (SMTP)', 'Montar resumo', [11, 0]);
 chain('Diário - Watchdog', 'Janela de hoje', 'W: status envio', 'W: envios hoje', 'W: verificados hoje', 'W: contatos hoje',
-  'W: uso API hoje', 'W: respostas hoje', 'W: fila sem verificação', 'W: contatos pendentes', 'Montar resumo', 'Enviar resumo (SMTP)');
+  'W: uso API hoje', 'W: respostas hoje', 'W: fila sem verificação', 'W: contatos pendentes', 'W: confirmação por nicho', 'Montar resumo',
+  'Enviar resumo (SMTP)');
 link('Teste manual (watchdog)', 'Janela de hoje');
 // Cada consulta roda UMA vez: sem isso o n8n repete o nó para cada item recebido do anterior e os números se multiplicam.
 for (const n of nodes) if (n.type === 'n8n-nodes-base.httpRequest') n.executeOnce = true;

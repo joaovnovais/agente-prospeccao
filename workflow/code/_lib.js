@@ -95,6 +95,11 @@ const SEM_ACENTO_RE = /\b(nao|voce|voces|servicos?|horarios?|reuni[ao]o|reunioes
 const NUM_EXTENSO = { um: 1, uma: 1, dois: 2, duas: 2, tres: 3, quatro: 4, cinco: 5, seis: 6, sete: 7, oito: 8, nove: 9, dez: 10 };
 const NUM_EXTENSO_RE = 'um|uma|dois|duas|tr[êe]s|quatro|cinco|seis|sete|oito|nove|dez';
 const numExtenso = (w) => String(NUM_EXTENSO[w.toLowerCase().replace('ê', 'e')]);
+// 13/10: assunto padrão quando a IA insiste em "Presença digital para …" (nome + cidade; cabe no limite de 90).
+const assuntoPadrao = (lead) => {
+  const a = `${lead.nome} em ${lead.cidade}: perfil no Google sem site`;
+  return a.length <= 90 ? a : `${String(lead.nome).slice(0, 60).trim()}: perfil no Google sem site`;
+};
 function checarFatos(texto, lead) {
   const erros = [];
   // O nome pode estar cadastrado sem acento no Google (e a IA pode reescrevê-lo em outra caixa): removido sem diferenciar maiúsculas.

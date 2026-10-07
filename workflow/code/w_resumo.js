@@ -23,6 +23,18 @@ if (st.primeiro_envio) {
   limite = r[Math.min(Math.max(semana, 1), r.length) - 1];
 }
 
+// Bloco semanal (segundas): o gargalo é a oferta de e-mail confirmado, então o que importa por nicho é captado → safe.
+let semanal = '';
+let porNicho = [];
+if (j.semanal) {
+  porNicho = $('W: confirmação por nicho').all().map((i) => i.json).filter((r) => r && r.nicho != null);
+  const pct = (v) => (v == null ? '-' : `${String(v).replace('.', ',')}%`);
+  semanal = porNicho.length
+    ? ['', 'Semana — e-mail confirmado por nicho (captados → verificados → safe):',
+       ...porNicho.map((n) => `- ${n.nicho}: ${n.captados} → ${n.verificados} → ${n.com_safe} (${pct(n.pct_safe_verificados)} dos verificados, ${pct(n.pct_safe_captados)} dos captados) · últimos 7 dias: +${n.captados_7d} captados, +${n.com_safe_7d} safe`)].join('\n')
+    : '\nSemana — taxa por nicho indisponível (view prospeccao_confirmacao_nicho ausente ou com erro).';
+}
+
 const alertas = [];
 if (j.diaUtil && reais === 0) alertas.push('0 e-mails hoje');
 if (j.diaUtil && verificados === 0) alertas.push('0 leads verificados hoje');
@@ -42,9 +54,10 @@ const texto = [
   '',
   `Fila para o próximo envio: ${contatosPendentes} contato(s) confirmado(s) · ${filaSemVerificacao} lead(s) sem verificação`,
   alertas.length ? `\nALERTAS: ${alertas.join('; ')}` : '',
+  semanal,
   '',
   'Painel de execuções: https://hooks.novax.ia.br/workflow/prspAgenteProsp1/executions',
 ].join('\n');
 
 return [{ json: { destino: CONFIG.alertaDestino, assunto, texto, html: textoParaHtml(texto), alertas,
-  numeros: { reais, comErro, limite, verificados, safeHoje, ia, respostas, filaSemVerificacao, contatosPendentes } } }];
+  numeros: { reais, comErro, limite, verificados, safeHoje, ia, respostas, filaSemVerificacao, contatosPendentes }, porNicho } }];

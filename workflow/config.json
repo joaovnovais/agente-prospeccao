@@ -11,6 +11,7 @@
   "tetoMensalPlaces": 300,
   "limitePlacesPorExecucao": 60,
   "maxTentativasIA": 3,
+  "maxChamadasFallbackDia": 15,
   "maxCandidatosEmail": 6,
   "rampUpEnviosPorDia": [
     5,

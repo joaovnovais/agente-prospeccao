@@ -2,6 +2,16 @@
 // Modo "fallback": nenhuma variação do nome passou → IA sugere e-mails alternativos + texto.
 // Recebe tanto a 1ª tentativa (de "Cabe no limite?") quanto retries (de "Preparar retry - e-mail").
 const j = $input.first().json;
+// 13/10 (c): teto diário de chamadas do fallback (CONFIG.maxChamadasFallbackDia), contando 1ª tentativa e novas tentativas.
+// O modo "texto" (e-mail já confirmado) não conta nem é barrado. Contador no static data do workflow, por dia em BRT
+// (persiste entre execuções de produção do mesmo dia). Estourou → "Teto do fallback?" encerra o loop (como a cota da IA).
+if (j.lead.fila?.modo !== 'texto') {
+  const sd = $getWorkflowStaticData('global');
+  const dia = new Intl.DateTimeFormat('en-CA', { timeZone: CONFIG.agenda.fuso, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  if (!sd.fallbackDia || sd.fallbackDia.dia !== dia) sd.fallbackDia = { dia, chamadas: 0 };
+  if (sd.fallbackDia.chamadas >= CONFIG.maxChamadasFallbackDia) return [{ json: { lead: j.lead, teto_fallback: true, chamadas_fallback: sd.fallbackDia.chamadas } }];
+  sd.fallbackDia.chamadas++;
+}
 if (j.messages) return [{ json: { lead: j.lead, tentativa: j.tentativa, messages: j.messages } }];
 
 const lead = j.lead;
@@ -23,7 +33,8 @@ ${regrasEmail}
 Regras para "assunto": curto (4 a 9 palavras), sem emojis, sem CAIXA ALTA, sem ponto de exclamação.
 - Deve conter um dado específico desta empresa: a cidade, o nome da empresa, a nota ou o número de avaliações.
 - Se citar a nota, use SEMPRE vírgula e uma casa decimal, copiando exatamente o valor informado abaixo (ex.: "nota 3,4"). NUNCA arredonde, trunque ou escreva "nota 3" nem "nota 3.4" (ponto).
-- Não comece com "Presença digital para". Varie a construção.
+- NUNCA comece com "Presença digital para". Varie a construção. Modelos (adapte, não copie igual):
+  "{empresa} em {cidade}: o que o Google mostra hoje" · "Quem procura {empresa} no Google encontra o quê?" · "{cidade}: {empresa} sem site no perfil do Google"
 - Nunca diga nem sugira que a empresa já tem, ganhou ou terá um site (proibido: "ganha site", "novo site", "tem site", "site pronto").
 
 Regras para "corpo" (português do Brasil):
@@ -32,7 +43,7 @@ Regras para "corpo" (português do Brasil):
 - Descreva o ramo da empresa apenas pelo nome dela e pelo tipo informado pelo Google Maps. Não afirme ramo nem especialidade que não esteja nesses dados (ex.: não chame uma clínica de estética de "odontológica" nem de "dental").
 - Escreva em português correto, com acentuação em TODAS as palavras que precisam (ex.: "clínica", "não", "avaliações", "reunião", "horário") — nunca "clinica", "nao", "avaliacoes".
 ${lead.total_avaliacoes != null && lead.total_avaliacoes < CONFIG.minAvaliacoesParaCitarNota ? `- Esta empresa tem poucas avaliações no Google: NÃO cite nota, estrelas nem número de avaliações, nem por extenso ("uma avaliação", "cinco estrelas"), nem no assunto; use o nome ou a cidade.\n` : ''}- Use SOMENTE fatos dos dados fornecidos (nome, segmento, cidade, nota, número de avaliações, ausência de site). Se citar nota ou avaliações, use exatamente os números fornecidos.
-- NÃO elogie nem qualifique a empresa sem base nos dados (proibido: "ótimo atendimento", "excelente", "referência", "boas avaliações", "muitas avaliações", etc.).
+- NÃO elogie nem qualifique a empresa sem base nos dados (proibido: "ótimo", "excelente", "referência", "bem avaliada", "boa avaliação", "boas avaliações", "muitas avaliações", "reputação", "nota alta", etc.). Sobre avaliações, só é permitido citar a nota e o número exatos.
 - NÃO use promessas genéricas (proibido: "sem precisar de equipe extra", "resultados reais", "mais credibilidade", "aumentar vendas", "garantia"). Descreva concretamente o que um site resolveria para quem pesquisa esta empresa no Google.
 - Mencione concretamente a lacuna encontrada: a empresa não tem site vinculado ao perfil do Google, então quem pesquisa no Google não encontra informações completas nem um canal para agendar/comprar.
 - Convide para uma reunião de diagnóstico gratuita de 30 minutos, online.
