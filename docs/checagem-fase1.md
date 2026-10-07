@@ -116,6 +116,21 @@ Os 4 nichos já buscados até 05/10 (`odontologia_estetica`, `advocacia`, `estet
      from prospeccao_leads where created_at >= '2026-10-12 10:00:00+00' group by 1,2 order by 1,2;
    ```
 4. Se já houver envio frio desses leads: `select nicho, count(*) from prospeccao_envios where enviado_em >= '2026-10-12 10:00:00+00' group by 1;`. Envios novos devem ter `nicho` preenchido.
+5. **Taxa de e-mail confirmado por nicho** (o gargalo do Robson é a oferta de e-mail confirmado, ~4/dia; o número de leads sozinho não diz nada). Registre a tabela inteira no relatório:
+   ```sql
+   with l as (
+     select coalesce(l.nicho, '(sem nicho)') nicho, l.created_at, l.verificacao_codigo_em,
+            (select min(c.created_at) from prospeccao_contatos c where c.lead_id = l.id and c.reacher_status = 'safe') primeiro_safe_em
+       from prospeccao_leads l)
+   select nicho, count(*) captados,
+          count(*) filter (where verificacao_codigo_em is not null or primeiro_safe_em is not null) verificados,
+          count(*) filter (where primeiro_safe_em is not null) com_safe,
+          round(100.0 * count(*) filter (where primeiro_safe_em is not null)
+                / nullif(count(*) filter (where verificacao_codigo_em is not null or primeiro_safe_em is not null), 0), 1) pct_safe_verificados,
+          count(*) filter (where created_at >= '2026-10-12 10:00:00+00') captados_hoje
+     from l group by 1 order by 2 desc;
+   ```
+   Referência de 07/10: advocacia 87 → 30 → 7 (23,3%); odontologia_estetica 74 → 54 → 19 (35,2%). Às 07:40 de 12/10 os nichos novos ainda não foram verificados (a verificação é no envio das 09:30), então `verificados = 0` neles é o esperado. Este item é informativo: não muda o resultado de C5. A mesma conta entra no resumo semanal do watchdog a partir de 19/10 (view `prospeccao_confirmacao_nicho`, migration 006, deploy de 13/10).
 
 | Resultado | Critério |
 |---|---|
