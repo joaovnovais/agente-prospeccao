@@ -353,36 +353,17 @@
   },
   "catalogoNichos": [
     {
-      "nicho": "odontologia_estetica",
-      "termos": [
-        "clínica odontológica",
-        "clínica de estética"
-      ]
-    },
-    {
-      "nicho": "advocacia",
-      "termos": [
-        "escritório de advocacia"
-      ]
-    },
-    {
-      "nicho": "estetica_harmonizacao",
-      "termos": [
-        "harmonização facial"
-      ]
-    },
-    {
-      "nicho": "varejo_local",
-      "termos": [
-        "loja de roupas",
-        "loja de cosméticos"
-      ]
-    },
-    {
       "nicho": "oficina_mecanica",
       "termos": [
         "oficina mecânica",
         "auto center"
+      ]
+    },
+    {
+      "nicho": "salao_barbearia",
+      "termos": [
+        "salão de beleza",
+        "barbearia"
       ]
     },
     {
@@ -393,10 +374,9 @@
       ]
     },
     {
-      "nicho": "salao_barbearia",
+      "nicho": "material_construcao",
       "termos": [
-        "salão de beleza",
-        "barbearia"
+        "loja de material de construção"
       ]
     },
     {
@@ -428,12 +408,6 @@
       "nicho": "escola_idiomas",
       "termos": [
         "escola de idiomas"
-      ]
-    },
-    {
-      "nicho": "material_construcao",
-      "termos": [
-        "loja de material de construção"
       ]
     },
     {
@@ -484,6 +458,32 @@
       "nicho": "grafica",
       "termos": [
         "gráfica"
+      ]
+    },
+    {
+      "nicho": "odontologia_estetica",
+      "termos": [
+        "clínica odontológica",
+        "clínica de estética"
+      ]
+    },
+    {
+      "nicho": "advocacia",
+      "termos": [
+        "escritório de advocacia"
+      ]
+    },
+    {
+      "nicho": "estetica_harmonizacao",
+      "termos": [
+        "harmonização facial"
+      ]
+    },
+    {
+      "nicho": "varejo_local",
+      "termos": [
+        "loja de roupas",
+        "loja de cosméticos"
       ]
     }
   ]

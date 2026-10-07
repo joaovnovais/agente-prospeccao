@@ -92,10 +92,12 @@ A escolha dos nichos não é aleatória: segue a rotação. Para a semana 0 (12/
 
 | Nicho | Termo |
 |---|---|
-| `odontologia_estetica` | clínica odontológica |
-| `advocacia` | escritório de advocacia |
-| `estetica_harmonizacao` | harmonização facial |
-| `varejo_local` | loja de roupas |
+| `oficina_mecanica` | oficina mecânica |
+| `salao_barbearia` | salão de beleza |
+| `pet_veterinaria` | pet shop |
+| `material_construcao` | loja de material de construção |
+
+Os 4 nichos já buscados até 05/10 (`odontologia_estetica`, `advocacia`, `estetica_harmonizacao`, `varejo_local`) ficam no fim do catálogo e só voltam na semana 4 (09/11). Se algum deles aparecer em 12/10, é FALHA.
 
 1. Pelo leitor, na execução das 07:00:
    - `success`;

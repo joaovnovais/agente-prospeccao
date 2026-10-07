@@ -41,6 +41,14 @@ ok(repetiu === 0, 'nenhuma combinação nicho×cidade se repete dentro do ciclo 
 const cobertas = new Set(semanas.flat().filter((x) => x.nicho === CONFIG.catalogoNichos[0].nicho && x.ciclo === 0).map((x) => x.cidade + x.estado));
 ok(cobertas.size === CONFIG.cidades.GO.length + CONFIG.cidades.SC.length, '1º nicho cobre as 56 cidades de GO+SC no ciclo 0');
 ok(semanas[0].every((x) => /^.+ em .+ - (GO|SC)$/.test(x.textQuery)), 'busca no formato "<termo> em <cidade> - UF"');
+// Nichos já buscados (sem paginação, repetir só traria duplicados) ficam no fim do ciclo; os novos de maior volume vêm primeiro.
+const ANTIGOS = ['odontologia_estetica', 'advocacia', 'estetica_harmonizacao', 'varejo_local'];
+const s0 = [...new Set(semanas[0].map((x) => x.nicho))];
+ok(JSON.stringify(s0) === JSON.stringify(['oficina_mecanica', 'salao_barbearia', 'pet_veterinaria', 'material_construcao']), '12/10 (semana 0): oficinas, salões/barbearias, pet shops/veterinárias, material de construção');
+ok(JSON.stringify(CONFIG.catalogoNichos.slice(-4).map((n) => n.nicho)) === JSON.stringify(ANTIGOS), 'os 4 nichos antigos são os últimos do catálogo');
+const primeiraAntiga = semanas.findIndex((b) => b.some((x) => ANTIGOS.includes(x.nicho)));
+ok(primeiraAntiga === Math.floor((CONFIG.catalogoNichos.length - 4) / CONFIG.rotacao.nichosPorSemana), `nicho antigo só volta na semana ${primeiraAntiga} (depois de todos os novos)`);
+ok(semanas.slice(0, primeiraAntiga).every((b) => b.every((x) => !ANTIGOS.includes(x.nicho))), 'nenhum nicho antigo antes disso');
 ok(CONFIG.catalogoNichos.length >= 20 && CONFIG.catalogoNichos.every((n) => n.termos.length >= 1 && n.termos.length <= 2), 'catálogo com 20+ nichos e 1–2 termos cada');
 
 console.log('Filtro de perfil (todo nicho)');
