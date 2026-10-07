@@ -10,6 +10,10 @@
   "limiteMensalPlaces": 900,
   "tetoMensalPlaces": 300,
   "limitePlacesPorExecucao": 60,
+  "paginacao": {
+    "paginasMax": 3,
+    "minSemSiteParaProximaPagina": 3
+  },
   "maxTentativasIA": 3,
   "maxChamadasFallbackDia": 15,
   "maxCandidatosEmail": 6,
@@ -346,7 +350,7 @@
   "inicioRotacao": "2026-10-12",
   "rotacao": {
     "nichosPorSemana": 4,
-    "cidadesPorNicho": 15,
+    "cidadesPorNicho": 10,
     "estados": [
       "GO",
       "SC"

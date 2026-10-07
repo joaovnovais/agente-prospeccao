@@ -1,7 +1,10 @@
 // Passo 1 (Robson 2.0, "todo segmento"): 4 nichos do catálogo × 15 cidades (GO+SC) por semana, 1 termo por busca.
 // Semana w ocupa as vagas 4w..4w+3; vaga s → nicho s % N (os 4 da semana nunca se repetem) e ocorrência c = floor(s / N).
 // Cada ocorrência de um nicho pega a próxima fatia de 15 cidades; 4 fatias cobrem as 56 cidades sem repetir
-// nicho×cidade dentro do ciclo (ciclo = 4 ocorrências). O termo alterna a cada ciclo. Teto: limitePlacesPorExecucao.
+// nicho×cidade dentro do ciclo. Teto: limitePlacesPorExecucao (contando as páginas extras, ver a_proxima_pagina.js).
+// Termo (07/10): avança a cada volta do nicho — ocorrência o usa termos[(fatia + ciclo + termoInicial) % nTermos]. Na volta
+// seguinte o nicho já usa o próximo termo, e no ciclo seguinte cada fatia de cidades recebe um termo diferente do anterior
+// (com 2 termos). Nicho de 1 termo repete a busca: aí quem traz resultado novo é a paginação (páginas 2 e 3).
 // (A priorização por taxa de resposta saiu: quebrava a garantia de não repetir combinação.)
 const R = CONFIG.rotacao;
 const cat = CONFIG.catalogoNichos;
@@ -20,13 +23,13 @@ for (let k = 0; k < R.nichosPorSemana; k++) {
   const ocorrencia = Math.floor(s / cat.length);
   const ciclo = Math.floor(ocorrencia / fatias);
   const fatia = ocorrencia % fatias;
-  const termo = n.termos[ciclo % n.termos.length];
+  const termo = n.termos[(fatia + ciclo + (n.termoInicial || 0)) % n.termos.length];
   // Deslocamento por nicho: nichos diferentes não começam todos pela mesma cidade.
   const base = (iNicho * 7) % total;
   const ini = fatia * R.cidadesPorNicho;
   for (let j = ini; j < Math.min(total, ini + R.cidadesPorNicho); j++) {
     const { cidade, estado } = cidades[(base + j) % total];
-    buscas.push({ nicho: n.nicho, estado, cidade, semana_ciclo: fatia + 1, ciclo, semana,
+    buscas.push({ nicho: n.nicho, estado, cidade, semana_ciclo: fatia + 1, ciclo, semana, termo, pagina: 1,
                   textQuery: `${termo} em ${cidade} - ${estado}` });
   }
 }

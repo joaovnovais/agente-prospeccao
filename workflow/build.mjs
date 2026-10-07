@@ -153,24 +153,51 @@ link('Teste: envio?', 'Resposta simulada', 1);
 schedule('Semanal - Captação', '0 7 * * 1', [0, 0]);
 supa('Buscar taxa de resposta', [1, 0], { path: '/prospeccao_taxa_resposta?select=*' });
 code('Montar buscas da semana', 'a_montar_buscas.js', [2, 0]);
-supa('Reservar cota Places', [3, 0], { method: 'POST', path: '/rpc/prospeccao_reservar_cota',
-  body: `={{ JSON.stringify({ p_servico: 'google_places', p_limite: ${Math.min(CONFIG.limiteMensalPlaces, CONFIG.tetoMensalPlaces || CONFIG.limiteMensalPlaces)} }) }}` });
-iff('Cota Places ok?', '$json.ok === true', [4, 0]);
+// Paginação (07/10): onda 1 = página 1 de cada busca; ondas 2 e 3 = próxima página só das buscas produtivas
+// (a_proxima_pagina.js), dentro de limitePlacesPorExecucao. Cada página reserva 1 chamada na cota mensal (RPC).
+// O field mask precisa pedir "nextPageToken": sem isso o Places nunca devolve o token (0 de 38 buscas até 05/10).
+const TETO_PLACES = Math.min(CONFIG.limiteMensalPlaces, CONFIG.tetoMensalPlaces || CONFIG.limiteMensalPlaces);
+const FIELD_MASK = 'places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.rating,places.userRatingCount,places.businessStatus,places.primaryType,places.primaryTypeDisplayName,places.types,nextPageToken';
+const PAGINAS = Math.max(1, (CONFIG.paginacao && CONFIG.paginacao.paginasMax) || 1);
+const sfxPag = (k) => (k === 1 ? '' : ` (p${k})`);
+const ONDAS = Array.from({ length: PAGINAS }, (_, i) => i + 1).map((k) => ({
+  origem: k === 1 ? 'Montar buscas da semana' : `Próxima página${sfxPag(k)}`,
+  haPagina: `Há página ${k}?`,
+  reservar: `Reservar cota Places${sfxPag(k)}`, cotaOk: `Cota Places ok?${sfxPag(k)}`, places: `Places - Text Search${sfxPag(k)}`,
+  filtro: `Filtrar sem site + exclusões${sfxPag(k)}`, haLeads: `Há leads novos?${sfxPag(k)}`, upsert: `Upsert leads${sfxPag(k)}`,
+}));
 noop('Cota Places esgotada', [5, 1]);
-http('Places - Text Search', [5, 0], {
-  method: 'POST', url: 'https://places.googleapis.com/v1/places:searchText', cred: 'places', soft: true,
-  headers: { 'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.rating,places.userRatingCount,places.businessStatus,places.primaryType,places.primaryTypeDisplayName,places.types' },
-  body: `={{ JSON.stringify({ textQuery: $('Montar buscas da semana').item.json.textQuery, languageCode: 'pt-BR', regionCode: 'BR', pageSize: 20 }) }}`,
+ONDAS.forEach((o, i) => {
+  const k = i + 1, y = i * 2;
+  if (k > 1) {
+    code(o.origem, 'a_proxima_pagina.js', [9.5, y - 1],
+      `const FILTRO = '${ONDAS[i - 1].filtro}'; const PROXIMA = ${k}; const PLACES = ${JSON.stringify(ONDAS.slice(0, i).map((w) => w.places))};`);
+    iff(o.haPagina, '$json.fim !== true', [10.5, y - 1]);
+  }
+  supa(o.reservar, [3, y], { method: 'POST', path: '/rpc/prospeccao_reservar_cota',
+    body: `={{ JSON.stringify({ p_servico: 'google_places', p_limite: ${TETO_PLACES} }) }}` });
+  iff(o.cotaOk, '$json.ok === true', [4, y]);
+  http(o.places, [5, y], {
+    method: 'POST', url: 'https://places.googleapis.com/v1/places:searchText', cred: 'places', soft: true,
+    headers: { 'X-Goog-FieldMask': FIELD_MASK },
+    // Página seguinte: mesmos parâmetros + pageToken (exigência da API).
+    body: `={{ JSON.stringify(Object.assign({ textQuery: $('${o.origem}').item.json.textQuery, languageCode: 'pt-BR', regionCode: 'BR', pageSize: 20 }, $('${o.origem}').item.json.pageToken ? { pageToken: $('${o.origem}').item.json.pageToken } : {})) }}`,
+  });
+  code(o.filtro, 'a_filtrar_places.js', [6, y], `const ORIGEM_BUSCA = '${o.origem}';`);
+  iff(o.haLeads, '$json.total > 0', [7, y]);
+  // Sempre devolve item (always): o fluxo segue para a próxima página/resumo mesmo se todo lead já existia.
+  supa(o.upsert, [8, y], { method: 'POST', path: '/prospeccao_leads?on_conflict=place_id',
+    prefer: 'resolution=ignore-duplicates,return=representation', body: `={{ JSON.stringify($('${o.filtro}').first().json.rows) }}`, always: true });
 });
-code('Filtrar sem site + exclusões', 'a_filtrar_places.js', [6, 0]);
-iff('Há leads novos?', '$json.total > 0', [7, 0]);
-supa('Upsert leads', [8, 0], { method: 'POST', path: '/prospeccao_leads?on_conflict=place_id',
-  prefer: 'resolution=ignore-duplicates,return=representation', body: '={{ JSON.stringify($json.rows) }}', always: false });
-code('Resumo captação', 'a_resumo.js', [9, 0]);
-chain('Semanal - Captação', 'Buscar taxa de resposta', 'Montar buscas da semana', 'Reservar cota Places', 'Cota Places ok?');
-link('Cota Places ok?', 'Places - Text Search', 0); link('Cota Places ok?', 'Cota Places esgotada', 1);
-chain('Places - Text Search', 'Filtrar sem site + exclusões', 'Há leads novos?');
-link('Há leads novos?', 'Upsert leads', 0); link('Upsert leads', 'Resumo captação');
+code('Resumo captação', 'a_resumo.js', [12, 0], `const ONDAS = ${JSON.stringify(ONDAS.map(({ filtro, upsert, places }) => ({ filtro, upsert, places })))};`);
+chain('Semanal - Captação', 'Buscar taxa de resposta', 'Montar buscas da semana', ONDAS[0].reservar, ONDAS[0].cotaOk);
+ONDAS.forEach((o, i) => {
+  const seguinte = ONDAS[i + 1] ? ONDAS[i + 1].origem : 'Resumo captação';
+  if (i > 0) { link(o.origem, o.haPagina); link(o.haPagina, o.reservar, 0); link(o.haPagina, 'Resumo captação', 1); link(o.reservar, o.cotaOk); }
+  link(o.cotaOk, o.places, 0); link(o.cotaOk, 'Cota Places esgotada', 1);
+  chain(o.places, o.filtro, o.haLeads);
+  link(o.haLeads, o.upsert, 0); link(o.haLeads, seguinte, 1); link(o.upsert, seguinte);
+});
 link('Teste: captação?', 'Buscar taxa de resposta', 0);
 
 // ====================== B. ENVIO DIÁRIO (passos 3-5, 8) ======================

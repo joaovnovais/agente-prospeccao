@@ -8,15 +8,20 @@ const excluida = (nome, endereco) => {
     (e.nomeOuEndereco || []).every((h) => jne.has(h)));
 };
 
+// ORIGEM_BUSCA (prefixo do build): nó que gerou as buscas desta onda ("Montar buscas da semana" ou "Próxima página (pN)").
 const vistos = new Set();
 const rows = [];
+const buscas = []; // por busca: PMEs sem site operando na página + nextPageToken → decide a próxima página
 const excluidos = [];
 const erros = [];
 const itens = $input.all();
 
 itens.forEach((it, i) => {
-  const ctx = $('Montar buscas da semana').itemMatching(i).json;
-  if (it.json.error) { erros.push(`${ctx.textQuery}: ${JSON.stringify(it.json.error).slice(0, 200)}`); return; }
+  const ctx = $(ORIGEM_BUSCA).itemMatching(i).json;
+  if (it.json.error) { erros.push(`${ctx.textQuery} (pág. ${ctx.pagina || 1}): ${JSON.stringify(it.json.error).slice(0, 200)}`); return; }
+  const semSite = (it.json.places || []).filter((p) => !p.websiteUri && (!p.businessStatus || p.businessStatus === 'OPERATIONAL')).length;
+  const { pageToken, sem_site_pagina_anterior, ...base } = ctx;
+  buscas.push({ ...base, pagina: ctx.pagina || 1, resultados: (it.json.places || []).length, sem_site: semSite, token: it.json.nextPageToken || null });
   for (const p of it.json.places || []) {
     if (!p.id || vistos.has(p.id)) continue;
     vistos.add(p.id);
@@ -51,4 +56,4 @@ itens.forEach((it, i) => {
 if (itens.length && erros.length === itens.length) {
   throw new Error('Places API falhou em todas as buscas. Primeiro erro: ' + erros[0]);
 }
-return [{ json: { rows, total: rows.length, excluidos, erros } }];
+return [{ json: { rows, total: rows.length, excluidos, erros, buscas } }];
