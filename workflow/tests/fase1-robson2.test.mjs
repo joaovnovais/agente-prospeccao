@@ -96,6 +96,17 @@ ok(rev.lead_patch.status === 'revisao_manual' && rev.trello_lista === CONFIG.tre
 const comCal = rodar('c_horarios.js', [{ json: { calendars: { primary: { busy: [] } } } }], { 'Contexto da resposta': ctx, 'Decidir próxima ação': decidir })[0].json;
 ok(!comCal.calendario_falhou && comCal.opcoes.length === CONFIG.agenda.opcoes, 'Calendar ok → proposta com horários reais como antes');
 
+console.log('Aviso ao João quando resposta de lead cai em revisão manual');
+const saidaRev = { acao_v1: 'revisao_manual', lead: { id: 'L', nome: 'Exemplo Ltda', cidade: 'Cidade X', estado: 'SC', trello_card_id: null },
+  lead_patch: { status: 'revisao_manual', motivo_revisao: 'Google Calendar indisponível ao propor horários' } };
+const av = rodar('c_aviso_revisao.js', [{ json: {} }], { 'Saída (C)': saidaRev, 'Salvar card no lead (C)': { trello_card_id: 'card123' },
+  'Trello - criar card (C)': { id: 'card123', shortUrl: 'https://trello.com/c/abc' }, 'Trello - mover card (C)': { id: 'outro', shortUrl: 'https://trello.com/c/velho' } })[0].json;
+ok(av.destino === CONFIG.alertaDestino && av.assunto === '[Robson] Lead respondeu — revisão manual', 'vai para o João (alertaDestino) com o assunto combinado');
+ok(['Exemplo Ltda', 'Cidade X/SC', 'Google Calendar indisponível', 'https://trello.com/c/abc'].every((t) => av.texto.includes(t)), 'corpo com empresa, cidade, motivo e link do card');
+ok(!av.texto.includes('velho'), 'ignora card de outra resposta do mesmo loop (id diferente do salvo)');
+const av2 = rodar('c_aviso_revisao.js', [{ json: {} }], { 'Saída (C)': saidaRev, 'Salvar card no lead (C)': { trello_card_id: 'card999' } })[0].json;
+ok(av2.link === 'https://trello.com/c/card999', 'sem resposta do Trello: link pelo id salvo no lead');
+
 console.log('Estrutura do workflow (motor v1 e v2)');
 const construir = (motor) => {
   const d = mkdtempSync(join(tmpdir(), 'prsp-'));
@@ -122,6 +133,13 @@ for (const motor of ['v1', 'v2']) {
   ok(saidas('Montar proposta de horários')[0] === 'Calendar ok? (proposta)' && saidas('Calendar ok? (proposta)', 0)[0] === 'Enviar proposta (SMTP)'
      && saidas('Calendar ok? (proposta)', 1)[0] === 'Revisão manual (resposta)' && saidas('Livre?', 1)[0] === 'Calendar - freeBusy (proposta)',
      `[${motor}] falha do Calendar (proposta ou checagem do horário) cai em revisão manual`);
+  ok(saidas('Salvar card no lead (C)')[0] === 'Avisar João? (C)' && saidas('Avisar João? (C)', 0)[0] === 'Montar aviso de revisão'
+     && saidas('Montar aviso de revisão')[0] === 'Enviar aviso de revisão (SMTP)' && saidas('Enviar aviso de revisão (SMTP)')[0] === 'Loop respostas'
+     && saidas('Avisar João? (C)', 1)[0] === 'Loop respostas', `[${motor}] resposta de lead: card → aviso ao João só em revisão manual`);
+  ok(/acao_v1 === 'revisao_manual'/.test(no('Avisar João? (C)').parameters.conditions.conditions[0].leftValue), `[${motor}] aviso condicionado a acao_v1 = revisao_manual`);
+  ok(no('Enviar aviso de revisão (SMTP)').onError === 'continueRegularOutput', `[${motor}] falha no aviso não trava o loop de respostas`);
+  ok(saidas('Salvar card no lead (B)')[0] === 'Houve envio? (B)' && !w.nodes.some((n) => /aviso/i.test(n.name) && /\(B\)/.test(n.name))
+     && !JSON.stringify(w.connections['Revisão manual (e-mail)']).includes('aviso'), `[${motor}] revisão do texto da IA no envio frio continua só no Trello`);
   ok(/primaryTypeDisplayName/.test(JSON.stringify(no('Places - Text Search').parameters)), `[${motor}] Places pede o tipo do estabelecimento`);
   ok(/p_limite: 300/.test(no('Reservar cota Places').parameters.jsonBody), `[${motor}] reserva de cota mensal com teto 300`);
 }

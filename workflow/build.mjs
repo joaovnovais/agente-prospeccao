@@ -111,7 +111,7 @@ const reservarIA = (name, pos) => supa(name, pos, { method: 'POST', path: '/rpc/
   body: `={{ JSON.stringify({ p_servico: 'openrouter', p_limite: ${CONFIG.limiteDiarioOpenRouter} }) }}` });
 
 // Cauda comum B/C: grava envio (se houver) → atualiza lead → Trello (mover ou criar) → salva id do card.
-function cauda(sfx, saida, row, fimLoop, depoisTrello, antes = null) {
+function cauda(sfx, saida, row, fimLoop, depoisTrello, antes = null, depoisCard = depoisTrello) {
   const S = `$('${saida}').first().json`;
   const regQ = iff(`Registrar envio? ${sfx}`, `!!${S}.envio`, [1, row]);
   const reg = supa(`Registrar envio ${sfx}`, [2, row - 0.5], { method: 'POST', path: '/prospeccao_envios', body: `={{ JSON.stringify(${S}.envio) }}` });
@@ -133,7 +133,7 @@ function cauda(sfx, saida, row, fimLoop, depoisTrello, antes = null) {
   if (antes) chain(saida, antes, regQ); else chain(saida, regQ);
   link(regQ, reg, 0); link(regQ, upd, 1); link(reg, upd);
   chain(upd, trQ); link(trQ, cardQ, 0); link(trQ, depoisTrello, 1);
-  link(cardQ, mover, 0); link(cardQ, criar, 1); link(mover, salvar); link(criar, salvar); link(salvar, depoisTrello);
+  link(cardQ, mover, 0); link(cardQ, criar, 1); link(mover, salvar); link(criar, salvar); link(salvar, depoisCard);
   return fimLoop;
 }
 
@@ -377,7 +377,14 @@ link('Revisão manual (resposta)', 'Saída (C)');
 supa('Registrar ação v1', [0.5, 21], { method: 'PATCH', path: '/prospeccao_respostas', soft: true, retry: true, prefer: 'return=minimal',
   query: { message_id: `={{ 'eq.' + ${CTX}.resposta.message_id }}` },
   body: `={{ JSON.stringify({ acao_v1: $('Saída (C)').first().json.acao_v1 || 'desconhecida' }) }}` });
-cauda('(C)', 'Saída (C)', 20, 'Loop respostas', 'Loop respostas', 'Registrar ação v1');
+// Resposta de lead em revisão manual (qualquer motivo) → além do card, e-mail curto ao João com o link do card.
+// Só no ramo C: revisão de texto da IA no envio frio (ramo B) continua só no Trello.
+iff('Avisar João? (C)', `$('Saída (C)').first().json.acao_v1 === 'revisao_manual'`, [8, 21]);
+code('Montar aviso de revisão', 'c_aviso_revisao.js', [9, 21]);
+smtp('Enviar aviso de revisão (SMTP)', 'Montar aviso de revisão', [10, 21]);
+cauda('(C)', 'Saída (C)', 20, 'Loop respostas', 'Loop respostas', 'Registrar ação v1', 'Avisar João? (C)');
+link('Avisar João? (C)', 'Montar aviso de revisão', 0); link('Avisar João? (C)', 'Loop respostas', 1);
+chain('Montar aviso de revisão', 'Enviar aviso de revisão (SMTP)', 'Loop respostas');
 
 // ---------- saída ----------
 const wf = {
