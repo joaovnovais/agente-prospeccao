@@ -125,12 +125,13 @@ Os 4 nichos já buscados até 05/10 (`odontologia_estetica`, `advocacia`, `estet
    select nicho, count(*) captados,
           count(*) filter (where verificacao_codigo_em is not null or primeiro_safe_em is not null) verificados,
           count(*) filter (where primeiro_safe_em is not null) com_safe,
+          round(100.0 * count(*) filter (where primeiro_safe_em is not null) / nullif(count(*), 0), 1) pct_safe_captados,
           round(100.0 * count(*) filter (where primeiro_safe_em is not null)
                 / nullif(count(*) filter (where verificacao_codigo_em is not null or primeiro_safe_em is not null), 0), 1) pct_safe_verificados,
           count(*) filter (where created_at >= '2026-10-12 10:00:00+00') captados_hoje
      from l group by 1 order by 2 desc;
    ```
-   Referência de 07/10: advocacia 87 → 30 → 7 (23,3%); odontologia_estetica 74 → 54 → 19 (35,2%). Às 07:40 de 12/10 os nichos novos ainda não foram verificados (a verificação é no envio das 09:30), então `verificados = 0` neles é o esperado. Este item é informativo: não muda o resultado de C5. A mesma conta entra no resumo semanal do watchdog a partir de 19/10 (view `prospeccao_confirmacao_nicho`, migration 006, deploy de 13/10).
+   Mostre as duas taxas: **safe/captados** (principal: rendimento da captação) e safe/verificados (etapa do Reacher). Referência de 07/10: advocacia 87 → 30 → 7 (safe/captados 8,0% · safe/verificados 23,3%); odontologia_estetica 74 → 54 → 19 (25,7% · 35,2%). Às 07:40 de 12/10 os nichos novos ainda não foram verificados (a verificação é no envio das 09:30), então `verificados = 0` neles é o esperado. Este item é informativo: não muda o resultado de C5. A mesma conta entra no resumo semanal do watchdog a partir de 19/10 (view `prospeccao_confirmacao_nicho`, migration 006, deploy de 13/10).
 
 | Resultado | Critério |
 |---|---|
