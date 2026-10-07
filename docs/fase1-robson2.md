@@ -23,6 +23,7 @@ Branch `robson2/fase1`. É a única fase do 2.0 que altera o workflow atual. Alv
 - Places em outubro: 26 usadas + 3 × 60 = 206 de 300.
 
 ## Ordem do deploy
+Deploy aprovado para **08/10** com o build **`5118433945de`** (commit `c2374e5`, que já inclui a correção dos números por extenso). Nada mais entra nele: as mudanças de cota/fallback ficam na branch `robson2/cota-fallback`, para 13/10. Se o build gerado no dia não for `5118433945de`, pare e investigue antes do deploy.
 1. **Migration 005 primeiro.** Sem ela, a captação (colunas `tipo_google`/`tipos_google`) e o registro de envio (`nicho`) falham. Conferir com: `select column_name from information_schema.columns where table_name in ('prospeccao_envios','prospeccao_leads')` e `select * from prospeccao_status_envio`.
 2. `node workflow/build.mjs` → 3 suítes de teste → `lint.mjs` (Robson e watchdog).
 3. Merge em `main` → push → `bash workflow/deploy.sh robson`.
