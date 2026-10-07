@@ -2,8 +2,7 @@
 // Reacher gravados na execução e conta quantas chamadas e envios o código novo teria feito (ordem da fila, atalho sem
 // candidato, assunto corrigido, teto do fallback, cota da IA). Não chama IA, Reacher nem banco.
 // Os dados reais ficam fora do repositório (docs/local/, gitignored). A saída mostra só IDs curtos e contagens.
-// Uso: node workflow/tests/simular-execucao.mjs docs/local/execucao-507.json [--ordem-original]
-//   --ordem-original: mantém a ordem da fila da execução (sem priorizar o fallback por avaliações), para comparar.
+// Uso: node workflow/tests/simular-execucao.mjs docs/local/execucao-507.json
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 const R = fileURLToPath(new URL('..', import.meta.url)).replace(/[\\/]$/, '');
@@ -15,7 +14,6 @@ const rodar = (file, { input = [], nodes = {}, staticData = {} } = {}) =>
     () => staticData, CONFIG);
 const d = JSON.parse(readFileSync(process.argv[2], 'utf8'));
 const sid = (l) => String(l.id).slice(0, 8);
-const ORDEM_ORIGINAL = process.argv.includes('--ordem-original');
 const LIMITE_ENVIOS = 10;
 
 // Observado na execução original.
@@ -24,13 +22,11 @@ for (const c of d.chamadas) { const k = c.lead.id; if (!porLead.has(k)) porLead.
 console.log(`Execução #${d.execucao} (original): ${d.chamadas.length} chamadas, ${d.pedidos_sem_resposta} pedido(s) barrado(s) pela cota.`);
 
 // Fila com o código novo: mesmos leads, b_montar_fila atual (texto primeiro; fallback por avaliações).
-const filaNova = rodar('b_montar_fila.js', { nodes: {
+const fila = rodar('b_montar_fila.js', { nodes: {
   'Calcular limite do dia': [{ json: { lote: d.fila.length } }],
   'Buscar fila com e-mail': d.fila.filter((l) => l.fila?.modo === 'texto').map(({ fila: f, ...l }) => ({ json: { ...l, contatos: [{ id: f.contato_id, email: f.email, reacher_raw: f.reacher }] } })),
   'Buscar fila fallback': d.fila.filter((l) => l.fila?.modo !== 'texto').map(({ fila: f, ...l }) => ({ json: l })),
 } }).map((i) => i.json);
-const fila = ORDEM_ORIGINAL ? d.fila : filaNova;
-console.log(ORDEM_ORIGINAL ? 'Ordem da fila: original (sem prioridade por avaliações).' : 'Ordem da fila: código novo (fallback por avaliações).');
 
 const sd = {};
 let chamadas = 0, envios = 0, chamadasFallback = 0, parada = null;

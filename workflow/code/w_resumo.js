@@ -30,8 +30,8 @@ if (j.semanal) {
   porNicho = $('W: confirmação por nicho').all().map((i) => i.json).filter((r) => r && r.nicho != null);
   const pct = (v) => (v == null ? '-' : `${String(v).replace('.', ',')}%`);
   semanal = porNicho.length
-    ? ['', 'Semana — e-mail confirmado por nicho (captados → verificados → safe):',
-       ...porNicho.map((n) => `- ${n.nicho}: ${n.captados} → ${n.verificados} → ${n.com_safe} (${pct(n.pct_safe_verificados)} dos verificados, ${pct(n.pct_safe_captados)} dos captados) · últimos 7 dias: +${n.captados_7d} captados, +${n.com_safe_7d} safe`)].join('\n')
+    ? ['', 'Semana — e-mail confirmado por nicho (captados → verificados → safe; taxa principal = safe/captados):',
+       ...porNicho.map((n) => `- ${n.nicho}: ${n.captados} → ${n.verificados} → ${n.com_safe} (safe/captados ${pct(n.pct_safe_captados)} · safe/verificados ${pct(n.pct_safe_verificados)}) · últimos 7 dias: +${n.captados_7d} captados, +${n.com_safe_7d} safe`)].join('\n')
     : '\nSemana — taxa por nicho indisponível (view prospeccao_confirmacao_nicho ausente ou com erro).';
 }
 

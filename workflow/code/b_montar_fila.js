@@ -14,9 +14,6 @@ for (const l of com) {
   if (!emailIdentificaEmpresa(c.email, lead.nome, lead.cidade)) continue;
   fila.push({ ...lead, fila: { modo: 'texto', email: c.email, contato_id: c.id, reacher: c.reacher_raw } });
 }
-// 13/10 (c): no fallback, primeiro quem tem mais avaliações (empresa maior tende a ter e-mail próprio); a busca já vem
-// nessa ordem, a ordenação aqui garante o mesmo critério. Empate: ordem da busca (estável).
-fb.sort((a, b) => (Number(b.total_avaliacoes) || 0) - (Number(a.total_avaliacoes) || 0));
 for (const l of fb) {
   if (vistos.has(l.id)) continue;
   vistos.add(l.id);

@@ -1,5 +1,5 @@
 // Cota da IA no fallback (13/10): (a) sem candidato não gera nova tentativa, (b) assunto "Presença digital para" corrigido
-// em código + prompt alinhado ao validador, (c) teto diário de chamadas do fallback com prioridade por avaliações.
+// em código + prompt alinhado ao validador, (c) teto diário de chamadas do fallback (na ordem antiga da fila).
 // Dados FICTÍCIOS (o repositório é público). Offline. Uso: node workflow/tests/cota-fallback.test.mjs
 import { readFileSync, writeFileSync, mkdtempSync, cpSync, rmSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -71,7 +71,7 @@ console.log('(b) assunto "Presença digital para" corrigido sem nova chamada + p
   ok((p.match(/\{empresa\}/g) || []).length >= 3 && /NUNCA comece com "Presença digital para"/.test(p), 'prompt traz 3 modelos de assunto');
 }
 
-console.log(`(c) teto diário do fallback (${CONFIG.maxChamadasFallbackDia}) e prioridade por avaliações`);
+console.log(`(c) teto diário do fallback (${CONFIG.maxChamadasFallbackDia}), ordem da fila inalterada`);
 {
   ok(CONFIG.maxChamadasFallbackDia === 15, 'config: maxChamadasFallbackDia = 15');
   const sd = {};
@@ -95,7 +95,8 @@ console.log(`(c) teto diário do fallback (${CONFIG.maxChamadasFallbackDia}) e p
     'Buscar fila com e-mail': [{ json: fl('t1', 3, true) }],
     'Buscar fila fallback': [fl('t1', 3), fl('a', 12), fl('b', 234), fl('c', null), fl('d', 78)].map((json) => ({ json })) } }).map((i) => i.json);
   ok(fila[0].id === 't1' && fila[0].fila.modo === 'texto', 'e-mail confirmado continua primeiro, mesmo com poucas avaliações');
-  ok(fila.slice(1).map((l) => l.id).join(',') === 'b,d,a,c', 'fallback ordenado por avaliações (234, 78, 12, sem número)');
+  // 07/10: prioridade por avaliações revertida (90 leads sem relação entre avaliações e e-mail safe; o replay da #507 perdeu 1 envio).
+  ok(fila.slice(1).map((l) => l.id).join(',') === 'a,b,c,d', 'fallback na ordem da busca (updated_at), sem reordenar por avaliações');
 }
 
 console.log('Watchdog: bloco semanal com a taxa de e-mail confirmado por nicho');
@@ -111,8 +112,8 @@ console.log('Watchdog: bloco semanal com a taxa de e-mail confirmado por nicho')
   const linhas = [{ nicho: 'oficina_mecanica', captados: 120, verificados: 15, com_safe: 3, pct_safe_captados: '2.5', pct_safe_verificados: '20.0', captados_7d: 120, com_safe_7d: 3 },
                   { nicho: 'advocacia', captados: 87, verificados: 30, com_safe: 7, pct_safe_captados: '8.0', pct_safe_verificados: '23.3', captados_7d: 0, com_safe_7d: 2 }];
   const seg = cen(true, linhas);
-  ok(seg.texto.includes('oficina_mecanica: 120 → 15 → 3 (20,0% dos verificados, 2,5% dos captados)') && seg.porNicho.length === 2,
-     'segunda: captados → verificados → safe e % por nicho no e-mail');
+  ok(seg.texto.includes('oficina_mecanica: 120 → 15 → 3 (safe/captados 2,5% · safe/verificados 20,0%)') && seg.porNicho.length === 2,
+     'segunda: captados → verificados → safe, com safe/captados (principal) antes de safe/verificados');
   ok(!cen(false, linhas).texto.includes('por nicho'), 'outros dias: sem bloco semanal');
   ok(cen(true, [{ error: { message: 'relation does not exist' } }]).texto.includes('indisponível'), 'view ausente (falha suave) → aviso, resumo diário sai igual');
 }
@@ -125,7 +126,8 @@ console.log('Estrutura do workflow');
   ok(saidas('Pedido IA - e-mail')[0]?.[0] === 'Teto do fallback?', 'Pedido IA → Teto do fallback?');
   ok(saidas('Teto do fallback?')[0]?.[0] === 'Parar: teto do fallback' && saidas('Teto do fallback?')[1]?.[0] === 'Reservar cota IA (e-mail)',
      'teto: sim → Parar; não → Reservar cota IA');
-  ok(/order=total_avaliacoes\.desc\.nullslast/.test(no('Buscar fila fallback').parameters.url), 'busca do fallback ordenada por avaliações');
+  ok(/order=updated_at\.asc,id\.asc&/.test(no('Buscar fila fallback').parameters.url) && !/total_avaliacoes/.test(no('Buscar fila fallback').parameters.url),
+     'busca do fallback na ordem antiga (updated_at), sem prioridade por avaliações');
   ok(no('Buscar fila fallback').executeOnce === true && no('Buscar fila com e-mail').executeOnce === true,
      'buscas da fila rodam 1 vez (antes: 1 por lead com e-mail, 120 itens em 07/10)');
   ok(no('Validar resposta IA - e-mail').parameters.jsCode.includes('sem_candidato'), 'validador do dist com o atalho sem candidato');

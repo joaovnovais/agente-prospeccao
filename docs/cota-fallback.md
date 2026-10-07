@@ -6,7 +6,7 @@ Contexto (execução #507, 07/10 09:30):
 - Leads com e-mail confirmado: 6 chamadas para 4 envios. Fallback: 39 chamadas para 1 envio.
 - O gargalo do Robson é a **oferta de e-mail confirmado** (~4 por dia), não a cota nem o limite de envio.
 
-Esta branch parte de `robson2/fase1` (deploy de 08/10, build `5118433945de`) e só entra em produção em 13/10. Build em 07/10: **`561256e7a66a`**. Merges posteriores da Fase 1 (só docs) não mudam o ID.
+Esta branch parte de `robson2/fase1` (deploy de 08/10, build `5118433945de`) e só entra em produção em 13/10. Build em 07/10 (depois das decisões das 10:30): **`9f4ce53dc9b1`**. Merges posteriores da Fase 1 (só docs) não mudam o ID.
 
 ## O que muda
 | Item | Arquivos | Efeito |
@@ -15,30 +15,27 @@ Esta branch parte de `robson2/fase1` (deploy de 08/10, build `5118433945de`) e s
 | (b) Prompt alinhado ao validador | `b_pedido_ia.js` | Prompt proíbe explicitamente "bem avaliada", "boa avaliação", "reputação" e "nota alta", e traz 3 modelos de assunto. |
 | (b) Assunto "Presença digital para" corrigido em código | `b_validar_ia.js`, `_lib.js` (`assuntoPadrao`) | Trocado por "{empresa} em {cidade}: perfil no Google sem site" (≤ 90 caracteres), sem nova chamada. As demais regras valem para o assunto novo. Saída `assunto_corrigido: true`. Foram 8 das 18 novas tentativas em 07/10. |
 | (c) Teto diário do fallback | `config.json` (`maxChamadasFallbackDia: 15`), `b_pedido_ia.js`, `build.mjs` | Conta 1ª tentativa e novas tentativas do fallback por dia em BRT (static data do workflow). A 16ª vai para "Teto do fallback?" → "Parar: teto do fallback", que encerra o loop como a cota. E-mail confirmado (modo texto) nunca conta nem é barrado, e já vem antes na fila. |
-| (c) Prioridade por avaliações | `build.mjs` ("Buscar fila fallback"), `b_montar_fila.js` | Fallback ordenado por `total_avaliacoes` desc (nulos no fim), depois `updated_at`. |
+| (c) Ordem da fila | — | **Inalterada** (`updated_at`, como antes). A prioridade por avaliações foi implementada e **revertida em 07/10** por decisão do João. Em 90 leads verificados, a taxa de safe não muda com o número de avaliações (<10: 29%, 10–29: 24%, 30–99: 31%, 100+: 31%). No replay da #507, a prioridade perdia o único envio do fallback, de um lead com 3 avaliações. |
 | Correção | `build.mjs` | "Buscar fila com e-mail" e "Buscar fila fallback" com `executeOnce`. A busca do fallback rodava uma vez por lead com e-mail (120 itens para 30 leads em 07/10). Era inofensivo pela deduplicação, mas multiplicava as consultas. |
 | BUILD_ID estável | `build.mjs` | O hash ignora o fim de linha. Em 07/10, o `core.autocrlf=true` do Git for Windows fazia o mesmo commit gerar IDs diferentes conforme o checkout (`5118433945de` × `7fc8b0621850` na Fase 1). O repositório também passou a ter `core.autocrlf=false` na config local. |
-| Taxa de e-mail confirmado por nicho | `supabase/006_confirmacao_nicho.sql`, `w_janela.js`, `w_resumo.js`, `build.mjs` (watchdog) | View `prospeccao_confirmacao_nicho` (captados → verificados → safe, % e últimos 7 dias). Às segundas, o resumo do watchdog ganha o bloco semanal. A consulta tem falha suave: sem a view, o resumo diário sai igual, com o aviso "indisponível". |
+| Taxa de e-mail confirmado por nicho | `supabase/006_confirmacao_nicho.sql`, `w_janela.js`, `w_resumo.js`, `build.mjs` (watchdog) | View `prospeccao_confirmacao_nicho` (captados → verificados → safe; duas taxas: **safe/captados**, a principal, e safe/verificados; últimos 7 dias). Às segundas, o resumo do watchdog ganha o bloco semanal. A consulta tem falha suave: sem a view, o resumo diário sai igual, com o aviso "indisponível". |
 
 Testes:
 - `workflow/tests/cota-fallback.test.mjs`: 44 testes, cobrindo (a), (b), (c), o bloco semanal, a estrutura, a migration só com view e o BUILD_ID independente do fim de linha.
 - As 4 suítes passam sem falhas. O teste antigo do watchdog agora espera 9 consultas.
 
 ## Simulação contra a #507 (replay, sem chamar IA nem Reacher)
-O script `node workflow/tests/simular-execucao.mjs docs/local/execucao-507.json [--ordem-original]` aplica o código desta branch às 45 respostas reais da IA e aos resultados do Reacher gravados na #507. Os dados ficam em `docs/local/`.
+O script `node workflow/tests/simular-execucao.mjs docs/local/execucao-507.json` aplica o código desta branch às 45 respostas reais da IA e aos resultados do Reacher gravados na #507. Os dados ficam em `docs/local/`.
 
 | Cenário | Chamadas de IA | Envios |
 |---|---|---|
 | Original (07/10) | 45 (cota esgotada) | 5 |
-| Esta branch (fallback por avaliações, teto 15) | **22** (fallback 15/15) | **3 confirmados + 1 provável** |
-| Esta branch, mantendo a ordem original da fila | **22** (fallback 15/15) | **4 confirmados + 1 provável** |
+| Esta branch (ordem antiga, teto 15) | **22** (fallback 15/15) | **4 confirmados + 1 provável** |
+| Variante descartada: fallback por avaliações | 22 | 3 confirmados + 1 provável |
 
 O "provável" é o lead com 1 avaliação: com o validador de 08/10 (números por extenso), o texto gravado de 07/10 é reprovado. Ele precisa de 1 chamada a mais, que não há como reproduzir.
 
-**Ressalva sobre a prioridade por avaliações:**
-- O único envio do fallback em 07/10 veio de um lead com 3 avaliações. Com a prioridade por avaliações e o teto de 15, ele fica de fora.
-- No histórico (90 leads verificados), a taxa de contato safe não muda com o número de avaliações: <10: 29%, 10–29: 24%, 30–99: 31%, 100+: 31%.
-- A prioridade foi mantida como aprovada. Reavaliar com o bloco semanal. Para voltar à ordem antiga: em "Buscar fila fallback", trocar `order=total_avaliacoes.desc.nullslast,updated_at.asc,id.asc` por `order=updated_at.asc,id.asc` e remover o `sort` de `b_montar_fila.js`.
+**Prioridade por avaliações: revertida.** Ela perdia 1 envio no replay e não tem base nos dados (ver a linha (c) da tabela). A ordem da fila é a mesma da Fase 1.
 
 O efeito do prompt mais explícito (b) não entra no replay, porque reaproveita as respostas antigas. Ele só pode reduzir as novas tentativas.
 
@@ -48,7 +45,7 @@ O efeito do prompt mais explícito (b) não entra no replay, porque reaproveita 
 3. Merge em `main` → push → `bash workflow/deploy.sh robson` e `bash workflow/deploy.sh watchdog`.
 4. Recarga pela UI dos **dois** workflows (Unpublish → Publish).
 5. Itens críticos no export:
-   - Robson: `Teto do fallback?`, `Parar: teto do fallback`, `maxChamadasFallbackDia`, `sem_candidato`, `assuntoPadrao`, `total_avaliacoes.desc.nullslast` e `executeOnce` nas duas buscas da fila;
+   - Robson: `Teto do fallback?`, `Parar: teto do fallback`, `maxChamadasFallbackDia`, `sem_candidato`, `assuntoPadrao`, `order=updated_at.asc,id.asc` na busca do fallback e `executeOnce` nas duas buscas da fila;
    - watchdog: `W: confirmação por nicho` com `continueRegularOutput`.
 
 ## Aceite (14/10)

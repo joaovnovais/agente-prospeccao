@@ -199,7 +199,7 @@ supa('Marcar verificação (lead)', [12, 2.4], { method: 'PATCH',
   body: `={{ JSON.stringify({ verificacao_codigo_em: $('Resultado verificação (código)').first().json.incompleto ? null : new Date().toISOString() }) }}` });
 code('Fim da verificação', 'b_resumo_verificacao.js', [6, 3.2]);
 supa('Buscar fila com e-mail', [7, 3.2], { path: `/prospeccao_leads?select=*,contatos:prospeccao_contatos!inner(id,email,reacher_status,reacher_raw,bloqueado)&status=eq.novo&contatos.reacher_status=eq.safe&contatos.bloqueado=is.false&order=created_at.asc,id.asc&limit={{ $('Calcular limite do dia').first().json.lote }}` });
-supa('Buscar fila fallback', [8, 3.2], { path: `/prospeccao_leads?select=*&status=eq.novo&verificacao_codigo_em=not.is.null&order=total_avaliacoes.desc.nullslast,updated_at.asc,id.asc&limit={{ $('Calcular limite do dia').first().json.lote }}` });
+supa('Buscar fila fallback', [8, 3.2], { path: `/prospeccao_leads?select=*&status=eq.novo&verificacao_codigo_em=not.is.null&order=updated_at.asc,id.asc&limit={{ $('Calcular limite do dia').first().json.lote }}` });
 code('Montar fila de envio', 'b_montar_fila.js', [9, 3.2]);
 // 07/10: "Buscar fila fallback" recebe 1 item por lead com e-mail e rodava uma vez por item (120 itens para 30 leads).
 for (const n of nodes) if (n.name === 'Buscar fila com e-mail' || n.name === 'Buscar fila fallback') n.executeOnce = true;

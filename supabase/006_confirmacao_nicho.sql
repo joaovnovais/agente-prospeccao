@@ -14,6 +14,7 @@ select
   count(*)::int                                                                           as captados,
   count(*) filter (where verificacao_codigo_em is not null or primeiro_safe_em is not null)::int as verificados,
   count(*) filter (where primeiro_safe_em is not null)::int                               as com_safe,
+  -- Duas taxas: safe/captados é a principal (rendimento da captação); safe/verificados isola a etapa do Reacher.
   round(100.0 * count(*) filter (where primeiro_safe_em is not null) / nullif(count(*), 0), 1) as pct_safe_captados,
   round(100.0 * count(*) filter (where primeiro_safe_em is not null)
         / nullif(count(*) filter (where verificacao_codigo_em is not null or primeiro_safe_em is not null), 0), 1) as pct_safe_verificados,
