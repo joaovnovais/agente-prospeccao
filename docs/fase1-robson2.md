@@ -23,7 +23,11 @@ Branch `robson2/fase1`. É a única fase do 2.0 que altera o workflow atual. Alv
 - Places em outubro: 26 usadas + 3 × 60 = 206 de 300.
 
 ## Ordem do deploy
-Deploy aprovado para **08/10** com o build **`5118433945de`** (commit `c2374e5`, que já inclui a correção dos números por extenso). Nada mais entra nele: as mudanças de cota/fallback ficam na branch `robson2/cota-fallback`, para 13/10. Se o build gerado no dia não for `5118433945de`, pare e investigue antes do deploy.
+Deploy aprovado para **08/10** com o build **`5118433945de`** (commit `c2374e5`, que já inclui a correção dos números por extenso). Nada mais entra nele: as mudanças de cota/fallback ficam na branch `robson2/cota-fallback`, para 13/10. **Não rode `build.mjs` antes deste deploy:** use o `dist` commitado, que é o `5118433945de` (`meta.buildId`).
+- O BUILD_ID é um hash dos bytes dos arquivos, inclusive do fim de linha. O `core.autocrlf=true` do Git for Windows converte arquivos LF em CRLF no checkout.
+- O `5118433945de` saiu de uma cópia em que 7 arquivos LF tinham virado CRLF assim (reproduzido em 07/10). Um rebuild a partir do commit, com `core.autocrlf=false`, que agora está na config local do repositório, dá `7fc8b0621850`.
+- Comprovado em 07/10: o `dist` commitado e o rebuild são **idênticos nó a nó** fora ``, build ID e UUIDs, tanto no Robson quanto no watchdog.
+- Se precisar rebuildar, `7fc8b0621850` é o mesmo conteúdo. A branch `robson2/cota-fallback` normaliza o fim de linha no hash para isso não se repetir.
 1. **Migration 005 primeiro.** Sem ela, a captação (colunas `tipo_google`/`tipos_google`) e o registro de envio (`nicho`) falham. Conferir com: `select column_name from information_schema.columns where table_name in ('prospeccao_envios','prospeccao_leads')` e `select * from prospeccao_status_envio`.
 2. `node workflow/build.mjs` → 3 suítes de teste → `lint.mjs` (Robson e watchdog).
 3. Merge em `main` → push → `bash workflow/deploy.sh robson`.
