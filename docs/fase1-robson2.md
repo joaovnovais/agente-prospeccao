@@ -31,6 +31,7 @@ Deploy aprovado para **08/10** com o build **`5118433945de`** (commit `c2374e5`,
 1. **Migration 005 primeiro.** Sem ela, a captação (colunas `tipo_google`/`tipos_google`) e o registro de envio (`nicho`) falham. Conferir com: `select column_name from information_schema.columns where table_name in ('prospeccao_envios','prospeccao_leads')` e `select * from prospeccao_status_envio`.
 2. `node workflow/build.mjs` → 3 suítes de teste → `lint.mjs` (Robson e watchdog).
 3. Merge em `main` → push → `bash workflow/deploy.sh robson`.
+   - Depois do push do `main`: `git push -u origin robson2/cota-fallback`, para ter cópia fora do PC. Decisão do João em 07/10. Em 07/10 a branch foi varrida contra os 161 leads e os contatos: sem nome, e-mail nem telefone de lead. Se entrarem commits novos nela, varra de novo antes do push. Não faça merge dela no `main`: o deploy dela é em 13/10.
 4. Recarga pela UI (Unpublish → Publish), fora de 08:30–10:30 nos dias úteis.
 5. Itens críticos no export: `Gravar resposta bruta` com `retryOnFail`, `Avisar João? (C)`, `Motor v1?` com `true === true`, `Registrar ação v1`, `total_todos_hoje`, `catalogoNichos`, `primaryTypeDisplayName` e `p_limite: 300`.
 
