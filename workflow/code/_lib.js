@@ -92,13 +92,21 @@ const fmtNota = (r) => Number(r).toFixed(1).replace('.', ',');
 // Todo número de nota/avaliações citado precisa bater com o Google Maps.
 // Ampliado na auditoria (7/37 palavras comuns eram pegas; "Gostariamos" e "vincado" saíram em produção).
 const SEM_ACENTO_RE = /\b(nao|voce|voces|servicos?|horarios?|reuni[ao]o|reunioes|avaliac(ao|oes)|informac(ao|oes)|clinicas?|esteticas?|pratica|diagnostico|gostariamos|tambem|atencao|soluc(ao|oes)|comunicacao|presenca|negocios?|otim[oa]s?|proxim[oa]s?|estao|sera|possivel|disponivel|facil|automatic[oa]s?|juridic[oa]s?|escritorio|previdenciari[oa]|familia|ja|ate|vincad[oa])\b/i;
+const NUM_EXTENSO = { um: 1, uma: 1, dois: 2, duas: 2, tres: 3, quatro: 4, cinco: 5, seis: 6, sete: 7, oito: 8, nove: 9, dez: 10 };
+const NUM_EXTENSO_RE = 'um|uma|dois|duas|tr[êe]s|quatro|cinco|seis|sete|oito|nove|dez';
+const numExtenso = (w) => String(NUM_EXTENSO[w.toLowerCase().replace('ê', 'e')]);
 function checarFatos(texto, lead) {
   const erros = [];
   // O nome pode estar cadastrado sem acento no Google (e a IA pode reescrevê-lo em outra caixa): removido sem diferenciar maiúsculas.
   const semNome = lead.nome ? texto.replace(new RegExp(String(lead.nome).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), ' ') : texto;
   if (SEM_ACENTO_RE.test(semNome)) erros.push('texto sem acentuação (ex.: "' + semNome.match(SEM_ACENTO_RE)[0] + '")');
   for (const [re, nome] of FRASES_PROIBIDAS) if (re.test(texto)) erros.push('contém ' + nome);
-  const t = texto.replace(/(\d)\.(\d)/g, '$1,$2');
+  // 07/10: "tem uma avaliação no Google" passou (lead com 1 avaliação) porque só dígitos eram reconhecidos.
+  // Número por extenso (um/uma…dez) antes de avaliação/estrela e depois de "nota" vira dígito antes das checagens.
+  // Exceção: "uma avaliação de 4,9" / "uma avaliação no Google de 5,0" é artigo (= a nota), não quantidade (2 envios reais assim).
+  const t = texto.replace(/(\d)\.(\d)/g, '$1,$2')
+    .replace(new RegExp(`\\b(${NUM_EXTENSO_RE})(?:\\s+[uú]nicas?)?(?=\\s+(?:avalia|estrela))(?!\\s+avalia[çc][ãa]o[^.;!?]{0,40}?\\d,\\d)`, 'gi'), (_, w) => numExtenso(w))
+    .replace(new RegExp(`\\b(nota\\s*(?:de\\s*)?)(${NUM_EXTENSO_RE})(?![\\wÀ-ÿ])`, 'gi'), (_, a, w) => a + numExtenso(w));
   const notas = [...t.matchAll(/(\d(?:,\d)?)\s*estrelas|nota\s*(?:de\s*)?(\d(?:,\d)?)|(\d,\d)/gi)].map((m) => m[1] || m[2] || m[3]);
   for (const n of notas) if (lead.rating == null || Number(n.replace(',', '.')) !== Number(lead.rating)) erros.push(`nota "${n}" não bate com o Google (${lead.rating ?? 'sem nota'})`);
   for (const m of t.matchAll(/nota\s*(?:de\s*)?(\d)(?!\d|,\d)/gi)) erros.push(`nota "${m[1]}" sem casa decimal (use "${fmtNota(lead.rating ?? m[1])}")`);

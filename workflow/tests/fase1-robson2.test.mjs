@@ -152,4 +152,29 @@ for (const motor of ['v1', 'v2']) {
   ok(/p_limite: 300/.test(no('Reservar cota Places').parameters.jsonBody), `[${motor}] reserva de cota mensal com teto 300`);
 }
 
+console.log('Números por extenso no validador (07/10: "tem uma avaliação no Google" passou com 1 avaliação)');
+{
+  const L = (aval, rating = 5) => ({ nome: 'Advocacia Exemplar', cidade: 'Vila Fictícia', rating, total_avaliacoes: aval, segmento: 'advocacia', nicho: 'advocacia' });
+  const tem = (txt, lead, re) => lib.checarFatos(txt, lead).some((e) => re.test(e));
+  // Texto real enviado em 07/10, com nome e cidade trocados por fictícios.
+  const real = 'Olá, vi que a Advocacia Exemplar, em Vila Fictícia/SC, tem uma avaliação no Google mas não possui site vinculado ao seu perfil.';
+  ok(tem(real, L(1), /só 1 avaliações/), 'texto real de 07/10 (1 avaliação, por extenso) é reprovado');
+  ok(tem('tem duas avaliações no Google', L(2), /só 2 avaliações/), '"duas avaliações" com poucas avaliações é reprovado');
+  ok(tem('com três avaliações', L(3), /só 3 avaliações/), '"três" (com acento) é reconhecido');
+  ok(tem('uma única avaliação no Google', L(1), /só 1 avaliações/), '"uma única avaliação" é reconhecido');
+  ok(tem('nota cinco no Google', L(4), /só 4 avaliações/), '"nota cinco" com poucas avaliações é reprovado');
+  ok(tem('cinco estrelas no Google', L(4), /só 4 avaliações/), '"cinco estrelas" com poucas avaliações é reprovado');
+  ok(tem('tem dez avaliações', L(40), /"10 avaliações" não bate/), 'número por extenso errado não bate com o Google');
+  ok(tem('nota quatro no Google', L(40, 4.8), /nota "4" não bate/), '"nota quatro" com nota 4,8 é reprovado');
+  ok(!lib.checarFatos('Um site profissional resolveria uma lacuna; tem um perfil no Google com 40 avaliações e nota 4,8.', L(40, 4.8)).length,
+     '"um site", "uma lacuna", "um perfil" não viram número; texto correto passa');
+  // Estruturas de 2 envios reais corretos (30/09 e 07/10): "uma avaliação" = a nota, seguida do número decimal.
+  ok(!lib.checarFatos('A Advocacia Exemplar, em Vila Fictícia, possui uma avaliação de 4,9 com 62 avaliações no Google.', L(62, 4.9)).length,
+     '"possui uma avaliação de 4,9 com 62 avaliações" (artigo) continua passando');
+  ok(!lib.checarFatos('Percebi que o escritório tem uma avaliação no Google de 5,0 com 232 avaliações.', L(232)).length,
+     '"tem uma avaliação no Google de 5,0 com 232 avaliações" (artigo) continua passando');
+  ok(!lib.checarFatos('Gostaria de marcar uma reunião de 30 minutos? Em uma conversa rápida mostro dois exemplos.', L(1)).length,
+     'lead com poucas avaliações sem citar nota/avaliações passa');
+}
+
 console.log(`\nfalhas: ${falhas}`); process.exit(falhas ? 1 : 0);
