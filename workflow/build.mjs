@@ -338,6 +338,7 @@ smtp('Enviar confirmação (SMTP)', 'Montar confirmação', [25, 12]);
 code('Resultado confirmação', 'c_resultado_resposta.js', [26, 12], `const MODO = 'confirmacao';`);
 freeBusy('Calendar - freeBusy (proposta)', [18, 14], 'new Date().toISOString()', `new Date(Date.now() + ${CONFIG.agenda.diasAFrente + 1} * 864e5).toISOString()`);
 code('Montar proposta de horários', 'c_horarios.js', [19, 14]);
+iff('Calendar ok? (proposta)', '$json.calendario_falhou !== true', [19.5, 15]);
 smtp('Enviar proposta (SMTP)', 'Montar proposta de horários', [20, 14]);
 code('Resultado proposta', 'c_resultado_resposta.js', [21, 14], `const MODO = 'proposta';`);
 code('Saída (C)', '_saida.js', [0, 20], `const ORIGEM_FALLBACK = 'Dados bloqueio';`);
@@ -368,7 +369,9 @@ link('Livre?', 'Montar evento', 0); link('Livre?', 'Calendar - freeBusy (propost
 chain('Montar evento', 'Calendar - criar evento', 'Montar confirmação', 'Evento criado?');
 link('Evento criado?', 'Enviar confirmação (SMTP)', 0); link('Evento criado?', 'Revisão manual (resposta)', 1);
 chain('Enviar confirmação (SMTP)', 'Resultado confirmação', 'Saída (C)');
-chain('Calendar - freeBusy (proposta)', 'Montar proposta de horários', 'Enviar proposta (SMTP)', 'Resultado proposta', 'Saída (C)');
+chain('Calendar - freeBusy (proposta)', 'Montar proposta de horários', 'Calendar ok? (proposta)');
+link('Calendar ok? (proposta)', 'Enviar proposta (SMTP)', 0); link('Calendar ok? (proposta)', 'Revisão manual (resposta)', 1);
+chain('Enviar proposta (SMTP)', 'Resultado proposta', 'Saída (C)');
 chain('Dados bloqueio', 'Bloquear contatos', 'Saída (C)');
 link('Revisão manual (resposta)', 'Saída (C)');
 supa('Registrar ação v1', [0.5, 21], { method: 'PATCH', path: '/prospeccao_respostas', soft: true, retry: true, prefer: 'return=minimal',

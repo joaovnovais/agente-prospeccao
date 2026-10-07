@@ -86,6 +86,16 @@ ok(prop.acao_v1 === 'proposta_horarios' && prop.lead_patch.status === 'respondeu
 const ext = rodar('c_extrair_resposta.js', [{ json: { inReplyTo: '<a@x>', references: '<a@x> <b@x>', from: { value: [{ address: 'p@exemplo.com' }] }, text: 'oi', messageId: '<r@x>' } }])[0].json;
 ok(ext.in_reply_to === '<a@x>' && ext.references_raw === '<a@x> <b@x>' && ext.ignorar === false, 'extração guarda In-Reply-To e References brutos');
 
+console.log('Calendar sem autorização → revisão manual (achado de 07/10)');
+const decidir = { q: { resposta_sugerida: 'Obrigado pelo retorno, podemos conversar.', resumo: 'quer reunião' } };
+const semCal = rodar('c_horarios.js', [{ json: { error: { message: 'invalid_grant' } } }], { 'Contexto da resposta': ctx, 'Decidir próxima ação': decidir })[0].json;
+ok(semCal.calendario_falhou === true && !semCal.texto && semCal.erro.includes('invalid_grant'), 'freeBusy com erro → não monta e-mail ao lead, marca calendario_falhou');
+const rev = rodar('c_revisao.js', [{ json: semCal }], { 'Contexto da resposta': { ...ctx, resposta: { from: 'a@exemplo.com', texto: 'Quero marcar uma conversa' } } })[0].json;
+ok(rev.lead_patch.status === 'revisao_manual' && rev.trello_lista === CONFIG.trello.revisaoManual && /Calendar indispon/.test(rev.lead_patch.motivo_revisao)
+   && rev.trello_desc.includes('Quero marcar uma conversa'), 'revisão manual no Trello com a resposta completa do lead');
+const comCal = rodar('c_horarios.js', [{ json: { calendars: { primary: { busy: [] } } } }], { 'Contexto da resposta': ctx, 'Decidir próxima ação': decidir })[0].json;
+ok(!comCal.calendario_falhou && comCal.opcoes.length === CONFIG.agenda.opcoes, 'Calendar ok → proposta com horários reais como antes');
+
 console.log('Estrutura do workflow (motor v1 e v2)');
 const construir = (motor) => {
   const d = mkdtempSync(join(tmpdir(), 'prsp-'));
@@ -109,6 +119,9 @@ for (const motor of ['v1', 'v2']) {
   ok(saidas('Motor v1?', 0)[0] === 'Pedido IA - qualificação' && saidas('Motor v1?', 1)[0] === 'Motor v2: só registra', `[${motor}] desvio do motor`);
   ok(no('Motor v1?').parameters.conditions.conditions[0].leftValue === `={{ ${motor === 'v1'} === true }}`, `[${motor}] flag embutida no build`);
   ok(saidas('Saída (C)')[0] === 'Registrar ação v1' && saidas('Registrar ação v1')[0] === 'Registrar envio? (C)', `[${motor}] acao_v1 final gravada sem mudar a cauda`);
+  ok(saidas('Montar proposta de horários')[0] === 'Calendar ok? (proposta)' && saidas('Calendar ok? (proposta)', 0)[0] === 'Enviar proposta (SMTP)'
+     && saidas('Calendar ok? (proposta)', 1)[0] === 'Revisão manual (resposta)' && saidas('Livre?', 1)[0] === 'Calendar - freeBusy (proposta)',
+     `[${motor}] falha do Calendar (proposta ou checagem do horário) cai em revisão manual`);
   ok(/primaryTypeDisplayName/.test(JSON.stringify(no('Places - Text Search').parameters)), `[${motor}] Places pede o tipo do estabelecimento`);
   ok(/p_limite: 300/.test(no('Reservar cota Places').parameters.jsonBody), `[${motor}] reserva de cota mensal com teto 300`);
 }

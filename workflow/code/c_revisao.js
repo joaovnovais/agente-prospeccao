@@ -5,6 +5,7 @@ const ctx = $('Contexto da resposta').first().json;
 let motivo;
 if (cotaEsgotada) motivo = 'cota diária da OpenRouter esgotada — qualificar a resposta manualmente';
 else if (j.acao === 'revisao') motivo = 'resposta fora do escopo: ' + (j.q?.resumo || '');
+else if (j.calendario_falhou) motivo = 'Google Calendar indisponível ao propor horários (responder o lead à mão): ' + j.erro;
 else if (j.evento_ok === false) motivo = 'falha ao criar evento no Google Calendar: ' + j.erro;
 else motivo = `IA inválida após ${j.tentativa} tentativa(s) [${j.tipo_falha}]: ${j.erro}`;
 return [{ json: {

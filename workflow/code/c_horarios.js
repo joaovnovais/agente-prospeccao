@@ -4,7 +4,13 @@ const ctx = $('Contexto da resposta').first().json;
 const d = $('Decidir próxima ação').first().json;
 const A = CONFIG.agenda;
 const calendarioOk = !fb.error && fb.calendars?.primary && !fb.calendars.primary.errors;
-const busy = calendarioOk ? fb.calendars.primary.busy || [] : [];
+// Calendar sem autorização/erro: não responde o lead sem horários (viraria um ciclo de "qual o melhor dia?");
+// vai para revisão manual com a resposta completa no Trello (correção da Fase 1, achado de 07/10).
+if (!calendarioOk) {
+  const erro = fb.error?.message || fb.error || fb.calendars?.primary?.errors || 'resposta inesperada do freeBusy';
+  return [{ json: { calendario_falhou: true, erro: String(typeof erro === 'string' ? erro : JSON.stringify(erro)).slice(0, 300) } }];
+}
+const busy = fb.calendars.primary.busy || [];
 
 const fmt = (dt) => new Intl.DateTimeFormat('pt-BR', { timeZone: A.fuso, weekday: 'long', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(dt).replace(/, (\d{2}:\d{2})$/, ' às $1');
 const opcoes = [];
