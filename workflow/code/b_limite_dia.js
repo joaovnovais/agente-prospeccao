@@ -8,7 +8,9 @@ let semanaEnvio = 1;
 if (s.primeiro_envio) semanaEnvio = Math.floor((Date.now() - new Date(s.primeiro_envio).getTime()) / (7 * 864e5)) + 1;
 const r = CONFIG.rampUpEnviosPorDia;
 let limite = r[Math.min(semanaEnvio, r.length) - 1];
-let enviadosHoje = Number(s.total_hoje || 0);
+// Robson 2.0 (decisão 07/10): o limite é compartilhado. Respostas a leads nunca são barradas e já contam;
+// envio frio e follow-up usam o que sobrar. Sem a migration 005 (coluna ausente) vale a conta antiga.
+let enviadosHoje = enviadosReaisHoje(s);
 
 if (CONFIG.modoTeste.ativo) {
   if (!CONFIG.modoTeste.redirecionarPara) {

@@ -11,6 +11,7 @@ if (!ctx.envio.teste && ctx.resposta.from && ctx.resposta.from !== ctx.contato.e
 return [{ json: {
   rows,
   lead: ctx.lead,
+  acao_v1: motivo === 'sem_interesse' ? 'sem_interesse' : 'optout',
   lead_patch: { status: 'perdido' },
   trello_lista: CONFIG.trello.fechadoPerdido,
   trello_nome: `${ctx.lead.nome} — ${ctx.lead.cidade}/${ctx.lead.estado}`,

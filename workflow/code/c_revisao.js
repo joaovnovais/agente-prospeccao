@@ -9,6 +9,7 @@ else if (j.evento_ok === false) motivo = 'falha ao criar evento no Google Calend
 else motivo = `IA inválida após ${j.tentativa} tentativa(s) [${j.tipo_falha}]: ${j.erro}`;
 return [{ json: {
   lead: ctx.lead,
+  acao_v1: 'revisao_manual',
   lead_patch: { status: 'revisao_manual', motivo_revisao: motivo.slice(0, 500) },
   trello_lista: CONFIG.trello.revisaoManual,
   trello_nome: `[REVISÃO] ${ctx.lead.nome} — ${ctx.lead.cidade}/${ctx.lead.estado}`,

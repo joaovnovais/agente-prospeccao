@@ -12,4 +12,5 @@ texto = texto.split('\n').filter((l) => !l.trim().startsWith('>')).join('\n').tr
 
 const ignorar = !ids.length || !from || from === CONFIG.remetente.email.toLowerCase();
 return [{ json: { ignorar, ids, from, texto, message_id: m.messageId || null, assunto: m.subject || '',
+                  in_reply_to: m.inReplyTo || null, references_raw: refs.filter(Boolean).join(' ') || null,
                   recebido_em: m.date ? new Date(m.date).toISOString() : agoraISO() } }];

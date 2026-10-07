@@ -8,8 +8,8 @@
   ],
   "limiteDiarioOpenRouter": 45,
   "limiteMensalPlaces": 900,
-  "limitePlacesPorExecucao": 80,
-  "cidadesPorSemana": 26,
+  "tetoMensalPlaces": 300,
+  "limitePlacesPorExecucao": 60,
   "maxTentativasIA": 3,
   "maxCandidatosEmail": 6,
   "rampUpEnviosPorDia": [
@@ -112,45 +112,6 @@
       ]
     }
   ],
-  "inicioRotacao": "2026-09-28",
-  "rotacao": [
-    {
-      "nicho": "odontologia_estetica",
-      "estado": "GO",
-      "offset": 0,
-      "buscas": [
-        "clínica odontológica",
-        "clínica de estética"
-      ]
-    },
-    {
-      "nicho": "advocacia",
-      "estado": "SC",
-      "offset": 0,
-      "buscas": [
-        "escritório de advocacia"
-      ]
-    },
-    {
-      "nicho": "estetica_harmonizacao",
-      "estado": "SC",
-      "offset": 6,
-      "buscas": [
-        "harmonização facial",
-        "clínica de estética"
-      ]
-    },
-    {
-      "nicho": "varejo_local",
-      "estado": "GO",
-      "offset": 6,
-      "buscas": [
-        "loja de roupas",
-        "loja de cosméticos",
-        "pet shop"
-      ]
-    }
-  ],
   "cidades": {
     "GO": [
       "Goiânia",
@@ -212,12 +173,6 @@
       "Içara",
       "Porto Belo"
     ]
-  },
-  "nichos": {
-    "odontologia_estetica": "clínicas odontológicas e clínicas de estética",
-    "advocacia": "escritórios de advocacia",
-    "estetica_harmonizacao": "clínicas de estética e harmonização facial",
-    "varejo_local": "pequeno varejo local (lojas de roupas, cosméticos, pet shops)"
   },
   "verificacaoPorExecucao": 15,
   "reacherFalhasSeguidasMax": 3,
@@ -369,5 +324,167 @@
     "xavier"
   ],
   "minAvaliacoesParaCitarNota": 10,
-  "alertaDestino": "joaovictornovais8@gmail.com"
+  "alertaDestino": "joaovictornovais8@gmail.com",
+  "modulos": {
+    "followup": {
+      "estagio": "desligado"
+    },
+    "respostasV2": {
+      "estagio": "desligado"
+    },
+    "posAgenda": {
+      "estagio": "desligado"
+    },
+    "whatsapp": {
+      "estagio": "desligado"
+    }
+  },
+  "respostas": {
+    "motor": "v1"
+  },
+  "inicioRotacao": "2026-10-12",
+  "rotacao": {
+    "nichosPorSemana": 4,
+    "cidadesPorNicho": 15,
+    "estados": [
+      "GO",
+      "SC"
+    ]
+  },
+  "catalogoNichos": [
+    {
+      "nicho": "odontologia_estetica",
+      "termos": [
+        "clínica odontológica",
+        "clínica de estética"
+      ]
+    },
+    {
+      "nicho": "advocacia",
+      "termos": [
+        "escritório de advocacia"
+      ]
+    },
+    {
+      "nicho": "estetica_harmonizacao",
+      "termos": [
+        "harmonização facial"
+      ]
+    },
+    {
+      "nicho": "varejo_local",
+      "termos": [
+        "loja de roupas",
+        "loja de cosméticos"
+      ]
+    },
+    {
+      "nicho": "oficina_mecanica",
+      "termos": [
+        "oficina mecânica",
+        "auto center"
+      ]
+    },
+    {
+      "nicho": "pet_veterinaria",
+      "termos": [
+        "pet shop",
+        "clínica veterinária"
+      ]
+    },
+    {
+      "nicho": "salao_barbearia",
+      "termos": [
+        "salão de beleza",
+        "barbearia"
+      ]
+    },
+    {
+      "nicho": "academia_pilates",
+      "termos": [
+        "academia",
+        "estúdio de pilates"
+      ]
+    },
+    {
+      "nicho": "contabilidade",
+      "termos": [
+        "escritório de contabilidade"
+      ]
+    },
+    {
+      "nicho": "imobiliaria",
+      "termos": [
+        "imobiliária"
+      ]
+    },
+    {
+      "nicho": "autoescola",
+      "termos": [
+        "autoescola"
+      ]
+    },
+    {
+      "nicho": "escola_idiomas",
+      "termos": [
+        "escola de idiomas"
+      ]
+    },
+    {
+      "nicho": "material_construcao",
+      "termos": [
+        "loja de material de construção"
+      ]
+    },
+    {
+      "nicho": "vidracaria_marmoraria",
+      "termos": [
+        "vidraçaria",
+        "marmoraria"
+      ]
+    },
+    {
+      "nicho": "serralheria",
+      "termos": [
+        "serralheria"
+      ]
+    },
+    {
+      "nicho": "fisioterapia",
+      "termos": [
+        "clínica de fisioterapia"
+      ]
+    },
+    {
+      "nicho": "otica",
+      "termos": [
+        "ótica"
+      ]
+    },
+    {
+      "nicho": "assistencia_celular",
+      "termos": [
+        "assistência técnica de celular"
+      ]
+    },
+    {
+      "nicho": "buffet_eventos",
+      "termos": [
+        "buffet de festas",
+        "espaço de eventos"
+      ]
+    },
+    {
+      "nicho": "dedetizadora",
+      "termos": [
+        "dedetizadora"
+      ]
+    },
+    {
+      "nicho": "grafica",
+      "termos": [
+        "gráfica"
+      ]
+    }
+  ]
 }

@@ -67,6 +67,10 @@ const rodapeLGPD = (lead) =>
 
 const agoraISO = () => new Date().toISOString();
 
+// Envios reais do dia que contam no limite do ramp-up (linha de prospeccao_status_envio). Desde a migration 005
+// a view tem total_todos_hoje (todos os tipos: frio, follow-up e respostas); antes dela, só o frio (total_hoje).
+const enviadosReaisHoje = (s) => Number((s || {}).total_todos_hoje ?? (s || {}).total_hoje ?? 0) || 0;
+
 // Ajustes de revisão (1-2): nada de elogio/qualificação sem base nos dados, nada de promessa genérica.
 const FRASES_PROIBIDAS = [
   [/[óo]tim[oa]s?\b/i, 'elogio "ótimo"'], [/excelen/i, 'elogio "excelente"'], [/incr[ií]vel/i, 'elogio "incrível"'],
@@ -104,7 +108,29 @@ function checarFatos(texto, lead) {
   if (lead.total_avaliacoes != null && Number(lead.total_avaliacoes) < minAv && (notas.length || /\d+\s*avalia/i.test(t) || /\bestrelas\b/i.test(t))) {
     erros.push(`cita nota/avaliações com só ${lead.total_avaliacoes} avaliações (mínimo ${minAv})`);
   }
+  erros.push(...checarRamo(semNome, lead));
   return erros;
+}
+
+// Robson 2.0: o texto só pode atribuir um ramo à empresa se o nome ou o tipo no Google Maps sustentar esse ramo
+// (ex.: chamar de "odontológica" uma clínica cujo tipo é "Spa"). Leads antigos, sem tipo do Google, usam o nicho da busca.
+const RAMOS = [
+  ['odontologia', /\b(odontolog\w*|dentist\w*|dental|dentari\w*|odonto)\b/, /odont|dent/],
+  ['estética', /\b(estetic\w*|harmoniza\w*)\b/, /estetic|beauty|harmoniz|spa|skin|laser|depila/],
+  ['advocacia', /\b(advocacia|advogad\w*|juridic\w*)\b/, /advoc|advog|juridic|law|direito/],
+  ['veterinária', /\bveterinari\w*/, /veterin|\bvet\b|pet|animal/],
+  ['mecânica', /\b(oficina mecanica|mecanica automotiva|auto center)\b/, /mecanic|oficina|auto|car repair|repair/],
+  ['contabilidade', /\b(contab\w*|contador\w*)\b/, /contab|contador|accounting/],
+  ['imobiliária', /\bimobiliari\w*/, /imobil|imoveis|real estate/],
+  ['fisioterapia', /\bfisioterap\w*/, /fisio|physiotherap/],
+  ['ótica', /\boticas?\b/, /otica|oculos|optic/],
+  ['autoescola', /\bauto ?escola\w*/, /auto ?escola|driving/],
+];
+function checarRamo(texto, lead) {
+  const temTipo = !!(lead.tipo_google || (lead.tipos_google || []).length);
+  const evid = norm([lead.nome, lead.tipo_google, ...(lead.tipos_google || []), temTipo ? '' : String(lead.nicho || '').replace(/_/g, ' ')].join(' '));
+  const t = norm(texto);
+  return RAMOS.filter(([, re, ev]) => re.test(t) && !ev.test(evid)).map(([nome]) => `atribui ramo "${nome}" sem base no nome nem no tipo do Google`);
 }
 
 // Exclusões de clientes guardadas só como hash (o repositório é público): FNV-1a 64 bits em JS puro (BigInt, sem crypto)
@@ -130,7 +156,16 @@ const GENERICAS = new Set(['clinica', 'clinicas', 'estetica', 'esteticas', 'odon
   // auditoria 2026-10-05: vocabulário jurídico e de serviços (semana de advocacia)
   'advogada', 'advogadas', 'consultoria', 'juridica', 'juridico', 'assessoria', 'direito', 'sociedade', 'individual', 'criminal',
   'criminalista', 'especialista', 'especializado', 'previdenciario', 'previdenciaria', 'familia', 'trabalhista', 'civil', 'tributario',
-  'empresarial', 'regiao', 'matriz', 'filial', 'unidade', 'contato']);
+  'empresarial', 'regiao', 'matriz', 'filial', 'unidade', 'contato',
+  // Robson 2.0 (todo segmento): termos de ramo do catálogo e de razão social também não identificam a empresa.
+  'oficina', 'mecanica', 'mecanico', 'auto', 'autos', 'center', 'car', 'motos', 'pet', 'shop', 'petshop', 'veterinaria', 'veterinario',
+  'vet', 'salao', 'barbearia', 'barber', 'cabeleireiro', 'cabeleireira', 'beleza', 'academia', 'fitness', 'pilates', 'crossfit',
+  'contabilidade', 'contabil', 'contador', 'contadora', 'imobiliaria', 'imoveis', 'corretor', 'corretora', 'autoescola', 'escola',
+  'idiomas', 'ingles', 'english', 'material', 'materiais', 'construcao', 'vidracaria', 'vidros', 'vidro', 'marmoraria', 'marmores',
+  'granitos', 'serralheria', 'serralheiro', 'fisioterapia', 'fisio', 'reabilitacao', 'otica', 'oculos', 'assistencia', 'tecnica',
+  'celular', 'celulares', 'cell', 'eletronicos', 'buffet', 'festas', 'eventos', 'dedetizadora', 'dedetizacao', 'pragas', 'grafica',
+  'impressao', 'roupas', 'moda', 'cosmeticos', 'boutique', 'store', 'comercio', 'servicos', 'industria', 'distribuidora', 'grupo',
+  'empresa', 'filhos', 'epp']);
 // A cidade do lead não identifica a empresa (em "<Marca> Odonto <Cidade>" só a marca é distintiva).
 const palavrasDistintivas = (nome, cidade = '') => {
   const daCidade = new Set(norm(cidade).split(' '));
@@ -165,6 +200,36 @@ function classificarAdvocacia(nome) {
   // Só 2–3 prenomes/sobrenomes soltos (critério do João); 4+ palavras sem marcador ficam como ambíguo (mantidos).
   if (palavras.length >= 2 && palavras.length <= 3 && palavras.every((w) => /^[a-z]+$/.test(w))) return 'pessoa_fisica';
   return 'ambiguo';
+}
+
+// Robson 2.0 — filtros de perfil para todos os nichos (advocacia mantém a regra própria acima).
+// Fora do perfil: pessoa física/autônomo, entidade de classe, órgão público e instituição religiosa.
+const RELIGIOSA_RE = /\b(igreja|paroquia|capela|templo|ministerio|assembleia de deus|congregacao|comunidade evangelica|centro espirita|terreiro|diocese|mosteiro|convento|santuario)\b/;
+const ORGAO_RE = /\b(prefeitura|secretaria|municipal|estadual|federal|governo|camara de vereadores|camara municipal|detran|ubs|posto de saude|policia|bombeiros|tribunal|forum|defensoria|procuradoria|cartorio|senai|sesi|senac|sesc|sebrae)\b/;
+const ENTIDADE_GERAL_RE = /\b(ordem dos|oab|conselho|sindicato|federacao|confederacao|associacao)\b/;
+const TIPOS_RELIGIOSA = ['church', 'place_of_worship', 'mosque', 'synagogue', 'hindu_temple'];
+const TIPOS_ORGAO = ['local_government_office', 'city_hall', 'courthouse', 'police', 'fire_station', 'embassy', 'post_office'];
+const NICHOS_SAUDE = new Set(['odontologia_estetica', 'estetica_harmonizacao', 'fisioterapia', 'pet_veterinaria']);
+function classificarPerfil(nome, tipos = [], nicho = '') {
+  const n = norm(nome);
+  const ts = (tipos || []).map(String);
+  if (RELIGIOSA_RE.test(n) || ts.some((t) => TIPOS_RELIGIOSA.includes(t))) return 'religiosa';
+  if (ORGAO_RE.test(n) || ts.some((t) => TIPOS_ORGAO.includes(t))) return 'orgao_publico';
+  if (nicho === 'advocacia') {
+    const a = classificarAdvocacia(nome);
+    return a === 'escritorio' || a === 'ambiguo' ? 'ok' : a;
+  }
+  if (ENTIDADE_GERAL_RE.test(n)) return 'entidade';
+  const palavras = n.split(' ').filter(Boolean);
+  const temMarca = palavras.some((w) => GENERICAS.has(w));
+  if (/\b(autonom[oa]|mei|personal trainer)\b/.test(n)) return 'pessoa_fisica';
+  // Saúde: consultório com o nome do profissional ("Dra. <Nome>") é o próprio negócio-alvo (já houve envio real assim).
+  if (NICHOS_SAUDE.has(nicho)) return 'ok';
+  if (!temMarca && /^(dr|dra|prof|profa)\b/.test(n)) return 'pessoa_fisica';
+  // 2–3 palavras soltas, sem termo de ramo, com sobrenome comum depois da 1ª ("Carlos Silva"); "Bella Moda" fica.
+  if (!temMarca && palavras.length >= 2 && palavras.length <= 3 && palavras.every((w) => /^[a-z]+$/.test(w))
+      && palavras.slice(1).some((w) => SOBRENOMES_COMUNS.has(w))) return 'pessoa_fisica';
+  return 'ok';
 }
 
 // Ajuste 5: variações determinísticas a partir do nome EXATO (só Gmail: é o único provedor que o Reacher confirma).

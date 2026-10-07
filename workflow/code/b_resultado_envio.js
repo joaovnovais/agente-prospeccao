@@ -16,6 +16,7 @@ return [{ json: {
     status: ok ? 'enviado' : 'erro',
     erro: ok ? null : String(r.error?.message || JSON.stringify(r.error || r)).slice(0, 500),
     teste: m.teste,
+    nicho: m.lead.nicho || null,
   },
   lead_patch: ok ? { status: 'email_enviado' } : { status: 'revisao_manual', motivo_revisao: 'falha no envio SMTP' },
   trello_lista: ok ? CONFIG.trello.emailEnviado : CONFIG.trello.revisaoManual,

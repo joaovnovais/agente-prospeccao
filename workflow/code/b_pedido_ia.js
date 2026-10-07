@@ -29,7 +29,7 @@ Regras para "assunto": curto (4 a 9 palavras), sem emojis, sem CAIXA ALTA, sem p
 Regras para "corpo" (português do Brasil):
 - 4 a 6 frases (um e-mail curto), tom cordial, direto e humano. Não conte palavras nem caracteres: escreva naturalmente.
 - Cite o nome da empresa e a cidade.
-- Descreva o ramo da empresa apenas pelo que o nome dela indica. Não afirme especialidade que não esteja no nome (ex.: não chame uma clínica de estética de "odontológica" nem de "dental").
+- Descreva o ramo da empresa apenas pelo nome dela e pelo tipo informado pelo Google Maps. Não afirme ramo nem especialidade que não esteja nesses dados (ex.: não chame uma clínica de estética de "odontológica" nem de "dental").
 - Escreva em português correto, com acentuação em TODAS as palavras que precisam (ex.: "clínica", "não", "avaliações", "reunião", "horário") — nunca "clinica", "nao", "avaliacoes".
 ${lead.total_avaliacoes != null && lead.total_avaliacoes < CONFIG.minAvaliacoesParaCitarNota ? `- Esta empresa tem poucas avaliações no Google: NÃO cite nota, estrelas nem número de avaliações (nem no assunto); use o nome ou a cidade.\n` : ''}- Use SOMENTE fatos dos dados fornecidos (nome, segmento, cidade, nota, número de avaliações, ausência de site). Se citar nota ou avaliações, use exatamente os números fornecidos.
 - NÃO elogie nem qualifique a empresa sem base nos dados (proibido: "ótimo atendimento", "excelente", "referência", "boas avaliações", "muitas avaliações", etc.).
@@ -40,7 +40,7 @@ ${lead.total_avaliacoes != null && lead.total_avaliacoes < CONFIG.minAvaliacoesP
 - NÃO inclua saudação final, assinatura nem rodapé (são adicionados automaticamente).`;
 
 const user = `Empresa: ${lead.nome}
-Segmento pesquisado: ${(CONFIG.nichos || {})[lead.nicho] || lead.nicho} (a especialidade exata desta empresa só é conhecida pelo nome dela)
+Tipo no Google Maps: ${lead.tipo_google || 'não informado (use só o nome da empresa)'}
 Cidade: ${lead.cidade}/${lead.estado}
 Endereço: ${lead.endereco || 'não informado'}
 Avaliação no Google: ${lead.rating != null ? fmtNota(lead.rating) : 'sem nota'} (${lead.total_avaliacoes ?? 0} avaliações)

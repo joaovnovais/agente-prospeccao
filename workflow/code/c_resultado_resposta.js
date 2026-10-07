@@ -8,6 +8,7 @@ const m = confirmacao ? $('Montar confirmação').first().json : $('Montar propo
 const ok = !!r.messageId && !r.error;
 const nome = `${ctx.lead.nome} — ${ctx.lead.cidade}/${ctx.lead.estado}`;
 return [{ json: {
+  acao_v1: !ok ? 'erro_envio' : confirmacao ? 'agendado' : 'proposta_horarios',
   lead: ctx.lead,
   envio: {
     lead_id: ctx.lead.id, contato_id: ctx.contato.id,

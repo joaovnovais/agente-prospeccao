@@ -1,33 +1,33 @@
-// Passo 1: define nicho + estado da semana (rotação de 4) e monta 1 busca por cidade × termo.
-// Entrada: linhas de prospeccao_taxa_resposta (ou 1 item vazio).
-const taxa = $input.all().map((i) => i.json).filter((r) => r && r.nicho);
+// Passo 1 (Robson 2.0, "todo segmento"): 4 nichos do catálogo × 15 cidades (GO+SC) por semana, 1 termo por busca.
+// Semana w ocupa as vagas 4w..4w+3; vaga s → nicho s % N (os 4 da semana nunca se repetem) e ocorrência c = floor(s / N).
+// Cada ocorrência de um nicho pega a próxima fatia de 15 cidades; 4 fatias cobrem as 56 cidades sem repetir
+// nicho×cidade dentro do ciclo (ciclo = 4 ocorrências). O termo alterna a cada ciclo. Teto: limitePlacesPorExecucao.
+// (A priorização por taxa de resposta saiu: quebrava a garantia de não repetir combinação.)
+const R = CONFIG.rotacao;
+const cat = CONFIG.catalogoNichos;
+const cidades = R.estados.flatMap((uf) => CONFIG.cidades[uf].map((cidade) => ({ cidade, estado: uf })));
+const total = cidades.length;
+const fatias = Math.ceil(total / R.cidadesPorNicho);
 
 const inicio = new Date(CONFIG.inicioRotacao + 'T00:00:00' + CONFIG.agenda.fusoOffset);
-const semanas = Math.max(0, Math.floor((Date.now() - inicio.getTime()) / (7 * 864e5)));
-const slot = semanas % CONFIG.rotacao.length;
-const ciclo = Math.floor(semanas / CONFIG.rotacao.length);
-const r = CONFIG.rotacao[slot];
-const lista = CONFIG.cidades[r.estado];
-const n = CONFIG.cidadesPorSemana;
-
-// Cada ciclo avança n cidades na lista do estado -> cobertura progressiva do estado inteiro.
-let cidades = [];
-for (let k = 0; k < n; k++) cidades.push(lista[(r.offset + ciclo * n + k) % lista.length]);
-
-// Semana 5+: nicho×cidade com melhor taxa de resposta observada entra primeiro.
-if (ciclo >= 1) {
-  const melhores = taxa
-    .filter((t) => t.nicho === r.nicho && t.estado === r.estado && Number(t.taxa_resposta_pct) > 0)
-    .sort((a, b) => Number(b.taxa_resposta_pct) - Number(a.taxa_resposta_pct))
-    .slice(0, 2).map((t) => t.cidade);
-  cidades = [...new Set([...melhores, ...cidades])].slice(0, n);
-}
+const semana = Math.max(0, Math.floor((Date.now() - inicio.getTime()) / (7 * 864e5)));
 
 const buscas = [];
-for (const cidade of cidades) {
-  for (const termo of r.buscas) {
-    buscas.push({ nicho: r.nicho, estado: r.estado, cidade, semana_ciclo: slot + 1, ciclo,
-                  textQuery: `${termo} em ${cidade} - ${r.estado}` });
+for (let k = 0; k < R.nichosPorSemana; k++) {
+  const s = semana * R.nichosPorSemana + k;
+  const iNicho = s % cat.length;
+  const n = cat[iNicho];
+  const ocorrencia = Math.floor(s / cat.length);
+  const ciclo = Math.floor(ocorrencia / fatias);
+  const fatia = ocorrencia % fatias;
+  const termo = n.termos[ciclo % n.termos.length];
+  // Deslocamento por nicho: nichos diferentes não começam todos pela mesma cidade.
+  const base = (iNicho * 7) % total;
+  const ini = fatia * R.cidadesPorNicho;
+  for (let j = ini; j < Math.min(total, ini + R.cidadesPorNicho); j++) {
+    const { cidade, estado } = cidades[(base + j) % total];
+    buscas.push({ nicho: n.nicho, estado, cidade, semana_ciclo: fatia + 1, ciclo, semana,
+                  textQuery: `${termo} em ${cidade} - ${estado}` });
   }
 }
 return buscas.slice(0, CONFIG.limitePlacesPorExecucao).map((json) => ({ json }));

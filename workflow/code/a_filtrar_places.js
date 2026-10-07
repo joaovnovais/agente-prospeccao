@@ -25,10 +25,9 @@ itens.forEach((it, i) => {
     const nome = p.displayName?.text || '';
     if (!nome) continue;
     if (excluida(nome, p.formattedAddress)) { excluidos.push(nome); continue; }
-    if (ctx.nicho === 'advocacia') {
-      const perfil = classificarAdvocacia(nome);
-      if (perfil === 'pessoa_fisica' || perfil === 'entidade') { excluidos.push(`${nome} [fora do perfil: ${perfil}]`); continue; }
-    }
+    // Todo nicho: fora do perfil = pessoa física/autônomo, entidade de classe, órgão público, instituição religiosa.
+    const perfil = classificarPerfil(nome, p.types, ctx.nicho);
+    if (perfil !== 'ok') { excluidos.push(`${nome} [fora do perfil: ${perfil}]`); continue; }
     rows.push({
       place_id: p.id,
       nome,
@@ -41,6 +40,8 @@ itens.forEach((it, i) => {
       google_maps_url: p.googleMapsUri || null,
       rating: p.rating ?? null,
       total_avaliacoes: p.userRatingCount ?? null,
+      tipo_google: p.primaryTypeDisplayName?.text || p.primaryType || null,
+      tipos_google: Array.isArray(p.types) ? p.types.slice(0, 10) : null,
       semana_ciclo: ctx.semana_ciclo,
       status: 'novo',
     });

@@ -17,6 +17,11 @@ const BUILD_ID = (() => {
 })();
 
 if (!CONFIG.modelos.every((m) => m.endsWith(':free'))) throw new Error('todo modelo precisa terminar em ":free"');
+// Robson 2.0: flags de módulo/motor validadas no build (valor inesperado nunca chega à produção).
+const ESTAGIOS = ['desligado', 'sombra', 'teste', 'ligado'];
+for (const [m, v] of Object.entries(CONFIG.modulos || {})) if (!ESTAGIOS.includes(v.estagio)) throw new Error(`modulos.${m}.estagio inválido: ${v.estagio}`);
+if (!['v1', 'v2'].includes(CONFIG.respostas?.motor)) throw new Error('respostas.motor precisa ser "v1" ou "v2"');
+const MOTOR_V1 = CONFIG.respostas.motor === 'v1';
 
 const CRED = {
   supabase: { supabaseApi: { id: 'prspSupabase0001', name: 'Supabase - Prospeccao' } },
@@ -53,7 +58,7 @@ function code(name, file, pos, pre = '') {
     `const CONFIG = ${JSON.stringify(CONFIG)};\n${pre}\n${LIB}\n${src}`;
   return add(name, 'n8n-nodes-base.code', 2, { mode: 'runOnceForAllItems', jsCode }, pos);
 }
-function http(name, pos, { method = 'GET', url, cred, credType, body, query, headers, timeout = 30000, always = false, soft = false, intervaloMs = 0 }) {
+function http(name, pos, { method = 'GET', url, cred, credType, body, query, headers, timeout = 30000, always = false, soft = false, intervaloMs = 0, retry = false }) {
   const p = { method, url: url.includes('{{') && !url.startsWith('=') ? '=' + url : url, options: { timeout } };
   // Uma requisição por vez com pausa entre elas (rajadas de consulta SMTP fazem o Gmail segurar o IP: 141 timeouts/258 consultas).
   if (intervaloMs) p.options.batching = { batch: { batchSize: 1, batchInterval: intervaloMs } };
@@ -66,6 +71,7 @@ function http(name, pos, { method = 'GET', url, cred, credType, body, query, hea
   if (cred) extra.credentials = CRED[cred];
   if (always) extra.alwaysOutputData = true;
   if (soft) extra.onError = 'continueRegularOutput';
+  if (retry) Object.assign(extra, { retryOnFail: true, maxTries: 3, waitBetweenTries: 2000 });
   return add(name, 'n8n-nodes-base.httpRequest', 4.2, p, pos, extra);
 }
 const supa = (name, pos, o) => http(name, pos, { ...o, url: REST + o.path, cred: 'supabase', credType: 'supabaseApi',
@@ -105,7 +111,7 @@ const reservarIA = (name, pos) => supa(name, pos, { method: 'POST', path: '/rpc/
   body: `={{ JSON.stringify({ p_servico: 'openrouter', p_limite: ${CONFIG.limiteDiarioOpenRouter} }) }}` });
 
 // Cauda comum B/C: grava envio (se houver) → atualiza lead → Trello (mover ou criar) → salva id do card.
-function cauda(sfx, saida, row, fimLoop, depoisTrello) {
+function cauda(sfx, saida, row, fimLoop, depoisTrello, antes = null) {
   const S = `$('${saida}').first().json`;
   const regQ = iff(`Registrar envio? ${sfx}`, `!!${S}.envio`, [1, row]);
   const reg = supa(`Registrar envio ${sfx}`, [2, row - 0.5], { method: 'POST', path: '/prospeccao_envios', body: `={{ JSON.stringify(${S}.envio) }}` });
@@ -124,7 +130,8 @@ function cauda(sfx, saida, row, fimLoop, depoisTrello) {
   }, [6, row + 0.5], { credentials: CRED.trello, onError: 'continueRegularOutput' });
   const salvar = supa(`Salvar card no lead ${sfx}`, [7, row], { method: 'PATCH', path: `/prospeccao_leads?id=eq.{{ ${S}.lead.id }}`,
     body: `={{ JSON.stringify({ trello_card_id: $json.id || ${S}.lead.trello_card_id || null }) }}` });
-  chain(saida, regQ); link(regQ, reg, 0); link(regQ, upd, 1); link(reg, upd);
+  if (antes) chain(saida, antes, regQ); else chain(saida, regQ);
+  link(regQ, reg, 0); link(regQ, upd, 1); link(reg, upd);
   chain(upd, trQ); link(trQ, cardQ, 0); link(trQ, depoisTrello, 1);
   link(cardQ, mover, 0); link(cardQ, criar, 1); link(mover, salvar); link(criar, salvar); link(salvar, depoisTrello);
   return fimLoop;
@@ -145,12 +152,12 @@ schedule('Semanal - Captação', '0 7 * * 1', [0, 0]);
 supa('Buscar taxa de resposta', [1, 0], { path: '/prospeccao_taxa_resposta?select=*' });
 code('Montar buscas da semana', 'a_montar_buscas.js', [2, 0]);
 supa('Reservar cota Places', [3, 0], { method: 'POST', path: '/rpc/prospeccao_reservar_cota',
-  body: `={{ JSON.stringify({ p_servico: 'google_places', p_limite: ${CONFIG.limiteMensalPlaces} }) }}` });
+  body: `={{ JSON.stringify({ p_servico: 'google_places', p_limite: ${Math.min(CONFIG.limiteMensalPlaces, CONFIG.tetoMensalPlaces || CONFIG.limiteMensalPlaces)} }) }}` });
 iff('Cota Places ok?', '$json.ok === true', [4, 0]);
 noop('Cota Places esgotada', [5, 1]);
 http('Places - Text Search', [5, 0], {
   method: 'POST', url: 'https://places.googleapis.com/v1/places:searchText', cred: 'places', soft: true,
-  headers: { 'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.rating,places.userRatingCount,places.businessStatus' },
+  headers: { 'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.rating,places.userRatingCount,places.businessStatus,places.primaryType,places.primaryTypeDisplayName,places.types' },
   body: `={{ JSON.stringify({ textQuery: $('Montar buscas da semana').item.json.textQuery, languageCode: 'pt-BR', regionCode: 'BR', pageSize: 20 }) }}`,
 });
 code('Filtrar sem site + exclusões', 'a_filtrar_places.js', [6, 0]);
@@ -280,9 +287,21 @@ supa('Buscar envio original', [4, 12], { path: '/prospeccao_envios', query: {
   order: 'enviado_em.desc', limit: '1' } });
 code('Contexto da resposta', 'c_contexto.js', [5, 12]);
 iff('Ignorar? (C)', `$json.acao === 'ignorar'`, [6, 12]);
-supa('Registrar resposta no envio', [7, 12], { method: 'PATCH', path: `/prospeccao_envios?id=eq.{{ $json.envio.id }}`,
-  body: '={{ JSON.stringify($json.resposta_patch) }}' });
+// Robson 2.0 (Fase 1): toda resposta casada com um envio é gravada bruta em prospeccao_respostas antes de qualquer ação.
+// Nunca bloqueia o fluxo: 3 tentativas e segue mesmo com erro. acao_v1 começa 'pendente' e é fechada em "Registrar ação v1".
+const CTX = "$('Contexto da resposta').first().json";
+supa('Gravar resposta bruta', [6.5, 11], { method: 'POST', path: '/prospeccao_respostas?on_conflict=message_id', soft: true, retry: true,
+  prefer: 'resolution=ignore-duplicates,return=minimal',
+  body: `={{ JSON.stringify({ message_id: ${CTX}.resposta.message_id, in_reply_to: ${CTX}.resposta.in_reply_to, references_raw: ${CTX}.resposta.references_raw,
+    remetente: ${CTX}.resposta.from, assunto: ${CTX}.resposta.assunto, corpo_texto: ${CTX}.resposta.texto, recebido_em: ${CTX}.resposta.recebido_em,
+    envio_id: ${CTX}.envio.id, lead_id: ${CTX}.lead.id, teste: !!${CTX}.envio.teste, acao_v1: ${CTX}.acao === 'optout' ? 'optout' : 'pendente' }) }}` });
+supa('Registrar resposta no envio', [7, 12], { method: 'PATCH', path: `/prospeccao_envios?id=eq.{{ ${CTX}.envio.id }}`,
+  body: `={{ JSON.stringify(${CTX}.resposta_patch) }}` });
 iff('É descadastro?', `$('Contexto da resposta').first().json.acao === 'optout'`, [8, 12]);
+// respostas.motor = "v2": o v1 só grava (o módulo prspRespostas02 decide). SAIR continua imediato no v1 (LGPD).
+iff('Motor v1?', `${MOTOR_V1} === true`, [8.5, 13]);
+supa('Motor v2: só registra', [9, 13.5], { method: 'PATCH', path: '/prospeccao_respostas', soft: true, retry: true, prefer: 'return=minimal',
+  query: { message_id: `={{ 'eq.' + ${CTX}.resposta.message_id }}` }, body: `={{ JSON.stringify({ acao_v1: 'v2_registrado' }) }}` });
 code('Pedido IA - qualificação', 'c_pedido_ia.js', [9, 12]);
 reservarIA('Reservar cota IA (resposta)', [10, 12]);
 iff('Cota IA ok? (resposta)', '$json.ok === true', [11, 12]);
@@ -329,9 +348,11 @@ link('Loop respostas', 'Extrair resposta', 1);
 chain('Extrair resposta', 'É resposta do agente?');
 link('É resposta do agente?', 'Buscar envio original', 0); link('É resposta do agente?', 'Loop respostas', 1);
 chain('Buscar envio original', 'Contexto da resposta', 'Ignorar? (C)');
-link('Ignorar? (C)', 'Loop respostas', 0); link('Ignorar? (C)', 'Registrar resposta no envio', 1);
+link('Ignorar? (C)', 'Loop respostas', 0); link('Ignorar? (C)', 'Gravar resposta bruta', 1);
+chain('Gravar resposta bruta', 'Registrar resposta no envio');
 chain('Registrar resposta no envio', 'É descadastro?');
-link('É descadastro?', 'Dados bloqueio', 0); link('É descadastro?', 'Pedido IA - qualificação', 1);
+link('É descadastro?', 'Dados bloqueio', 0); link('É descadastro?', 'Motor v1?', 1);
+link('Motor v1?', 'Pedido IA - qualificação', 0); link('Motor v1?', 'Motor v2: só registra', 1); link('Motor v2: só registra', 'Loop respostas');
 chain('Pedido IA - qualificação', 'Reservar cota IA (resposta)', 'Cota IA ok? (resposta)');
 link('Cota IA ok? (resposta)', 'OpenRouter - qualificar', 0); link('Cota IA ok? (resposta)', 'Revisão manual (resposta)', 1);
 chain('OpenRouter - qualificar', 'Validar resposta IA - qualificação', 'JSON válido? (resposta)');
@@ -350,7 +371,10 @@ chain('Enviar confirmação (SMTP)', 'Resultado confirmação', 'Saída (C)');
 chain('Calendar - freeBusy (proposta)', 'Montar proposta de horários', 'Enviar proposta (SMTP)', 'Resultado proposta', 'Saída (C)');
 chain('Dados bloqueio', 'Bloquear contatos', 'Saída (C)');
 link('Revisão manual (resposta)', 'Saída (C)');
-cauda('(C)', 'Saída (C)', 20, 'Loop respostas', 'Loop respostas');
+supa('Registrar ação v1', [0.5, 21], { method: 'PATCH', path: '/prospeccao_respostas', soft: true, retry: true, prefer: 'return=minimal',
+  query: { message_id: `={{ 'eq.' + ${CTX}.resposta.message_id }}` },
+  body: `={{ JSON.stringify({ acao_v1: $('Saída (C)').first().json.acao_v1 || 'desconhecida' }) }}` });
+cauda('(C)', 'Saída (C)', 20, 'Loop respostas', 'Loop respostas', 'Registrar ação v1');
 
 // ---------- saída ----------
 const wf = {
