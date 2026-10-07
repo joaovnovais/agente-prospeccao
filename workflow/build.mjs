@@ -11,8 +11,10 @@ const LIB = readFileSync(join(DIR, 'code', '_lib.js'), 'utf8');
 const REST = CONFIG.supabaseRest;
 // Impressão digital do build (auditoria 2026-10-05): o deploy.sh confere que a versão no banco do n8n é ESTE build.
 const BUILD_ID = (() => {
-  const h = createHash('sha256').update(readFileSync(join(DIR, 'config.json'))).update(readFileSync(fileURLToPath(import.meta.url)));
-  for (const f of readdirSync(join(DIR, 'code')).sort()) h.update(f).update(readFileSync(join(DIR, 'code', f)));
+  // 07/10: fim de linha normalizado. Com core.autocrlf=true o mesmo commit dava IDs diferentes conforme o checkout.
+  const ler = (p) => readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
+  const h = createHash('sha256').update(ler(join(DIR, 'config.json'))).update(ler(fileURLToPath(import.meta.url)));
+  for (const f of readdirSync(join(DIR, 'code')).sort()) h.update(f).update(ler(join(DIR, 'code', f)));
   return h.digest('hex').slice(0, 12);
 })();
 

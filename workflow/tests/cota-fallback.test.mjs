@@ -1,7 +1,10 @@
 // Cota da IA no fallback (13/10): (a) sem candidato não gera nova tentativa, (b) assunto "Presença digital para" corrigido
 // em código + prompt alinhado ao validador, (c) teto diário de chamadas do fallback com prioridade por avaliações.
 // Dados FICTÍCIOS (o repositório é público). Offline. Uso: node workflow/tests/cota-fallback.test.mjs
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, cpSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const R = fileURLToPath(new URL('..', import.meta.url)).replace(/[\\/]$/, '');
 const CONFIG = JSON.parse(readFileSync(`${R}/config.json`, 'utf8'));
@@ -135,6 +138,23 @@ console.log('Estrutura do workflow');
   const sql = readFileSync(`${R}/../supabase/006_confirmacao_nicho.sql`, 'utf8');
   ok(/create or replace view/i.test(sql) && !/\b(drop|alter|delete|update|insert)\b/i.test(sql) && /revoke all .* from anon, authenticated/i.test(sql),
      'migration 006 é só uma view (aditiva), sem acesso para anon/authenticated');
+}
+
+console.log('BUILD_ID independente do fim de linha (07/10: core.autocrlf mudava o ID do mesmo commit)');
+{
+  const id = (flip) => {
+    const d = mkdtempSync(join(tmpdir(), 'prsp-eol-'));
+    cpSync(R, d, { recursive: true, filter: (s) => !s.includes('dist') });
+    for (const f of flip) {
+      const t = readFileSync(join(d, f), 'utf8');
+      writeFileSync(join(d, f), t.includes('\r\n') ? t.replace(/\r\n/g, '\n') : t.replace(/\n/g, '\r\n'));
+    }
+    const out = execFileSync(process.execPath, [join(d, 'build.mjs')], { stdio: 'pipe' }).toString();
+    rmSync(d, { recursive: true, force: true });
+    return out.match(/build ([0-9a-f]{12})/)[1];
+  };
+  const base = id([]);
+  ok(id(['config.json', 'code/w_janela.js', 'code/_lib.js', 'build.mjs']) === base, `trocar LF↔CRLF em 4 arquivos mantém o ID (${base})`);
 }
 
 console.log(`\nfalhas: ${falhas}`); process.exit(falhas ? 1 : 0);

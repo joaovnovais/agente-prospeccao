@@ -6,7 +6,7 @@ Contexto (execução #507, 07/10 09:30):
 - Leads com e-mail confirmado: 6 chamadas para 4 envios. Fallback: 39 chamadas para 1 envio.
 - O gargalo do Robson é a **oferta de e-mail confirmado** (~4 por dia), não a cota nem o limite de envio.
 
-Esta branch parte de `robson2/fase1` (deploy de 08/10, build `5118433945de`) e só entra em produção em 13/10.
+Esta branch parte de `robson2/fase1` (deploy de 08/10, build `5118433945de`) e só entra em produção em 13/10. Build em 07/10: **`561256e7a66a`**. Merges posteriores da Fase 1 (só docs) não mudam o ID.
 
 ## O que muda
 | Item | Arquivos | Efeito |
@@ -17,10 +17,11 @@ Esta branch parte de `robson2/fase1` (deploy de 08/10, build `5118433945de`) e s
 | (c) Teto diário do fallback | `config.json` (`maxChamadasFallbackDia: 15`), `b_pedido_ia.js`, `build.mjs` | Conta 1ª tentativa e novas tentativas do fallback por dia em BRT (static data do workflow). A 16ª vai para "Teto do fallback?" → "Parar: teto do fallback", que encerra o loop como a cota. E-mail confirmado (modo texto) nunca conta nem é barrado, e já vem antes na fila. |
 | (c) Prioridade por avaliações | `build.mjs` ("Buscar fila fallback"), `b_montar_fila.js` | Fallback ordenado por `total_avaliacoes` desc (nulos no fim), depois `updated_at`. |
 | Correção | `build.mjs` | "Buscar fila com e-mail" e "Buscar fila fallback" com `executeOnce`. A busca do fallback rodava uma vez por lead com e-mail (120 itens para 30 leads em 07/10). Era inofensivo pela deduplicação, mas multiplicava as consultas. |
+| BUILD_ID estável | `build.mjs` | O hash ignora o fim de linha. Em 07/10, o `core.autocrlf=true` do Git for Windows fazia o mesmo commit gerar IDs diferentes conforme o checkout (`5118433945de` × `7fc8b0621850` na Fase 1). O repositório também passou a ter `core.autocrlf=false` na config local. |
 | Taxa de e-mail confirmado por nicho | `supabase/006_confirmacao_nicho.sql`, `w_janela.js`, `w_resumo.js`, `build.mjs` (watchdog) | View `prospeccao_confirmacao_nicho` (captados → verificados → safe, % e últimos 7 dias). Às segundas, o resumo do watchdog ganha o bloco semanal. A consulta tem falha suave: sem a view, o resumo diário sai igual, com o aviso "indisponível". |
 
 Testes:
-- `workflow/tests/cota-fallback.test.mjs`: 43 testes, cobrindo (a), (b), (c), o bloco semanal, a estrutura e a migration só com view.
+- `workflow/tests/cota-fallback.test.mjs`: 44 testes, cobrindo (a), (b), (c), o bloco semanal, a estrutura, a migration só com view e o BUILD_ID independente do fim de linha.
 - As 4 suítes passam sem falhas. O teste antigo do watchdog agora espera 9 consultas.
 
 ## Simulação contra a #507 (replay, sem chamar IA nem Reacher)
