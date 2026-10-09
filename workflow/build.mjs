@@ -158,7 +158,9 @@ code('Montar buscas da semana', 'a_montar_buscas.js', [2, 0]);
 // O field mask precisa pedir "nextPageToken": sem isso o Places nunca devolve o token (0 de 38 buscas até 05/10).
 const TETO_PLACES = Math.min(CONFIG.limiteMensalPlaces, CONFIG.tetoMensalPlaces || CONFIG.limiteMensalPlaces);
 const FIELD_MASK = 'places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.rating,places.userRatingCount,places.businessStatus,places.primaryType,places.primaryTypeDisplayName,places.types,nextPageToken';
-const PAGINAS = Math.max(1, (CONFIG.paginacao && CONFIG.paginacao.paginasMax) || 1);
+// A estrutura tem sempre 3 ondas; quem liga/desliga é CONFIG.paginacao.paginasMax em tempo de execução (a_proxima_pagina.js):
+// com 1, "Próxima página (p2)" devolve { fim: true } e o fluxo vai direto ao resumo. Ligar = só mudar o config.
+const PAGINAS = 3;
 const sfxPag = (k) => (k === 1 ? '' : ` (p${k})`);
 const ONDAS = Array.from({ length: PAGINAS }, (_, i) => i + 1).map((k) => ({
   origem: k === 1 ? 'Montar buscas da semana' : `Próxima página${sfxPag(k)}`,

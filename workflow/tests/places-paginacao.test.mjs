@@ -17,15 +17,19 @@ const emData = (iso, fn) => { const real = Date.now; Date.now = () => new Date(i
 let falhas = 0; const ok = (c, m) => { console.log((c ? '  ✔ ' : '  ✘ ') + m); if (!c) falhas++; };
 
 console.log('Config');
-ok(CONFIG.paginacao.paginasMax === 3 && CONFIG.paginacao.minSemSiteParaProximaPagina === 3, 'paginação: até 3 páginas, próxima só com >= 3 sem site');
-ok(CONFIG.rotacao.cidadesPorNicho === 10 && CONFIG.rotacao.nichosPorSemana === 4, '4 nichos × 10 cidades = 40 buscas de página 1, sobra orçamento para as páginas 2-3');
+// 08/10 (decisão do João): deploy de 13/10 com a paginação DESLIGADA (15 cidades, 1 página); rotação do termo LIGADA.
+ok(CONFIG.paginacao.paginasMax === 1 && CONFIG.paginacao.minSemSiteParaProximaPagina === 3, 'paginação desligada no config (paginasMax 1); critério pronto para ligar (>= 3 sem site)');
+ok(CONFIG.rotacao.cidadesPorNicho === 15 && CONFIG.rotacao.nichosPorSemana === 4, '4 nichos × 15 cidades = 60 buscas de página 1, como hoje');
+// Cenário "ligada" (para perto de 09/11): só config.
+const LIGADA = { ...CONFIG, paginacao: { ...CONFIG.paginacao, paginasMax: 3 }, rotacao: { ...CONFIG.rotacao, cidadesPorNicho: 10 } };
 ok(CONFIG.limitePlacesPorExecucao === 60 && CONFIG.tetoMensalPlaces === 300, 'tetos inalterados: 60 por execução, 300 por mês');
 
 console.log('Planejador: rotação do termo');
 const semanaDe = (w) => emData(new Date(new Date(CONFIG.inicioRotacao + 'T10:00:00Z').getTime() + w * 7 * 864e5).toISOString(),
   () => rodar('a_montar_buscas.js').map((i) => i.json));
 const s0 = semanaDe(0);
-ok(s0.length === 40 && s0.every((b) => b.pagina === 1), 'semana 0: 40 buscas, todas página 1');
+ok(s0.length === 60 && s0.every((b) => b.pagina === 1), 'semana 0: 60 buscas, todas página 1 (paginação desligada)');
+ok(emData(new Date(CONFIG.inicioRotacao + 'T10:00:00Z').toISOString(), () => rodar('a_montar_buscas.js', { config: LIGADA })).length === 40, 'ligada (10 cidades): 40 buscas de página 1');
 ok(s0.every((b) => b.textQuery.startsWith(b.termo + ' em ')), 'textQuery usa o termo registrado na busca');
 ok(['oficina mecânica', 'salão de beleza', 'pet shop', 'loja de material de construção'].every((t) => s0.some((b) => b.termo === t)),
    'semana 0 com o 1º termo dos 4 nichos novos (igual à checagem de 12/10)');
@@ -75,7 +79,7 @@ console.log('Próxima página: produtividade, orçamento e limite de páginas');
     { textQuery: 'q3', pagina: 1, sem_site: 2, token: 'T3', resultados: 20 }, { textQuery: 'q4', pagina: 1, sem_site: 7, token: null, resultados: 12 },
     { textQuery: 'q5', pagina: 1, sem_site: 5, token: 'T5', resultados: 20 },
   ];
-  const prox = (gastas, proxima = 2, bs = buscas) => rodar('a_proxima_pagina.js', {
+  const prox = (gastas, proxima = 2, bs = buscas, config = LIGADA) => rodar('a_proxima_pagina.js', { config,
     pre: `const FILTRO = 'Filtrar sem site + exclusões'; const PROXIMA = ${proxima}; const PLACES = ['Places - Text Search'];`,
     nodes: { 'Filtrar sem site + exclusões': [{ json: { buscas: bs } }], 'Places - Text Search': Array.from({ length: gastas }, () => ({ json: {} })) } }).map((i) => i.json);
   const p = prox(40);
@@ -86,12 +90,13 @@ console.log('Próxima página: produtividade, orçamento e limite de páginas');
   ok(fim.length === 1 && fim[0].fim === true, 'orçamento esgotado → { fim: true } (segue para o resumo)');
   ok(prox(10, 4)[0].fim === true, 'nunca passa de paginasMax (página 4 não existe)');
   ok(prox(10, 2, [])[0].fim === true, 'sem buscas → fim');
-  const ondas3 = rodar('a_proxima_pagina.js', {
+  ok(prox(10, 2, buscas, CONFIG)[0].fim === true, 'com o config de produção (paginasMax 1) nunca pede página 2');
+  const ondas3 = rodar('a_proxima_pagina.js', { config: LIGADA,
     pre: "const FILTRO = 'Filtrar sem site + exclusões (p2)'; const PROXIMA = 3; const PLACES = ['Places - Text Search', 'Places - Text Search (p2)'];",
     nodes: { 'Filtrar sem site + exclusões (p2)': [{ json: { buscas } }], 'Places - Text Search': Array.from({ length: 40 }, () => ({ json: {} })),
              'Places - Text Search (p2)': Array.from({ length: 18 }, () => ({ json: {} })) } }).map((i) => i.json);
   ok(ondas3.length === 2, 'orçamento soma todas as ondas (40 + 18 → sobram 2 para a página 3)');
-  const naoExec = rodar('a_proxima_pagina.js', { pre: "const FILTRO = 'Filtrar sem site + exclusões'; const PROXIMA = 2; const PLACES = ['Places - Text Search'];", nodes: {} }).map((i) => i.json);
+  const naoExec = rodar('a_proxima_pagina.js', { config: LIGADA, pre: "const FILTRO = 'Filtrar sem site + exclusões'; const PROXIMA = 2; const PLACES = ['Places - Text Search'];", nodes: {} }).map((i) => i.json);
   ok(naoExec[0].fim === true, 'nó anterior não executado → fim, sem erro');
 }
 

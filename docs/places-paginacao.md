@@ -1,6 +1,12 @@
 # Paginação do Places e rotação do termo — branch `robson2/places-paginacao` (sobre `robson2/cota-fallback`)
 
-Alvo: entrar no deploy de 13/10 junto com `cota-fallback`. Build em 07/10: **`77b2411d6d1c`**. Nada foi deployado.
+Alvo: entrar no deploy de 13/10 junto com `cota-fallback`. Build em 08/10: **`54dacbe874d9`**. Nada foi deployado.
+
+## Decisão do João (08/10)
+**Deploy em 13/10 com a paginação DESLIGADA** (`cidadesPorNicho: 15`, `paginasMax: 1`) e a **rotação do termo LIGADA**.
+- O build gera sempre as 3 ondas. Com `paginasMax: 1`, "Próxima página (p2)" devolve `{ fim: true }` e o fluxo vai direto ao resumo, com as mesmas 60 buscas de página 1 de hoje. O field mask já pede `nextPageToken`, o que não muda custo nem resultados.
+- **Para ligar perto de 09/11:** só config, `paginacao.paginasMax: 3` e, se quiser abrir orçamento para as páginas, `rotacao.cidadesPorNicho: 10`. Depois: build, testes, deploy e Publish. Os testes cobrem os dois cenários (`LIGADA` em `places-paginacao.test.mjs`).
+- As tabelas abaixo são da análise de 07/10 (cenário ligado). A simulação com o config de 08/10 dá a mesma cota de hoje: 206, 300 e 240 chamadas em out, nov e dez.
 
 ## Achado
 Nas 38 buscas reais (27/09 e 05/10), **todas** vieram cheias (20 resultados), mas **nenhuma** trouxe `nextPageToken`. O motivo é que o field mask não pedia `nextPageToken`, e o Places (New) só devolve o token quando o field mask pede.
@@ -13,10 +19,10 @@ Nas 38 buscas reais (27/09 e 05/10), **todas** vieram cheias (20 resultados), ma
 | Filtro genérico por onda | `a_filtrar_places.js` | Lê o contexto do nó da onda (`ORIGEM_BUSCA`) e devolve `buscas` (sem site por página + token), que decide a página seguinte. |
 | Resumo somado | `a_resumo.js` | Soma as ondas e mantém os campos antigos (`leads_novos`, `sem_site_encontrados`, `excluidos_lista_manual`, `erros_places`), mais `chamadas_places` e `por_pagina`. Os upserts sempre devolvem item, para o fluxo seguir mesmo quando todo lead já existe. |
 | Rotação do termo | `a_montar_buscas.js` | Antes, o termo só mudava a cada ciclo. Agora a ocorrência usa `termos[(fatia + ciclo + termoInicial) % nTermos]`: **quando o nicho volta, usa o próximo termo**, e no ciclo seguinte cada fatia de cidades recebe termo diferente do anterior. Em ~2 ciclos (63 semanas), nenhum nicho de 2 termos repete cidade + termo (testado). Nicho de 1 termo repete a busca: aí quem traz novidade são as páginas 2-3. `termoInicial` (opcional, por nicho) desloca o 1º termo de um nicho já buscado. |
-| Largura | `config.json` | `rotacao.cidadesPorNicho` 15 → **10**: 40 buscas de página 1 por semana, e até 20 chamadas ficam para as páginas 2-3. Novo bloco `paginacao: { paginasMax: 3, minSemSiteParaProximaPagina: 3 }`. |
+| Largura e flag | `config.json` | Novo bloco `paginacao: { paginasMax, minSemSiteParaProximaPagina: 3 }`. **Em 13/10: `paginasMax: 1` e `cidadesPorNicho: 15`** (desligada). Ligada: `paginasMax: 3` e `cidadesPorNicho: 10` (40 buscas de página 1 e até 20 chamadas para as páginas 2-3). |
 
 Testes:
-- `workflow/tests/places-paginacao.test.mjs`: 32 testes (config, rotação, filtro, próxima página/orçamento, resumo e estrutura).
+- `workflow/tests/places-paginacao.test.mjs`: 36 testes (config desligado e cenário ligado), (config, rotação, filtro, próxima página/orçamento, resumo e estrutura).
 - As 5 suítes passam sem falhas.
 
 ## Simulação da cota por mês

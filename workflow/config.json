@@ -11,7 +11,7 @@
   "tetoMensalPlaces": 300,
   "limitePlacesPorExecucao": 60,
   "paginacao": {
-    "paginasMax": 3,
+    "paginasMax": 1,
     "minSemSiteParaProximaPagina": 3
   },
   "maxTentativasIA": 3,
@@ -350,7 +350,7 @@
   "inicioRotacao": "2026-10-12",
   "rotacao": {
     "nichosPorSemana": 4,
-    "cidadesPorNicho": 10,
+    "cidadesPorNicho": 15,
     "estados": [
       "GO",
       "SC"

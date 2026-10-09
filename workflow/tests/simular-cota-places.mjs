@@ -33,8 +33,8 @@ function execucao(cfg, iso) {
   return { chamadas, semSite };
 }
 const cenarios = {
-  'atual (15 cidades, só página 1)': { ...BASE, rotacao: { ...BASE.rotacao, cidadesPorNicho: 15 }, paginacao: { paginasMax: 1, minSemSiteParaProximaPagina: 3 } },
-  'branch (10 cidades, até 3 páginas)': BASE,
+  'config da branch (15 cidades, paginação desligada)': BASE,
+  'paginação ligada (10 cidades, até 3 páginas)': { ...BASE, rotacao: { ...BASE.rotacao, cidadesPorNicho: 10 }, paginacao: { ...BASE.paginacao, paginasMax: 3 } },
 };
 console.log(`Hipótese: páginas 2-3 rendem ${FATOR} × a página 1; ${RODADAS} rodadas; Out/2026 já tem 26 chamadas usadas (antes de 12/10).`);
 for (const [nome, cfg] of Object.entries(cenarios)) {
