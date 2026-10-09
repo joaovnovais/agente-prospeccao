@@ -14,7 +14,12 @@ for (const l of com) {
   if (!emailIdentificaEmpresa(c.email, lead.nome, lead.cidade)) continue;
   fila.push({ ...lead, fila: { modo: 'texto', email: c.email, contato_id: c.id, reacher: c.reacher_raw } });
 }
-for (const l of fb) {
+// 09/10: disjuntor aberto nesta execução (Gmail segurando o IP do Reacher) → sem fallback hoje. As sugestões da IA
+// também passam pelo Reacher: em 09/10 foram 6 consultas de 45 s depois do disjuntor, insistindo com o IP já travado.
+// Quem tem e-mail confirmado (modo texto) continua sendo enviado: não depende do Reacher.
+const sd = $getWorkflowStaticData('global');
+const disjuntorAberto = sd.reacherExec === String($execution.id) && (sd.reacherFalhas || 0) >= CONFIG.reacherFalhasSeguidasMax;
+for (const l of disjuntorAberto ? [] : fb) {
   if (vistos.has(l.id)) continue;
   vistos.add(l.id);
   fila.push({ ...l, fila: { modo: 'fallback' } });
