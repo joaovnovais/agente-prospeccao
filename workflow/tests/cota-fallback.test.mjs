@@ -11,9 +11,9 @@ const CONFIG = JSON.parse(readFileSync(`${R}/config.json`, 'utf8'));
 const LIB = readFileSync(`${R}/code/_lib.js`, 'utf8');
 const lib = new Function('CONFIG', LIB + '; return { variantesEmail, assuntoPadrao, ASSUNTO_SITE_EXISTE_RE, checarFatos };')(CONFIG);
 const rodar = (file, { input = [], nodes = {}, staticData = {}, config = CONFIG } = {}) =>
-  new Function('$input', '$', '$getWorkflowStaticData', 'CONFIG', LIB + '\n' + readFileSync(`${R}/code/${file}`, 'utf8'))(
+  new Function('$input', '$', '$getWorkflowStaticData', '$execution', 'CONFIG', LIB + '\n' + readFileSync(`${R}/code/${file}`, 'utf8'))(
     { first: () => input[0], all: () => input }, (n) => ({ first: () => (nodes[n] || [])[0], all: () => nodes[n] || [] }),
-    () => staticData, config);
+    () => staticData, { id: 'teste' }, config);
 let falhas = 0; const ok = (c, m) => { console.log((c ? '  ✔ ' : '  ✘ ') + m); if (!c) falhas++; };
 
 const lead = (modo, extra = {}) => ({ id: 'L1', nome: 'Advocacia Vasconcelos Exemplar', cidade: 'Vila Fictícia', estado: 'GO', rating: 4.8,
@@ -135,8 +135,10 @@ console.log('Estrutura do workflow');
   const n6 = wd.nodes.find((x) => x.name === 'W: confirmação por nicho');
   ok(n6 && n6.onError === 'continueRegularOutput' && n6.executeOnce === true && /prospeccao_confirmacao_nicho/.test(n6.parameters.url),
      'watchdog consulta a view 006 uma vez, com falha suave');
-  ok(wd.connections['W: contatos pendentes'].main[0][0].node === 'W: confirmação por nicho'
-     && wd.connections['W: confirmação por nicho'].main[0][0].node === 'Montar resumo', 'consulta semanal entre "contatos pendentes" e "Montar resumo"');
+  // 09/10: "W: Reacher hoje" entra entre "contatos pendentes" e a consulta semanal.
+  ok(wd.connections['W: contatos pendentes'].main[0][0].node === 'W: Reacher hoje'
+     && wd.connections['W: Reacher hoje'].main[0][0].node === 'W: confirmação por nicho'
+     && wd.connections['W: confirmação por nicho'].main[0][0].node === 'Montar resumo', 'consultas do Reacher e semanal antes de "Montar resumo"');
   const sql = readFileSync(`${R}/../supabase/006_confirmacao_nicho.sql`, 'utf8');
   ok(/create or replace view/i.test(sql) && !/\b(drop|alter|delete|update|insert)\b/i.test(sql) && /revoke all .* from anon, authenticated/i.test(sql),
      'migration 006 é só uma view (aditiva), sem acesso para anon/authenticated');

@@ -183,6 +183,7 @@
   "reacherFalhasSeguidasMax": 3,
   "pausaEntreVerificacoesSeg": 10,
   "reacherIntervaloMs": 6000,
+  "reacherLimiteDiario": 25,
   "maxTentativasFallback": 2,
   "exclusoesJanelaMax": 4,
   "sobrenomesComuns": [

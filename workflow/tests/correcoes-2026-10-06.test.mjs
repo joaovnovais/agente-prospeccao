@@ -107,7 +107,8 @@ console.log('Watchdog (w_resumo.js)');
   const wd = JSON.parse(readFileSync(`${R}/dist/novax-robson-watchdog.json`, 'utf8'));
   const https = wd.nodes.filter((n) => n.type === 'n8n-nodes-base.httpRequest');
   // 13/10: 9ª consulta = bloco semanal (taxa de e-mail confirmado por nicho).
-  ok(https.length === 9 && https.every((n) => n.executeOnce === true && n.parameters.method === 'GET'), 'watchdog: 9 consultas GET, cada uma com executeOnce');
+  // 09/10: 10ª consulta = reservas/disjuntor do Reacher do dia.
+  ok(https.length === 10 && https.every((n) => n.executeOnce === true && n.parameters.method === 'GET'), 'watchdog: 10 consultas GET, cada uma com executeOnce');
   ok(wd.id === 'prspWatchdog01' && wd.id !== '6NJ7fIsgaBsWh1iX', 'watchdog tem ID próprio');
 }
 

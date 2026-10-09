@@ -218,6 +218,17 @@ http('Reacher - variações do nome', [8, 2], { method: 'POST', url: CONFIG.reac
   body: '={{ JSON.stringify({ to_email: $json.email }) }}' });
 code('Resultado verificação (código)', 'b_resultado_verificacao.js', [9, 2.4]);
 iff('Reacher travou?', '$json.disjuntor === true', [10, 1.6]);
+// 09/10: orçamento GLOBAL do Reacher (migration 007; teto diário fixo na função do Supabase, vale para toda origem).
+// Cada lote é reservado ANTES de consultar; sem orçamento, nada é consultado.
+const reservarReacher = (name, pos, qtdExpr, origem) => supa(name, pos, { method: 'POST', path: '/rpc/prospeccao_reservar_reacher',
+  body: `={{ JSON.stringify({ p_qtd: ${qtdExpr}, p_origem: '${origem}' }) }}` });
+reservarReacher('Reservar Reacher (variações)', [7.5, 1.6], "$('Variações do nome').all().filter((i) => i.json && i.json.email).length", 'robson:variacoes');
+iff('Reacher liberado? (variações)', '$json.ok === true', [8, 1.2]);
+code('Variações reservadas', 'b_variacoes_reservadas.js', [8.5, 1.2]);
+code('Sem orçamento Reacher', 'b_sem_orcamento_reacher.js', [9, 0.8]);
+// Disjuntor registrado no Supabase: o watchdog das 10:15 avisa "Reacher travou".
+supa('Registrar disjuntor', [11, 1.2], { method: 'POST', path: '/prospeccao_reacher_reservas',
+  body: `={{ JSON.stringify({ origem: 'robson:disjuntor', qtd: 0, ok: false }) }}` });
 iff('E-mail do nome confirmado?', '$json.safe === true', [10, 2.4]);
 wait('Pausa entre verificações', CONFIG.pausaEntreVerificacoesSeg, [13, 2.4]);
 supa('Salvar contato verificado', [11, 2], { method: 'POST', path: '/prospeccao_contatos?on_conflict=email',
@@ -231,7 +242,6 @@ supa('Buscar fila com e-mail', [7, 3.2], { path: `/prospeccao_leads?select=*,con
 supa('Buscar fila fallback', [8, 3.2], { path: `/prospeccao_leads?select=*&status=eq.novo&verificacao_codigo_em=not.is.null&order=updated_at.asc,id.asc&limit={{ $('Calcular limite do dia').first().json.lote }}` });
 code('Montar fila de envio', 'b_montar_fila.js', [9, 3.2]);
 // 07/10: "Buscar fila fallback" recebe 1 item por lead com e-mail e rodava uma vez por item (120 itens para 30 leads).
-for (const n of nodes) if (n.name === 'Buscar fila com e-mail' || n.name === 'Buscar fila fallback') n.executeOnce = true;
 
 loop('Loop leads', [4, 4]);
 supa('Status envios (lead)', [5, 4], { path: '/prospeccao_status_envio?select=*' });
@@ -252,6 +262,9 @@ code('Preparar retry - e-mail', '_retry.js', [10, 7]);
 code('Revisão manual (e-mail)', 'b_revisao.js', [14, 7]);
 iff('E-mail já confirmado?', `!!$json.lead.fila && $json.lead.fila.modo === 'texto'`, [14, 4]);
 iff('Há candidatos novos?', '!!$json.candidatos && $json.candidatos.length > 0', [14, 5.2]);
+reservarReacher('Reservar Reacher (candidatos)', [14.5, 5.8], '$json.candidatos.length', 'robson:candidatos');
+iff('Reacher liberado? (candidatos)', '$json.ok === true', [15, 5.8]);
+noop('Parar: orçamento do Reacher', [15.5, 6.4]);
 code('Separar candidatos', 'b_separar_candidatos.js', [15, 5.2]);
 http('Reacher - candidatos da IA', [16, 5.2], { method: 'POST', url: CONFIG.reacherUrl, timeout: 90000, soft: true, intervaloMs: CONFIG.reacherIntervaloMs,
   body: '={{ JSON.stringify({ to_email: $json.email }) }}' });
@@ -279,10 +292,13 @@ link('Teste: envio?', 'Status envios (dia)', 0);
 link('Há leads p/ verificar?', 'Loop verificação', 0); link('Há leads p/ verificar?', 'Fim da verificação', 1);
 link('Loop verificação', 'Fim da verificação', 0); link('Loop verificação', 'Variações do nome', 1);
 chain('Variações do nome', 'Tem variação?');
-link('Tem variação?', 'Reacher - variações do nome', 0); link('Tem variação?', 'Resultado verificação (código)', 1);
+link('Tem variação?', 'Reservar Reacher (variações)', 0);
+chain('Reservar Reacher (variações)', 'Reacher liberado? (variações)');
+link('Reacher liberado? (variações)', 'Variações reservadas', 0); link('Reacher liberado? (variações)', 'Sem orçamento Reacher', 1);
+link('Variações reservadas', 'Reacher - variações do nome'); link('Sem orçamento Reacher', 'Fim da verificação'); link('Tem variação?', 'Resultado verificação (código)', 1);
 chain('Reacher - variações do nome', 'Resultado verificação (código)', 'Reacher travou?');
 // Disjuntor: consulta inconclusiva → encerra a fase 1 já (sem acumular timeouts) e segue p/ a fila com o que já foi confirmado.
-link('Reacher travou?', 'Fim da verificação', 0); link('Reacher travou?', 'E-mail do nome confirmado?', 1);
+link('Reacher travou?', 'Registrar disjuntor', 0); link('Registrar disjuntor', 'Fim da verificação'); link('Reacher travou?', 'E-mail do nome confirmado?', 1);
 link('E-mail do nome confirmado?', 'Salvar contato verificado', 0); link('E-mail do nome confirmado?', 'Marcar verificação (lead)', 1);
 chain('Salvar contato verificado', 'Marcar verificação (lead)', 'Pausa entre verificações', 'Loop verificação');
 chain('Fim da verificação', 'Buscar fila com e-mail', 'Buscar fila fallback', 'Montar fila de envio', 'Loop leads');
@@ -299,7 +315,9 @@ link('JSON válido? (e-mail)', 'E-mail já confirmado?', 0); link('JSON válido?
 link('Ainda tem tentativa? (e-mail)', 'Pausa retry (e-mail)', 0); link('Ainda tem tentativa? (e-mail)', 'Revisão manual (e-mail)', 1);
 chain('Pausa retry (e-mail)', 'Preparar retry - e-mail', 'Pedido IA - e-mail');
 link('E-mail já confirmado?', 'E-mail definido', 0); link('E-mail já confirmado?', 'Há candidatos novos?', 1);
-link('Há candidatos novos?', 'Separar candidatos', 0); link('Há candidatos novos?', 'Descartar lead', 1);
+link('Há candidatos novos?', 'Reservar Reacher (candidatos)', 0);
+chain('Reservar Reacher (candidatos)', 'Reacher liberado? (candidatos)');
+link('Reacher liberado? (candidatos)', 'Separar candidatos', 0); link('Reacher liberado? (candidatos)', 'Parar: orçamento do Reacher', 1); link('Há candidatos novos?', 'Descartar lead', 1);
 chain('Separar candidatos', 'Reacher - candidatos da IA', 'Escolher melhor e-mail', 'Tem e-mail válido?');
 link('Tem e-mail válido?', 'E-mail definido', 0); link('Tem e-mail válido?', 'Descartar lead', 1);
 chain('E-mail definido', 'Checar bloqueio LGPD', 'Montar e-mail final', 'Bloqueado?');
@@ -436,6 +454,8 @@ const wf = {
   settings: { executionOrder: 'v1', timezone: CONFIG.agenda.fuso, saveManualExecutions: true, saveDataErrorExecution: 'all', saveDataSuccessExecution: 'all', callerPolicy: 'workflowsFromSameOwner' },
 };
 mkdirSync(join(DIR, 'dist'), { recursive: true });
+// Rodam 1 vez por lote (recebem N itens): buscas da fila (07/10) e reservas/registro do Reacher (09/10).
+for (const n of nodes) if (['Buscar fila com e-mail', 'Buscar fila fallback', 'Reservar Reacher (variações)', 'Reservar Reacher (candidatos)', 'Registrar disjuntor'].includes(n.name)) n.executeOnce = true;
 writeFileSync(join(DIR, 'dist', 'novax-agente-prospeccao.json'), JSON.stringify(wf, null, 2));
 console.log(`build ${BUILD_ID} · ok: ${nodes.length} nós, ${Object.values(connections).reduce((a, c) => a + c.main.flat().length, 0)} conexões`);
 
@@ -456,11 +476,12 @@ supa('W: respostas hoje', [7, 0], { path: `/prospeccao_envios?select=id&resposta
 supa('W: fila sem verificação', [8, 0], { path: '/prospeccao_leads?select=id&status=eq.novo&verificacao_codigo_em=is.null' });
 supa('W: contatos pendentes', [9, 0], { path: '/prospeccao_leads?select=id,contatos:prospeccao_contatos!inner(id)&status=eq.novo&contatos.reacher_status=eq.safe&contatos.bloqueado=is.false' });
 // Bloco semanal (segundas): view da migration 006. Falha suave: sem a view, o resumo diário sai normalmente.
+supa('W: Reacher hoje', [9.2, 1], { path: `/prospeccao_reacher_reservas?select=origem,qtd,ok&em=gte.{{ ${HOJE}.inicio }}`, soft: true });
 supa('W: confirmação por nicho', [9.5, 1], { path: '/prospeccao_confirmacao_nicho?select=*&order=captados.desc', soft: true });
 code('Montar resumo', 'w_resumo.js', [10, 0]);
 smtp('Enviar resumo (SMTP)', 'Montar resumo', [11, 0]);
 chain('Diário - Watchdog', 'Janela de hoje', 'W: status envio', 'W: envios hoje', 'W: verificados hoje', 'W: contatos hoje',
-  'W: uso API hoje', 'W: respostas hoje', 'W: fila sem verificação', 'W: contatos pendentes', 'W: confirmação por nicho', 'Montar resumo',
+  'W: uso API hoje', 'W: respostas hoje', 'W: fila sem verificação', 'W: contatos pendentes', 'W: Reacher hoje', 'W: confirmação por nicho', 'Montar resumo',
   'Enviar resumo (SMTP)');
 link('Teste manual (watchdog)', 'Janela de hoje');
 // Cada consulta roda UMA vez: sem isso o n8n repete o nó para cada item recebido do anterior e os números se multiplicam.

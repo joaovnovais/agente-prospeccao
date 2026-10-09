@@ -53,11 +53,23 @@ Leitura:
   - nos nichos de 2 termos, com termo diferente;
   - em `material_construcao` (1 termo), a busca repete, e as páginas 2-3 cobrem.
 
+## Orçamento do Reacher (09/10)
+- **Por quê:** em 08/10 o Gmail passou a segurar o IP da VPS por volta da 37ª consulta do dia (23 do Robson + 19 de uma amostra avulsa). Em 09/10 o envio fez 0 envios. Sem bloqueio, o Robson sozinho usou 17, 22 e 23 consultas (06–08/10).
+- **Teto:** **25 consultas por dia (BRT), somando todas as origens.** Fica fixo na função `prospeccao_reservar_reacher(p_qtd, p_origem)` (migration 007); `config.reacherLimiteDiario` só espelha o valor. Contador em `prospeccao_uso_api` (`servico = 'reacher'`), com o registro de cada reserva e de cada disjuntor em `prospeccao_reacher_reservas`.
+- **No Robson:**
+  - "Reservar Reacher (variações)" e "(candidatos)" reservam o lote antes de consultar.
+  - Sem orçamento nas variações, a verificação do dia termina e não há fallback (como o disjuntor).
+  - Sem orçamento nos candidatos, o loop para (como a cota da IA).
+  - Um teste confere que nenhum nó do Reacher é alcançado sem passar pelo ramo "liberado" de uma reserva.
+- **Disjuntor:** gravado como `robson:disjuntor`. O watchdog das 10:15 mostra "Reacher: N de 25" e alerta "Reacher travou" ou "orçamento do Reacher esgotado".
+- **Scripts locais:** só consultam depois de `reservarReacher()` (`docs/local/reacher-orcamento.mjs`, falha fechada sem `SUPABASE_ANON_KEY` em `docs/local/.env`). A anon só executa essa função; o pior abuso possível é esgotar o teto do dia, que é uma falha segura.
+
 ## Deploy (13/10, junto com `cota-fallback`)
-- Esta branch contém `cota-fallback`. Fazer o merge **desta** em `main` leva as duas.
+- Esta branch contém `cota-fallback` e o hotfix de 09/10 (`main`). Fazer o merge **desta** em `main` leva tudo.
+- **Orçamento global do Reacher (09/10):** migration 007 + reservas no Robson + watchdog. Ver "Orçamento do Reacher" abaixo.
 - Ordem:
-  1. migration 006;
-  2. build e 5 suítes de teste;
+  1. migrations 006 e 007, conferindo com `select * from prospeccao_confirmacao_nicho` e `select * from prospeccao_reservar_reacher(1, 'deploy:teste')`. A conferência gasta 1 das 25 do dia; faça no dia do deploy, depois do envio;
+  2. build e 7 suítes de teste;
   3. lint;
   4. merge;
   5. push;

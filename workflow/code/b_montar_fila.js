@@ -18,7 +18,8 @@ for (const l of com) {
 // também passam pelo Reacher: em 09/10 foram 6 consultas de 45 s depois do disjuntor, insistindo com o IP já travado.
 // Quem tem e-mail confirmado (modo texto) continua sendo enviado: não depende do Reacher.
 const sd = $getWorkflowStaticData('global');
-const disjuntorAberto = sd.reacherExec === String($execution.id) && (sd.reacherFalhas || 0) >= CONFIG.reacherFalhasSeguidasMax;
+const disjuntorAberto = (sd.reacherExec === String($execution.id) && (sd.reacherFalhas || 0) >= CONFIG.reacherFalhasSeguidasMax)
+  || sd.reacherSemOrcamentoExec === String($execution.id); // 09/10: orçamento global do Reacher esgotado também
 for (const l of disjuntorAberto ? [] : fb) {
   if (vistos.has(l.id)) continue;
   vistos.add(l.id);
