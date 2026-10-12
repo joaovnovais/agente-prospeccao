@@ -95,11 +95,9 @@ const SEM_ACENTO_RE = /\b(nao|voce|voces|servicos?|horarios?|reuni[ao]o|reunioes
 const NUM_EXTENSO = { um: 1, uma: 1, dois: 2, duas: 2, tres: 3, quatro: 4, cinco: 5, seis: 6, sete: 7, oito: 8, nove: 9, dez: 10 };
 const NUM_EXTENSO_RE = 'um|uma|dois|duas|tr[êe]s|quatro|cinco|seis|sete|oito|nove|dez';
 const numExtenso = (w) => String(NUM_EXTENSO[w.toLowerCase().replace('ê', 'e')]);
-// 13/10: assunto padrão quando a IA insiste em "Presença digital para …" (nome + cidade; cabe no limite de 90).
-const assuntoPadrao = (lead) => {
-  const a = `${lead.nome} em ${lead.cidade}: perfil no Google sem site`;
-  return a.length <= 90 ? a : `${String(lead.nome).slice(0, 60).trim()}: perfil no Google sem site`;
-};
+// 13/10: assunto padrão quando a IA erra o assunto. Copy v2: é o formato sorteado do lead montado pelo código; só existe
+// quando o nome cabe inteiro no assunto (até 4 palavras). Nome maior → null (a IA precisa da forma curta: nova tentativa).
+const assuntoPadrao = (lead) => (nomeCabeNoAssunto(lead) ? montarAssunto(formatoAssunto(lead), lead) : null);
 function checarFatos(texto, lead) {
   const erros = [];
   // O nome pode estar cadastrado sem acento no Google (e a IA pode reescrevê-lo em outra caixa): removido sem diferenciar maiúsculas.
@@ -263,4 +261,94 @@ const emailPossivel = (e) => {
   const u = e.split('@')[0];
   return u.length >= 6 && u.length <= 30;
 };
+// ---- Copy v2 (12/10/2026): primeiro e-mail de uma pessoa para outra ----
+// Formato do assunto sorteado pelo código, não pela IA: hash FNV do lead.id, misturado (fmix64 do MurmurHash3: o FNV
+// sozinho deixa ids parecidos no mesmo formato), módulo o nº de formatos. Determinístico: a nova tentativa do mesmo lead
+// recebe o mesmo formato.
+const M64 = 0xffffffffffffffffn;
+const fmix64 = (h) => {
+  h ^= h >> 33n; h = (h * 0xff51afd7ed558ccdn) & M64;
+  h ^= h >> 33n; h = (h * 0xc4ceb9fe1a85ec53n) & M64;
+  return h ^ (h >> 33n);
+};
+const formatoAssunto = (lead) => {
+  const fs = CONFIG.assuntoFormatos || [];
+  return fs[Number(fmix64(BigInt('0x' + fnv64(String(lead.id ?? lead.nome ?? '')))) % BigInt(fs.length))];
+};
+const escRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// Nome em CAIXA ALTA no Google ("ADVOCACIA EXEMPLO") vira "Advocacia Exemplo" no texto; os demais ficam como estão.
+const CONECTIVOS_NOME = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'a', 'o', 'as', 'os']);
+const nomeExibicao = (nome) => {
+  const s = String(nome || '').trim();
+  if (s !== s.toUpperCase() || !/\p{Lu}/u.test(s)) return s;
+  return s.toLowerCase().split(/\s+/).map((w, i) => (i && CONECTIVOS_NOME.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
+};
+const nomeCabeNoAssunto = (lead) => norm(lead.nome).split(' ').filter(Boolean).length <= 4;
+const montarAssunto = (formato, lead, nome = nomeExibicao(lead.nome)) => formato.replace('{nome}', nome).replace('{cidade}', lead.cidade);
+// Nome com marcador de mais de uma pessoa: aí "vocês" / "o escritório" é natural; nos demais, "você".
+const nomeSugerePlural = (nome) => /&/.test(String(nome || ''))
+  || /\b(advogad[oa]s|associad[oa]s|sociedade|socios|irmaos|filhos|parceiros|equipe|grupo)\b|\se\s/.test(' ' + norm(nome) + ' ');
+
+// Assunto: formato sorteado (3 a 7 palavras, nome e cidade contam 1 cada), sem nota/avaliações nem os padrões antigos.
+const ASSUNTO_PROIBIDO_V2 = /\b(pode aparecer|sem site|ganha|tem nota|presenca digital)\b/;
+function checarAssuntoV2(assunto, lead) {
+  const erros = [];
+  const a = String(assunto || '').trim();
+  const fmt = formatoAssunto(lead);
+  const n = norm(a);
+  const nFmt = norm(fmt.replace(/\{\w+\}/g, ' ')).split(' ').filter(Boolean).length + (fmt.match(/\{\w+\}/g) || []).length;
+  if (nFmt < 3 || nFmt > 7) erros.push(`formato do config fora de 3-7 palavras ("${fmt}")`);
+  if (/!/.test(a)) erros.push('com ponto de exclamação');
+  if (/\p{Extended_Pictographic}/u.test(a)) erros.push('com emoji');
+  if (!/^[\p{Lu}0-9]/u.test(a)) erros.push('não começa com letra maiúscula');
+  const semNome = lead.nome ? a.replace(new RegExp(escRe(lead.nome), 'gi'), ' ') : a;
+  if (/\p{Lu}{4,}/u.test(semNome)) erros.push('com palavra em CAIXA ALTA');
+  if (/\d/.test(a) || /\b(nota|avaliac\w*|estrelas?)\b/.test(n)) erros.push('cita nota, avaliações ou estrelas');
+  const proib = n.match(ASSUNTO_PROIBIDO_V2);
+  if (proib) erros.push(`no padrão antigo ("${proib[0]}")`);
+  // Partes fixas exatas; {cidade} = a cidade do lead; {nome} = 1 a 4 palavras, todas do nome real (forma curta, sem inventar).
+  const toks = fmt.split(/(\{nome\}|\{cidade\})/)
+    .map((p) => (p === '{nome}' ? '(.+?)' : p === '{cidade}' ? escRe(norm(lead.cidade)) : escRe(norm(p)))).filter(Boolean);
+  const m = n.match(new RegExp('^' + toks.join(' ') + '$'));
+  const doNome = new Set(norm(lead.nome).split(' '));
+  const slot = m ? m[1].split(' ').filter((w, i) => !(i === 0 && ['a', 'o', 'as', 'os'].includes(w))) : [];
+  if (!m || slot.length < 1 || slot.length > 4 || !slot.every((w) => doNome.has(w))) erros.push(`fora do formato sorteado ("${fmt}")`);
+  return erros.map((e) => 'assunto ' + e);
+}
+
+// Corpo: curto, em primeira pessoa, observação neutra e pedido de sim ou não, sem reunião nem duração no primeiro toque.
+const TERMOS_PROIBIDOS_V2 = [
+  [/\blacuna/i, '"lacuna"'], [/\bdificult/i, '"dificulta"'], [/\bresolveria/i, '"resolveria"'],
+  [/reuni[ãa]o de diagn[óo]stico/i, '"reunião de diagnóstico"'], [/reuni[ãa]o/i, 'pedido de reunião no primeiro contato'],
+  [/\b(\d+|quinze|vinte|trinta|quarenta)\s*(min\b|minutos?)/i, 'duração ("30 minutos")'], [/\bminutos?\b/i, 'duração em minutos'],
+  [/gratuit/i, '"gratuita"'], [/\bgostar[íi]a/i, '"Gostaria de"'], [/presen[çc]a digital/i, '"presença digital"'],
+  [/\bsites?\b[^.?!\n]{0,30}\bprofissiona/i, '"profissional" como adjetivo de site'],
+  [/profissiona\w*\s+(?:\S+\s+)?sites?\b/i, '"profissional" como adjetivo de site'],
+  [/^\s*ol[áa]\s*[,!.]?\s*(vi que|equipe)/i, 'abertura antiga ("Olá, vi que" / "Olá, equipe")'],
+  [/\p{L}-l[oa]s?(?!\p{L})/iu, 'forma com gênero ("convidá-lo/la/los")'], [/\((?:o|a|os|as|s)\)/i, 'forma com gênero ("(a)")'],
+  [/\bprezad[oa]/i, 'forma com gênero ("Prezado")'],
+];
+function checarCorpoV2(corpo, lead) {
+  const erros = [];
+  const c = String(corpo || '').trim();
+  const L = CONFIG.corpoLimites;
+  const palavras = c.split(/\s+/).filter(Boolean).length;
+  if (c.length < L.caracteresMin || c.length > L.caracteresMax) erros.push(`com ${c.length} caracteres (fora de ${L.caracteresMin}-${L.caracteresMax})`);
+  if (palavras < L.palavrasMin || palavras > L.palavrasMax) erros.push(`com ${palavras} palavras (fora de ${L.palavrasMin}-${L.palavrasMax})`);
+  if (c.split(/\n\s*\n/).filter((p) => p.trim()).length > 2) erros.push('com mais de 2 parágrafos');
+  // Frases: sem a saudação ("Olá!"), sem o nome da empresa e sem "Dr./Dra." (esse ponto não fecha frase).
+  let t = c.replace(/^\s*ol[áa]\s*[!,.]?\s*/i, '');
+  if (lead.nome) t = t.replace(new RegExp(escRe(lead.nome), 'gi'), 'X');
+  t = t.replace(/\b(dra?|sra?|profa?)\./gi, '$1');
+  const frases = (t.match(/[.!?]+(?=\s|$)/g) || []).length;
+  if (frases < 3 || frases > 5) erros.push(`com ${frases} frases (fora de 3-5)`);
+  for (const [re, nome] of TERMOS_PROIBIDOS_V2) if (re.test(c)) erros.push('contém ' + nome);
+  const pessoa = norm(CONFIG.remetente.nomePessoa || '');
+  if (!pessoa || !new RegExp(`\\bsou (o|a) ${escRe(pessoa)}\\b`).test(norm(c.slice(0, 120)))) {
+    erros.push(`sem primeira pessoa na abertura ("Sou o ${CONFIG.remetente.nomePessoa}")`);
+  }
+  if (!nomeSugerePlural(lead.nome) && /(^|[^\p{L}])voc[êe]s(?!\p{L})/iu.test(c)) erros.push('trata por "vocês" um nome que não indica mais de uma pessoa (use "você")');
+  if (!/\?\s*$/.test(c)) erros.push('não termina com a pergunta de sim ou não');
+  return erros.map((e) => 'corpo ' + e);
+}
 // ---- fim da biblioteca ----

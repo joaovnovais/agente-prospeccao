@@ -28,12 +28,17 @@ if (fallback) {
   if (!cands.length) return [{ json: { ...out, ok: true, sem_candidato: true, candidatos: [], assunto: null, corpo: null } }];
 }
 // 13/10 (b): assunto "Presença digital para …" (8 das 18 novas tentativas de 07/10, apesar da regra no prompt) é trocado
-// por um assunto padrão com nome e cidade, sem nova chamada à IA. As demais checagens valem para o assunto novo.
+// por um assunto padrão, sem nova chamada à IA. Copy v2: vale para qualquer assunto reprovado (formato, nota, padrão antigo)
+// quando o nome tem até 4 palavras e o código monta sozinho o formato sorteado. As demais checagens valem para o assunto novo.
 let assuntoCorrigido = false;
-if (typeof o.assunto === 'string' && /^presenca digital para/.test(norm(o.assunto))) { o.assunto = assuntoPadrao(L); assuntoCorrigido = true; }
+if (typeof o.assunto === 'string' && (/^presenca digital para/.test(norm(o.assunto)) || checarAssuntoV2(o.assunto, L).length) && assuntoPadrao(L)) {
+  o.assunto = assuntoPadrao(L); assuntoCorrigido = true;
+}
 if (typeof o.assunto !== 'string' || o.assunto.trim().length < 5 || o.assunto.length > 90) erros.push('assunto ausente ou fora de 5-90 caracteres');
-if (typeof o.corpo !== 'string' || o.corpo.trim().length < 300 || o.corpo.length > 1800) erros.push('corpo ausente ou fora de 300-1800 caracteres');
-if (typeof o.corpo === 'string') {
+// Copy v2: limites do corpo (caracteres e palavras) vêm de CONFIG.corpoLimites, em checarCorpoV2.
+if (typeof o.corpo !== 'string' || !o.corpo.trim()) erros.push('corpo ausente');
+if (typeof o.corpo === 'string' && o.corpo.trim()) {
+  erros.push(...checarCorpoV2(o.corpo, L));
   if (/[\[\]{}]/.test(o.corpo)) erros.push('corpo contém placeholder entre colchetes/chaves');
   if (!/site/i.test(o.corpo)) erros.push('corpo não menciona a lacuna (site)');
   if (RECUSA_RE.test(o.corpo)) erros.push('corpo contém texto de recusa/meta-comentário da IA');
@@ -44,12 +49,13 @@ if (typeof o.corpo === 'string') {
 }
 if (typeof o.assunto === 'string') {
   const a = norm(o.assunto);
-  const dados = [norm(L.cidade), norm(L.nome).split(' ').find((w) => w.length > 3), L.rating != null ? norm(fmtNota(L.rating)) : null,
-                 L.total_avaliacoes ? String(L.total_avaliacoes) : null].filter(Boolean);
+  // Copy v2: o assunto usa a forma curta do nome, então vale qualquer palavra do nome (nota e avaliações saíram do assunto).
+  const dados = [norm(L.cidade), ...norm(L.nome).split(' ').filter((w) => w.length > 3)].filter(Boolean);
   if (!dados.some((d) => a.includes(d))) erros.push('assunto sem dado específico do lead (cidade, nome, nota ou avaliações)');
   if (/^presenca digital para/.test(a)) erros.push('assunto no padrão repetitivo "Presença digital para"');
   if (ASSUNTO_SITE_EXISTE_RE.test(o.assunto)) erros.push('assunto sugere que a empresa já tem site');
   erros.push(...checarFatos(o.assunto, L).map((e) => 'assunto ' + e));
+  erros.push(...checarAssuntoV2(o.assunto, L));
 }
 if (erros.length) {
   return [{ json: { ...out, ok: false, tipo_falha: 'schema', erro: 'schema inválido: ' + erros.join('; '), raw: String(p.raw).slice(0, 3000) } }];
