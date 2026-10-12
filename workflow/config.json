@@ -47,13 +47,26 @@
   "remetente": {
     "nome": "Novax",
     "email": "novax.ia.br@gmail.com",
-    "assinatura": "Equipe Novax\nnovax.ia.br | instagram.com/novax.ia.br",
+    "nomePessoa": "João",
+    "assinatura": "João Novais\nNovax · novax.ia.br | instagram.com/novax.ia.br",
     "links": {
       "novax.ia.br": "https://novax.ia.br",
       "instagram.com/novax.ia.br": "https://instagram.com/novax.ia.br"
     }
   },
-  "oferta": "A Novax cria presença digital para pequenas empresas: site profissional e atendimento automatizado com IA (recepcionista digital que responde clientes e agenda horários 24h).",
+  "oferta": "A Novax cria sites simples para pequenas empresas, com atendimento automático por IA (recepcionista digital que responde clientes pelo WhatsApp e agenda horários 24h).",
+  "assuntoFormatos": [
+    "Uma ideia para {nome}",
+    "Pergunta rápida sobre {nome}",
+    "{nome} no Google de {cidade}",
+    "Sobre o perfil de {nome} no Google"
+  ],
+  "corpoLimites": {
+    "palavrasMin": 55,
+    "palavrasMax": 95,
+    "caracteresMin": 300,
+    "caracteresMax": 900
+  },
   "agenda": {
     "duracaoMin": 45,
     "horarios": [
