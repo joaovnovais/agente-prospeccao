@@ -73,7 +73,8 @@ ok(lib.checarFatos('Escritório de contabilidade em Exemplo.', dent).some((e) =>
 const antigo = { nome: 'Sorriso Prime', nicho: 'odontologia_estetica', rating: 5, total_avaliacoes: 30 };
 ok(lib.checarFatos('A Sorriso Prime é uma clínica odontológica.', antigo).length === 0, 'lead antigo sem tipo do Google: o nicho da busca vale como evidência');
 const ped = rodar('b_pedido_ia.js', [{ json: { lead: { ...dent, cidade: 'Exemplo', estado: 'GO', fila: { modo: 'texto' } } } }])[0].json;
-const prompt = ped.messages.map((m) => m.content).join('\n');
+// Copy v2 (12/10): o prompt traz um exemplo fixo de escritório de advocacia fictício; o rótulo interno é procurado fora dele.
+const prompt = ped.messages.map((m) => m.content).join('\n').replace(/Exemplo do tom \(empresa fictícia[\s\S]*?"\}/, '');
 ok(prompt.includes('Tipo no Google Maps: Dentista'), 'prompt traz o tipo do Google Maps');
 ok(!CONFIG.catalogoNichos.some((n) => prompt.includes(n.nicho)) && !/Segmento pesquisado/.test(prompt), 'prompt sem rótulo interno de nicho');
 
