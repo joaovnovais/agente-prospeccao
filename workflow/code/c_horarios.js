@@ -30,10 +30,11 @@ if (calendarioOk) {
 }
 
 const blocoHorarios = opcoes.length
-  ? `Tenho estes horários disponíveis para a reunião de diagnóstico (${A.duracaoMin} min, online pelo Google Meet):\n` +
+  // Copy v2: o primeiro e-mail não fala mais de reunião; "a reunião de diagnóstico" pressupunha um convite anterior.
+  ? `Tenho estes horários disponíveis para conversarmos (${A.duracaoMin} min, online pelo Google Meet):\n` +
     opcoes.map((o, i) => `${i + 1}) ${o.label}`).join('\n') +
     '\n\nÉ só responder com o número da opção que funciona melhor — ou sugerir outro horário.'
-  : 'Qual o melhor dia e horário para você nos próximos dias? Assim já envio o convite da reunião.';
+  : 'Qual o melhor dia e horário para você nos próximos dias? Assim já envio o convite para conversarmos.';
 const texto = `${d.q.resposta_sugerida}\n\n${blocoHorarios}\n\n${CONFIG.remetente.assinatura}`;
 return [{ json: {
   destino: ctx.resposta.from,

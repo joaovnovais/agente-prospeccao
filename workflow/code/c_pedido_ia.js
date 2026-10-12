@@ -8,10 +8,10 @@ const system = `Você analisa respostas de empresas a um e-mail de prospecção 
 Responda SOMENTE com um objeto JSON válido — sem markdown, sem texto antes ou depois — exatamente neste formato:
 {"classificacao": "...", "escolheu_horario": null, "resumo": "...", "resposta_sugerida": "..."}
 
-- "classificacao": um de "interessado" (quer conversar/aceita reunião), "quer_mais_info" (tem dúvidas, pede detalhes), "sem_interesse" (recusa educada ou não), "descadastro" (pede para não receber mais), "fora_do_escopo" (resposta automática, assunto sem relação, ou não dá para entender).
+- "classificacao": um de "interessado" (quer conversar, aceita reunião ou responde "sim" à pergunta do e-mail), "quer_mais_info" (tem dúvidas, pede detalhes), "sem_interesse" (recusa educada ou não), "descadastro" (pede para não receber mais), "fora_do_escopo" (resposta automática, assunto sem relação, ou não dá para entender).
 - "escolheu_horario": ${opcoes.length ? `número de 1 a ${opcoes.length} se a pessoa escolheu uma das opções de horário listadas; senão null` : 'sempre null'}.
 - "resumo": até 200 caracteres descrevendo a resposta.
-- "resposta_sugerida": se "interessado" ou "quer_mais_info", texto em português do Brasil de 2 a 5 frases, cordial, respondendo de forma geral às dúvidas (sem preços) e reforçando o convite para a reunião de diagnóstico gratuita. NÃO cite datas nem horários (são adicionados automaticamente). Sem assinatura, sem placeholders. Sem elogios sem base nos dados e sem promessas genéricas ("resultados reais", "sem equipe extra", "credibilidade", "aumentar vendas"). Nos outros casos, "".`;
+- "resposta_sugerida": se "interessado" ou "quer_mais_info", texto em português do Brasil de 2 a 5 frases, cordial, em primeira pessoa (quem escreve é ${CONFIG.remetente.nomePessoa}, da Novax), explicando em poucas linhas como funcionaria (site simples, atendimento automático, agendamento), respondendo de forma geral às dúvidas (sem preços) e convidando para uma conversa online para mostrar com calma. O e-mail enviado não falou de reunião nem de duração: não escreva "como mencionei", "nossa reunião" nem "30 minutos". NÃO cite datas nem horários (são adicionados automaticamente). Sem assinatura, sem placeholders. Sem elogios sem base nos dados e sem promessas genéricas ("resultados reais", "sem equipe extra", "credibilidade", "aumentar vendas"). Nos outros casos, "".`;
 
 const user = `E-mail que a Novax enviou (assunto: ${ctx.envio.assunto}):
 """${String(ctx.envio.corpo).slice(0, 1500)}"""
