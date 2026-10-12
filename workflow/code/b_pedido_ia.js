@@ -26,29 +26,43 @@ Regras para "candidatos_email" (2 a 5 itens):
 - Tente abreviações e formas curtas do nome (usuário do Gmail tem no máximo 30 caracteres), sem acentos, espaços ou pontuação.
 - Somente letras minúsculas. Nunca invente nomes de pessoas.
 `;
-const system = `Você é redator de prospecção B2B da Novax (novax.ia.br). ${CONFIG.oferta}
+// Copy v2 (12/10): e-mail de uma pessoa para outra. O formato do assunto é sorteado pelo código (formatoAssunto) e o
+// prompt já recebe o texto pronto quando o nome cabe (até 4 palavras); o validador (checarAssuntoV2/checarCorpoV2) repete as regras.
+const pessoa = CONFIG.remetente.nomePessoa;
+const L = CONFIG.corpoLimites;
+const curto = nomeCabeNoAssunto(lead);
+const nomeTxt = curto ? nomeExibicao(lead.nome) : '{nome curto}';
+const regraNomeCurto = curto ? '' : `\n- {nome curto} = forma curta natural do nome da empresa, de 2 a 4 palavras, só com palavras do nome (sem inventar, sem CAIXA ALTA). Use a mesma forma no assunto e no corpo.`;
+const plural = nomeSugerePlural(lead.nome);
+const pergunta = plural ? `Faz sentido eu explicar a vocês, em poucas linhas, como isso funcionaria para ${nomeTxt}?`
+  : `Faz sentido eu te explicar, em poucas linhas, como isso funcionaria para ${nomeTxt}?`;
+const citaNota = lead.rating != null && lead.total_avaliacoes != null && lead.total_avaliacoes >= CONFIG.minAvaliacoesParaCitarNota;
+const regraNota = citaNota
+  ? `cite uma única vez, logo depois do nome, exatamente "(nota ${fmtNota(lead.rating)}, ${lead.total_avaliacoes} avaliações)"`
+  : 'NÃO cite nota, estrelas nem número de avaliações, nem por extenso ("uma avaliação", "cinco estrelas")';
+const system = `Você escreve, em nome de ${pessoa}, da Novax (novax.ia.br), o primeiro e-mail para uma pequena empresa. ${CONFIG.oferta}
 Responda SOMENTE com um objeto JSON válido — sem markdown, sem texto antes ou depois — exatamente neste formato:
 ${formato}
 ${regrasEmail}
-Regras para "assunto": curto (4 a 9 palavras), sem emojis, sem CAIXA ALTA, sem ponto de exclamação.
-- Deve conter um dado específico desta empresa: a cidade, o nome da empresa, a nota ou o número de avaliações.
-- Se citar a nota, use SEMPRE vírgula e uma casa decimal, copiando exatamente o valor informado abaixo (ex.: "nota 3,4"). NUNCA arredonde, trunque ou escreva "nota 3" nem "nota 3.4" (ponto).
-- NUNCA comece com "Presença digital para". Varie a construção. Modelos (adapte, não copie igual):
-  "{empresa} em {cidade}: o que o Google mostra hoje" · "Quem procura {empresa} no Google encontra o quê?" · "{cidade}: {empresa} sem site no perfil do Google"
-- Nunca diga nem sugira que a empresa já tem, ganhou ou terá um site (proibido: "ganha site", "novo site", "tem site", "site pronto").
+"assunto": use exatamente "${montarAssunto(formatoAssunto(lead), lead, nomeTxt)}".${regraNomeCurto}
 
-Regras para "corpo" (português do Brasil):
-- 4 a 6 frases (um e-mail curto), tom cordial, direto e humano. Não conte palavras nem caracteres: escreva naturalmente.
-- Cite o nome da empresa e a cidade.
-- Descreva o ramo da empresa apenas pelo nome dela e pelo tipo informado pelo Google Maps. Não afirme ramo nem especialidade que não esteja nesses dados (ex.: não chame uma clínica de estética de "odontológica" nem de "dental").
-- Escreva em português correto, com acentuação em TODAS as palavras que precisam (ex.: "clínica", "não", "avaliações", "reunião", "horário") — nunca "clinica", "nao", "avaliacoes".
-${lead.total_avaliacoes != null && lead.total_avaliacoes < CONFIG.minAvaliacoesParaCitarNota ? `- Esta empresa tem poucas avaliações no Google: NÃO cite nota, estrelas nem número de avaliações, nem por extenso ("uma avaliação", "cinco estrelas"), nem no assunto; use o nome ou a cidade.\n` : ''}- Use SOMENTE fatos dos dados fornecidos (nome, segmento, cidade, nota, número de avaliações, ausência de site). Se citar nota ou avaliações, use exatamente os números fornecidos.
-- NÃO elogie nem qualifique a empresa sem base nos dados (proibido: "ótimo", "excelente", "referência", "bem avaliada", "boa avaliação", "boas avaliações", "muitas avaliações", "reputação", "nota alta", etc.). Sobre avaliações, só é permitido citar a nota e o número exatos.
-- NÃO use promessas genéricas (proibido: "sem precisar de equipe extra", "resultados reais", "mais credibilidade", "aumentar vendas", "garantia"). Descreva concretamente o que um site resolveria para quem pesquisa esta empresa no Google.
-- Mencione concretamente a lacuna encontrada: a empresa não tem site vinculado ao perfil do Google, então quem pesquisa no Google não encontra informações completas nem um canal para agendar/comprar.
-- Convide para uma reunião de diagnóstico gratuita de 30 minutos, online.
-- Sem preços, sem promessas exageradas, sem emojis, sem links, sem placeholders entre colchetes ou chaves.
-- NÃO inclua saudação final, assinatura nem rodapé (são adicionados automaticamente).`;
+"corpo": e-mail curto de uma pessoa para outra, em português do Brasil, nesta ordem:
+1. Comece exatamente com "Olá! Sou o ${pessoa}, da Novax."
+2. Uma observação neutra: você pesquisou o ramo da empresa em ${lead.cidade} no Google e o perfil de ${nomeTxt} apareceu sem site; ${regraNota}.
+3. Uma frase concreta com o que um site simples resolve para esse ramo (ex.: mostrar serviços ou áreas de atuação, endereço e horário, botão de WhatsApp, agendamento), sem prometer resultado.
+4. Termine com esta pergunta: "${pergunta}"
+- ${L.palavrasMin} a ${L.palavrasMax} palavras, 3 a 5 frases curtas, no máximo 2 parágrafos.
+- ${plural ? 'Trate por "vocês" (o nome indica mais de uma pessoa).' : 'Trate a pessoa por "você" ou "te" (singular). Nunca "vocês".'} Nada de formas com gênero ("convidá-lo", "convidá-la", "convidá-los", "Prezado(a)").
+- Descreva o ramo apenas pelo nome da empresa e pelo tipo informado pelo Google Maps. Não afirme ramo nem especialidade que não esteja nesses dados (ex.: não chame uma clínica de estética de "odontológica" nem de "dental").
+- Acentuação correta em TODAS as palavras (ex.: "clínica", "não", "avaliações", "horário", "você") — nunca "clinica", "nao", "avaliacoes".
+- Use SOMENTE os dados fornecidos (nome, tipo, cidade, nota, número de avaliações, ausência de site). Números sempre em algarismos, copiados dos dados.
+- NÃO elogie nem qualifique a empresa (proibido: "ótimo", "excelente", "referência", "bem avaliada", "boa avaliação", "boas avaliações", "muitas avaliações", "reputação", "nota alta").
+- NÃO use promessas genéricas (proibido: "sem precisar de equipe extra", "resultados reais", "mais credibilidade", "aumentar vendas", "garantia").
+- NÃO use: "Olá, vi que", "Olá, equipe", "lacuna", "dificulta", "resolveria", "reunião", "30 minutos", "gratuita", "Gostaria de", "presença digital", "site profissional". Diga "site simples" ou só "site".
+- Sem preços, sem emojis, sem links, sem colchetes nem chaves, sem saudação final, assinatura ou rodapé (são adicionados automaticamente).
+
+Exemplo do tom (empresa fictícia, não copie os dados):
+{"assunto": "Uma ideia para Exemplo Advocacia", "corpo": "Olá! Sou o ${pessoa}, da Novax. Pesquisei escritórios de advocacia em Cidade Exemplo no Google e o perfil do Exemplo Advocacia (nota 4,4, 29 avaliações) apareceu sem site, então quem quer ver áreas de atuação ou agendar uma consulta não tem para onde ir.\\n\\nA Novax cria sites simples para escritórios, com agendamento e resposta automática pelo WhatsApp. Faz sentido eu te explicar, em poucas linhas, como isso funcionaria para o Exemplo Advocacia?"}`;
 
 const user = `Empresa: ${lead.nome}
 Tipo no Google Maps: ${lead.tipo_google || 'não informado (use só o nome da empresa)'}
