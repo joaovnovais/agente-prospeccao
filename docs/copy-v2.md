@@ -37,6 +37,18 @@ Testes:
 
 Reprova dos 29 textos reais antigos (contagem, sem gravar texto): **29 de 29 reprovados**, no corpo e no assunto. Em todos: reunião, duração, "gratuita" e falta de primeira pessoa; no assunto, o formato não é o sorteado. Em 27 deles, "profissional" junto de "site"; em 17, abertura antiga; em 16, nota no assunto. `tests/simular-execucao.mjs` (replay da #507) reaproveita textos antigos e por isso deixa de servir para medir aprovação de texto.
 
+## Medição com o modelo novo e assunto determinístico (21/10)
+- **Modelo:** em produção desde 21/10, `openai/gpt-5.6-luna` com reserva `gpt-6-luna` e `data_collection: "deny"` (os modelos `:free` saíram do ar em 20/10).
+- **1ª medição offline** (30 leads da #507): **83%** aprovado na 1ª tentativa e 97% em até 3. 7 das 8 reprovações eram de nomes com mais de 4 palavras, em que a IA escolhia a forma curta e o código não tinha como corrigir; a 8ª era palavra em CAIXA ALTA.
+- **Correção (commit `d67e817`):**
+  - **`nomeCurtoAssunto`:** o código faz a forma curta do nome. Corta no 1º separador (` - `, `|`, `/`, `(`, `,`), fica com até 4 palavras e não termina em conectivo nem título ("Dra.").
+  - O prompt recebe o **assunto pronto para todo lead**, com a ordem de copiar exatamente, e a mesma forma curta para o corpo.
+  - **`normalizarCaixa`:** palavra inteira em maiúsculas com 4+ letras vira Título antes de validar.
+  - O assunto reprovado é **sempre** trocado pelo formato sorteado montado pelo código, sem nova chamada.
+  - Dígito e caixa do próprio nome não contam como "nota" ou "CAIXA ALTA" ("Clínica 3D…").
+  - O assunto padrão passa no próprio validador em **80 de 80 leads reais**.
+- **2ª medição offline:** **100% (30/30) aprovado na 1ª tentativa**, 0 reprovações, US$ 0,010. Meta do João: ≥ 95%.
+
 ## Riscos
 - **Taxa de aprovação na 1ª tentativa não medida:** não havia chave da OpenRouter em `docs/local/.env`, então não houve dry-run com IA.
   - As regras novas de forma podem reprovar mais com o modelo gratuito: 3 a 5 frases, fecho com "?" e 55 a 95 palavras.
@@ -44,7 +56,7 @@ Reprova dos 29 textos reais antigos (contagem, sem gravar texto): **29 de 29 rep
   - Se a reprova subir, o primeiro ajuste é afrouxar o número de frases (3 a 6) ou a faixa de palavras (50 a 100) em `corpoLimites`, sem mexer nas regras de conteúdo.
 - O exemplo do prompt é de advocacia. Num lead de outro ramo, se a IA copiar "escritórios", a checagem de ramo continua barrando "advocacia" sem base.
 
-## Ordem do deploy (decisão do João: junto com 13/10 ou deploy próprio)
+## Ordem do deploy (decisão do João, 21/10: deploy próprio em 26 ou 27/10, depois de 2 dias limpos do verificador novo)
 1. Sem migration.
 2. `git config core.autocrlf` = `false` → `node workflow/build.mjs` (esperado `9f4719001b6b` se nada mudou) → 8 suítes → `lint.mjs` (Robson e watchdog).
 3. Merge de `robson2/copy-v2` (que já contém `places-paginacao`) em `main` → push → `bash workflow/deploy.sh robson`.
