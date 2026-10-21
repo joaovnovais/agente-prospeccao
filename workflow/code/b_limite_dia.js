@@ -1,9 +1,9 @@
 // Passo 5 (ramp-up): semana 1 → 5/dia, semana 2 → 10/dia, semana 3+ → 15-20/dia.
 // A semana de envio conta a partir do 1º envio REAL (envios de teste não contam).
 const s = $input.first().json || {};
-if (!CONFIG.modelos.every((m) => m.endsWith(':free'))) {
-  throw new Error('Config inválida: todo modelo precisa terminar em ":free".');
-}
+// 21/10: teto de gasto no lugar da trava ":free" (regra em _lib.js → gastoMaximoMensalIA).
+const gastoIA = gastoMaximoMensalIA(CONFIG);
+if (!gastoIA.ok) throw new Error('Config inválida: ' + gastoIA.motivo);
 let semanaEnvio = 1;
 if (s.primeiro_envio) semanaEnvio = Math.floor((Date.now() - new Date(s.primeiro_envio).getTime()) / (7 * 864e5)) + 1;
 const r = CONFIG.rampUpEnviosPorDia;

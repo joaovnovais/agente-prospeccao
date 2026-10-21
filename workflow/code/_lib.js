@@ -95,6 +95,18 @@ const SEM_ACENTO_RE = /\b(nao|voce|voces|servicos?|horarios?|reuni[ao]o|reunioes
 const NUM_EXTENSO = { um: 1, uma: 1, dois: 2, duas: 2, tres: 3, quatro: 4, cinco: 5, seis: 6, sete: 7, oito: 8, nove: 9, dez: 10 };
 const NUM_EXTENSO_RE = 'um|uma|dois|duas|tr[êe]s|quatro|cinco|seis|sete|oito|nove|dez';
 const numExtenso = (w) => String(NUM_EXTENSO[w.toLowerCase().replace('ê', 'e')]);
+// 21/10: teto de gasto da IA no lugar da trava ":free". Pior caso do mês: todo dia no teto diário de chamadas
+// (limiteDiarioOpenRouter, que soma envio e respostas), 23 dias, cada chamada com tokensEntradaMaxIA de entrada e
+// maxTokensIA de saída, no modelo mais caro da lista. Modelo sem preço declarado em precosIA → recusado.
+// O limite mensal da chave na OpenRouter (US$ 2, reset mensal) é a trava final; esta é a da configuração.
+function gastoMaximoMensalIA(cfg) {
+  const semPreco = (cfg.modelos || []).filter((m) => !Array.isArray((cfg.precosIA || {})[m]));
+  if (!(cfg.modelos || []).length || semPreco.length) return { ok: false, motivo: `modelo sem preço declarado: ${semPreco.join(', ') || '(lista vazia)'}` };
+  const porChamada = Math.max(...cfg.modelos.map((m) => (cfg.tokensEntradaMaxIA * cfg.precosIA[m][0] + cfg.maxTokensIA * cfg.precosIA[m][1]) / 1e6));
+  const usd = porChamada * cfg.limiteDiarioOpenRouter * 23;
+  return { ok: usd <= cfg.tetoGastoIAMensalUSD, usd: Math.round(usd * 100) / 100, teto: cfg.tetoGastoIAMensalUSD,
+           motivo: usd <= cfg.tetoGastoIAMensalUSD ? null : `pior caso US$ ${usd.toFixed(2)}/mês > teto US$ ${cfg.tetoGastoIAMensalUSD}` };
+}
 function checarFatos(texto, lead) {
   const erros = [];
   // O nome pode estar cadastrado sem acento no Google (e a IA pode reescrevê-lo em outra caixa): removido sem diferenciar maiúsculas.

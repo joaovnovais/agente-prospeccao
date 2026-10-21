@@ -16,7 +16,9 @@ const BUILD_ID = (() => {
   return h.digest('hex').slice(0, 12);
 })();
 
-if (!CONFIG.modelos.every((m) => m.endsWith(':free'))) throw new Error('todo modelo precisa terminar em ":free"');
+// 21/10: teto de gasto da IA no lugar da trava ":free" (mesma regra do nó "Calcular limite do dia", em _lib.js).
+const GASTO_IA = new Function('CONFIG', LIB + '; return gastoMaximoMensalIA(CONFIG);')(CONFIG);
+if (!GASTO_IA.ok) throw new Error('config: ' + GASTO_IA.motivo);
 // Robson 2.0: flags de módulo/motor validadas no build (valor inesperado nunca chega à produção).
 const ESTAGIOS = ['desligado', 'sombra', 'teste', 'ligado'];
 for (const [m, v] of Object.entries(CONFIG.modulos || {})) if (!ESTAGIOS.includes(v.estagio)) throw new Error(`modulos.${m}.estagio inválido: ${v.estagio}`);
@@ -105,7 +107,7 @@ function smtp(name, ref, pos) {
 const openrouter = (name, pedido, pos) => http(name, pos, {
   method: 'POST', url: CONFIG.openRouterUrl, cred: 'openrouter', credType: 'openRouterApi', timeout: 90000, soft: true,
   headers: { 'HTTP-Referer': 'https://novax.ia.br', 'X-Title': 'NOVAX - Agente de Prospeccao' },
-  body: `={{ JSON.stringify({ models: ${JSON.stringify(CONFIG.modelos)}, messages: $('${pedido}').first().json.messages, temperature: 0.4, max_tokens: 2000, reasoning: { enabled: false } }) }}`,
+  body: `={{ JSON.stringify({ models: ${JSON.stringify(CONFIG.modelos)}, messages: $('${pedido}').first().json.messages, temperature: 0.4, max_tokens: ${CONFIG.maxTokensIA}, reasoning: { enabled: false }, provider: { data_collection: 'deny' } }) }}`,
 });
 const reservarIA = (name, pos) => supa(name, pos, { method: 'POST', path: '/rpc/prospeccao_reservar_cota',
   body: `={{ JSON.stringify({ p_servico: 'openrouter', p_limite: ${CONFIG.limiteDiarioOpenRouter} }) }}` });
