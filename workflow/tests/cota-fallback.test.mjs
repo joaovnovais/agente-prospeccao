@@ -64,7 +64,8 @@ console.log('(b) assunto "Presença digital para" corrigido sem nova chamada + p
   const v2 = validar(lead('texto'), { assunto: 'presenca digital para voces', corpo: CORPO.replace('Um site simples', 'Um site excelente') });
   ok(v2.ok === false && !/Presença digital/.test(v2.erro) && /excelente/.test(v2.erro), 'outros erros continuam valendo depois da correção');
   const longo = lib.assuntoPadrao({ nome: 'Sociedade de Advogados Exemplar Fictício Vasconcelos Albuquerque e Associados', cidade: 'Vila Fictícia do Norte' });
-  ok(longo === null, 'nome com mais de 4 palavras: sem assunto padrão (copy v2: a IA escreve a forma curta, nova tentativa)');
+  // 21/10: a forma curta é do código → todo lead tem assunto padrão.
+  ok(typeof longo === 'string' && longo.length <= 90 && !/{/.test(longo), `nome com mais de 4 palavras: assunto padrão com a forma curta do código ("${longo}")`);
   ok(!lib.ASSUNTO_SITE_EXISTE_RE.test(lib.assuntoPadrao(lead())), 'assunto padrão não sugere que a empresa já tem site');
   const sd = {};
   const p = rodar('b_pedido_ia.js', { input: [{ json: { lead: lead('texto') } }], staticData: sd })[0].json.messages[0].content;

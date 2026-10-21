@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const R = fileURLToPath(new URL('..', import.meta.url)).replace(/[\\/]$/, '');
 const CONFIG = JSON.parse(readFileSync(`${R}/config.json`, 'utf8'));
 const LIB = readFileSync(`${R}/code/_lib.js`, 'utf8');
-const lib = new Function('CONFIG', LIB + '; return { formatoAssunto, montarAssunto, nomeExibicao, nomeSugerePlural, checarAssuntoV2, checarCorpoV2, assuntoPadrao, rodapeLGPD, textoParaHtml };')(CONFIG);
+const lib = new Function('CONFIG', LIB + '; return { formatoAssunto, montarAssunto, nomeExibicao, nomeSugerePlural, checarAssuntoV2, checarCorpoV2, assuntoPadrao, nomeCurtoAssunto, normalizarCaixa, rodapeLGPD, textoParaHtml };')(CONFIG);
 const rodar = (file, { input = [], nodes = {}, staticData = {} } = {}) =>
   new Function('$input', '$', '$getWorkflowStaticData', '$execution', 'CONFIG', LIB + '\n' + readFileSync(`${R}/code/${file}`, 'utf8'))(
     { first: () => input[0], all: () => input }, (n) => ({ first: () => (nodes[n] || [])[0], all: () => nodes[n] || [] }),
@@ -140,7 +140,11 @@ ok(!assErros('Uma ideia para o Exemplo Advocacia'), 'artigo antes do nome é ace
   ok(v.ok === true && v.assunto_corrigido === true && v.assunto === 'Uma ideia para Exemplo Advocacia',
      'nome até 4 palavras: assunto reprovado é trocado pelo formato sorteado, sem nova chamada');
   const v2 = validar(BONS[4].lead, { assunto: 'Casa Fictícia Materiais de Construção tem nota 4,5', corpo: BONS[4].corpo });
-  ok(v2.ok === false && /assunto/.test(v2.erro), 'nome com mais de 4 palavras: assunto reprovado vai para nova tentativa');
+  // 21/10: a forma curta agora é do código (nomeCurtoAssunto) → o assunto reprovado também é corrigido, sem nova chamada.
+  ok(v2.assunto_corrigido === true && v2.assunto === lib.assuntoPadrao(BONS[4].lead) && !/assunto/.test(v2.erro || ''),
+     'nome com mais de 4 palavras: assunto reprovado é trocado pelo formato sorteado com a forma curta do código, sem nova chamada');
+  const v3 = validar(B.lead, { assunto: 'Uma ideia para EXEMPLO ADVOCACIA', corpo: B.corpo });
+  ok(v3.ok === true && v3.assunto === 'Uma ideia para Exemplo Advocacia', 'palavra inteira em maiúsculas é normalizada antes de validar (sem nova chamada)');
   const caixa = { ...B.lead, nome: 'ADVOCACIA EXEMPLO FICTÍCIA', id: 'ficticio-01' };
   ok(lib.assuntoPadrao(caixa) === 'Uma ideia para Advocacia Exemplo Fictícia', 'nome em CAIXA ALTA vira "Advocacia Exemplo Fictícia" no assunto montado');
   ok(!assErros(lib.assuntoPadrao(caixa), caixa), 'assunto montado de nome em CAIXA ALTA passa');
@@ -156,7 +160,7 @@ console.log('Sorteio do formato do assunto');
      `1.000 ids: os 4 formatos com ≥ 15% cada (${Object.values(cont).join(' / ')})`);
   const p1 = rodar('b_pedido_ia.js', { input: [{ json: { lead: { ...B.lead, fila: { modo: 'texto' } } } }] })[0].json.messages[0].content;
   const p2 = rodar('b_pedido_ia.js', { input: [{ json: { lead: { ...B.lead, fila: { modo: 'texto' } } } }] })[0].json.messages[0].content;
-  ok(p1 === p2 && p1.includes('"assunto": use exatamente "Uma ideia para Exemplo Advocacia"'), 'prompt recebe o formato sorteado já preenchido');
+  ok(p1 === p2 && p1.includes('copie EXATAMENTE este texto') && p1.includes('"Uma ideia para Exemplo Advocacia"'), 'prompt recebe o assunto pronto e a ordem de copiar exatamente');
 }
 
 console.log('Prompt');
@@ -174,7 +178,12 @@ console.log('Prompt');
   const pb = prompt(BONS[3].lead);
   ok(/NÃO cite nota, estrelas nem número de avaliações/.test(pb), 'poucas avaliações → não cita nota');
   const plg = prompt(BONS[4].lead);
-  ok(plg.includes('"Pergunta rápida sobre {nome curto}"') && /forma curta natural do nome/.test(plg), 'nome com mais de 4 palavras → IA escreve a forma curta');
+  ok(!plg.includes('{nome curto}') && plg.includes(`"${lib.assuntoPadrao(BONS[4].lead)}"`) && plg.includes(`use a forma "${lib.nomeCurtoAssunto(BONS[4].lead)}"`),
+     'nome com mais de 4 palavras → prompt já recebe a forma curta do código (a IA não escolhe)');
+  ok(lib.nomeCurtoAssunto({ nome: 'Prime Espaço Fictício | Implantes dentários | Protocolo' }) === 'Prime Espaço Fictício', 'forma curta corta no separador');
+  ok(lib.nomeCurtoAssunto({ nome: 'Escritório de Advocacia Dra. Exemplo Fictícia Silva' }) === 'Escritório de Advocacia', 'forma curta não termina em título nem conectivo');
+  ok(lib.normalizarCaixa('MS Clinic & BEAUTY') === 'MS Clinic & Beauty', 'caixa: só palavras de 4+ letras; siglas curtas ficam');
+  ok(!/cita nota/.test(lib.checarAssuntoV2(lib.assuntoPadrao({ id: 'z', nome: 'Clínica 3D Fictícia', cidade: 'Vila Exemplo' }), { id: 'z', nome: 'Clínica 3D Fictícia', cidade: 'Vila Exemplo' }).join()), 'dígito do próprio nome não conta como nota');
 }
 
 console.log('E-mail montado: assinatura nova e rodapé de LGPD idêntico');

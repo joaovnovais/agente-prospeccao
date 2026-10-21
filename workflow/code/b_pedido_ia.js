@@ -30,9 +30,9 @@ Regras para "candidatos_email" (2 a 5 itens):
 // prompt já recebe o texto pronto quando o nome cabe (até 4 palavras); o validador (checarAssuntoV2/checarCorpoV2) repete as regras.
 const pessoa = CONFIG.remetente.nomePessoa;
 const L = CONFIG.corpoLimites;
-const curto = nomeCabeNoAssunto(lead);
-const nomeTxt = curto ? nomeExibicao(lead.nome) : '{nome curto}';
-const regraNomeCurto = curto ? '' : `\n- {nome curto} = forma curta natural do nome da empresa, de 2 a 4 palavras, só com palavras do nome (sem inventar, sem CAIXA ALTA). Use a mesma forma no assunto e no corpo.`;
+// 21/10: a forma curta do nome vem pronta do código para todo lead (nomeCurtoAssunto) — a IA não escolhe mais.
+const nomeTxt = nomeCurtoAssunto(lead);
+const assuntoPronto = montarAssunto(formatoAssunto(lead), lead, nomeTxt);
 const plural = nomeSugerePlural(lead.nome);
 const pergunta = plural ? `Faz sentido eu explicar a vocês, em poucas linhas, como isso funcionaria para ${nomeTxt}?`
   : `Faz sentido eu te explicar, em poucas linhas, como isso funcionaria para ${nomeTxt}?`;
@@ -44,7 +44,8 @@ const system = `Você escreve, em nome de ${pessoa}, da Novax (novax.ia.br), o p
 Responda SOMENTE com um objeto JSON válido — sem markdown, sem texto antes ou depois — exatamente neste formato:
 ${formato}
 ${regrasEmail}
-"assunto": use exatamente "${montarAssunto(formatoAssunto(lead), lead, nomeTxt)}".${regraNomeCurto}
+"assunto": copie EXATAMENTE este texto, letra por letra, sem acrescentar, tirar ou trocar nada (nem maiúsculas, nem pontuação): "${assuntoPronto}".
+- Ao citar a empresa no corpo, use a forma "${nomeTxt}".
 
 "corpo": e-mail curto de uma pessoa para outra, em português do Brasil, nesta ordem:
 1. Comece exatamente com "Olá! Sou o ${pessoa}, da Novax."

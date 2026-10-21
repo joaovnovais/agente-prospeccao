@@ -31,7 +31,9 @@ if (fallback) {
 // por um assunto padrão, sem nova chamada à IA. Copy v2: vale para qualquer assunto reprovado (formato, nota, padrão antigo)
 // quando o nome tem até 4 palavras e o código monta sozinho o formato sorteado. As demais checagens valem para o assunto novo.
 let assuntoCorrigido = false;
-if (typeof o.assunto === 'string' && (/^presenca digital para/.test(norm(o.assunto)) || checarAssuntoV2(o.assunto, L).length) && assuntoPadrao(L)) {
+// 21/10: palavra inteira em maiúsculas vira Título antes de checar; assunto ausente também é montado pelo código.
+if (typeof o.assunto === 'string') o.assunto = normalizarCaixa(o.assunto.trim());
+if (typeof o.assunto !== 'string' || /^presenca digital para/.test(norm(o.assunto)) || checarAssuntoV2(o.assunto, L).length) {
   o.assunto = assuntoPadrao(L); assuntoCorrigido = true;
 }
 if (typeof o.assunto !== 'string' || o.assunto.trim().length < 5 || o.assunto.length > 90) erros.push('assunto ausente ou fora de 5-90 caracteres');

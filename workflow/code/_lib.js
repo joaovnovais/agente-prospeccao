@@ -95,9 +95,10 @@ const SEM_ACENTO_RE = /\b(nao|voce|voces|servicos?|horarios?|reuni[ao]o|reunioes
 const NUM_EXTENSO = { um: 1, uma: 1, dois: 2, duas: 2, tres: 3, quatro: 4, cinco: 5, seis: 6, sete: 7, oito: 8, nove: 9, dez: 10 };
 const NUM_EXTENSO_RE = 'um|uma|dois|duas|tr[êe]s|quatro|cinco|seis|sete|oito|nove|dez';
 const numExtenso = (w) => String(NUM_EXTENSO[w.toLowerCase().replace('ê', 'e')]);
-// 13/10: assunto padrão quando a IA erra o assunto. Copy v2: é o formato sorteado do lead montado pelo código; só existe
-// quando o nome cabe inteiro no assunto (até 4 palavras). Nome maior → null (a IA precisa da forma curta: nova tentativa).
-const assuntoPadrao = (lead) => (nomeCabeNoAssunto(lead) ? montarAssunto(formatoAssunto(lead), lead) : null);
+// 13/10: assunto padrão quando a IA erra o assunto. Copy v2: é o formato sorteado do lead montado pelo código.
+// 21/10: sempre existe — o nome curto agora é do código (nomeCurtoAssunto), não da IA (7 das 8 reprovações de 21/10 eram
+// nomes com mais de 4 palavras, em que a IA inventava a forma curta e o código não tinha como corrigir).
+const assuntoPadrao = (lead) => montarAssunto(formatoAssunto(lead), lead, nomeCurtoAssunto(lead));
 function checarFatos(texto, lead) {
   const erros = [];
   // O nome pode estar cadastrado sem acento no Google (e a IA pode reescrevê-lo em outra caixa): removido sem diferenciar maiúsculas.
@@ -284,6 +285,19 @@ const nomeExibicao = (nome) => {
   return s.toLowerCase().split(/\s+/).map((w, i) => (i && CONECTIVOS_NOME.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
 };
 const nomeCabeNoAssunto = (lead) => norm(lead.nome).split(' ').filter(Boolean).length <= 4;
+// 21/10: palavra inteira em maiúsculas com 4+ letras ("BEAUTY") → "Beauty". Siglas curtas ("MS", "3D") ficam.
+const normalizarCaixa = (s) => String(s).replace(/\p{L}+/gu, (w) => (w.length >= 4 && w === w.toUpperCase() && w !== w.toLowerCase()
+  ? w.charAt(0) + w.slice(1).toLowerCase() : w));
+// 21/10: forma curta do nome feita pelo código (determinística): corta no 1º separador (" - ", "|", "/", "(", ","),
+// fica com até 4 palavras sem terminar em conectivo ("de", "&"...) e normaliza a caixa. Só usa palavras do nome real.
+const nomeCurtoAssunto = (lead) => {
+  const base = nomeExibicao(lead.nome).split(/\s+[-–—|\/]\s+|\s*[|(]\s*|\s*,\s*/)[0].trim() || nomeExibicao(lead.nome);
+  const ws = base.split(/\s+/).filter(Boolean).slice(0, 4);
+  // não termina em conectivo, símbolo ou título de pessoa ("Escritório de Advocacia Dra." → "Escritório de Advocacia")
+  while (ws.length > 1 && (CONECTIVOS_NOME.has(norm(ws[ws.length - 1])) || !norm(ws[ws.length - 1])
+    || /^(dra?|sra?|prof|profa)$/.test(norm(ws[ws.length - 1])))) ws.pop();
+  return normalizarCaixa(ws.join(' '));
+};
 const montarAssunto = (formato, lead, nome = nomeExibicao(lead.nome)) => formato.replace('{nome}', nome).replace('{cidade}', lead.cidade);
 // Nome com marcador de mais de uma pessoa: aí "vocês" / "o escritório" é natural; nos demais, "você".
 const nomeSugerePlural = (nome) => /&/.test(String(nome || ''))
@@ -301,9 +315,12 @@ function checarAssuntoV2(assunto, lead) {
   if (/!/.test(a)) erros.push('com ponto de exclamação');
   if (/\p{Extended_Pictographic}/u.test(a)) erros.push('com emoji');
   if (!/^[\p{Lu}0-9]/u.test(a)) erros.push('não começa com letra maiúscula');
-  const semNome = lead.nome ? a.replace(new RegExp(escRe(lead.nome), 'gi'), ' ') : a;
+  // 21/10: tira do assunto o nome (inteiro, de exibição e a forma curta do código) antes de procurar CAIXA ALTA e dígitos:
+  // "Clínica 3D Imagem Facial" não "cita nota" por ter um 3 no nome.
+  let semNome = a;
+  for (const nm of [lead.nome, nomeExibicao(lead.nome), nomeCurtoAssunto(lead)].filter(Boolean)) semNome = semNome.replace(new RegExp(escRe(nm), 'gi'), ' ');
   if (/\p{Lu}{4,}/u.test(semNome)) erros.push('com palavra em CAIXA ALTA');
-  if (/\d/.test(a) || /\b(nota|avaliac\w*|estrelas?)\b/.test(n)) erros.push('cita nota, avaliações ou estrelas');
+  if (/\d/.test(semNome) || /\b(nota|avaliac\w*|estrelas?)\b/.test(norm(semNome))) erros.push('cita nota, avaliações ou estrelas');
   const proib = n.match(ASSUNTO_PROIBIDO_V2);
   if (proib) erros.push(`no padrão antigo ("${proib[0]}")`);
   // Partes fixas exatas; {cidade} = a cidade do lead; {nome} = 1 a 4 palavras, todas do nome real (forma curta, sem inventar).
