@@ -23,7 +23,14 @@ if (fallback) {
   // Só e-mails novos (as variações do nome já falharam na fase 1), sem duplicatas e sem Gmail impossível.
   cands = [...new Set((o.candidatos_email || []).map(limparEmail))]
     .filter((e) => EMAIL_RE.test(e) && emailPossivel(e) && !jaTestadas.has(e) && emailIdentificaEmpresa(e, L.nome, L.cidade));
+  // 13/10 (a): sem candidato aproveitável o lead vira sem_email de qualquer jeito; reprovar o texto só gastaria nova chamada
+  // (11 das 18 novas tentativas de 07/10 foram assim). Segue direto para "Há candidatos novos?" → descarte.
+  if (!cands.length) return [{ json: { ...out, ok: true, sem_candidato: true, candidatos: [], assunto: null, corpo: null } }];
 }
+// 13/10 (b): assunto "Presença digital para …" (8 das 18 novas tentativas de 07/10, apesar da regra no prompt) é trocado
+// por um assunto padrão com nome e cidade, sem nova chamada à IA. As demais checagens valem para o assunto novo.
+let assuntoCorrigido = false;
+if (typeof o.assunto === 'string' && /^presenca digital para/.test(norm(o.assunto))) { o.assunto = assuntoPadrao(L); assuntoCorrigido = true; }
 if (typeof o.assunto !== 'string' || o.assunto.trim().length < 5 || o.assunto.length > 90) erros.push('assunto ausente ou fora de 5-90 caracteres');
 if (typeof o.corpo !== 'string' || o.corpo.trim().length < 300 || o.corpo.length > 1800) erros.push('corpo ausente ou fora de 300-1800 caracteres');
 if (typeof o.corpo === 'string') {
@@ -48,4 +55,4 @@ if (erros.length) {
   return [{ json: { ...out, ok: false, tipo_falha: 'schema', erro: 'schema inválido: ' + erros.join('; '), raw: String(p.raw).slice(0, 3000) } }];
 }
 return [{ json: { ...out, ok: true, candidatos: cands.slice(0, CONFIG.maxCandidatosEmail),
-                  assunto: o.assunto.trim(), corpo: o.corpo.trim() } }];
+                  assunto: o.assunto.trim(), corpo: o.corpo.trim(), assunto_corrigido: assuntoCorrigido } }];

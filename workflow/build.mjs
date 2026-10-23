@@ -11,8 +11,10 @@ const LIB = readFileSync(join(DIR, 'code', '_lib.js'), 'utf8');
 const REST = CONFIG.supabaseRest;
 // Impressão digital do build (auditoria 2026-10-05): o deploy.sh confere que a versão no banco do n8n é ESTE build.
 const BUILD_ID = (() => {
-  const h = createHash('sha256').update(readFileSync(join(DIR, 'config.json'))).update(readFileSync(fileURLToPath(import.meta.url)));
-  for (const f of readdirSync(join(DIR, 'code')).sort()) h.update(f).update(readFileSync(join(DIR, 'code', f)));
+  // 07/10: fim de linha normalizado. Com core.autocrlf=true o mesmo commit dava IDs diferentes conforme o checkout.
+  const ler = (p) => readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
+  const h = createHash('sha256').update(ler(join(DIR, 'config.json'))).update(ler(fileURLToPath(import.meta.url)));
+  for (const f of readdirSync(join(DIR, 'code')).sort()) h.update(f).update(ler(join(DIR, 'code', f)));
   return h.digest('hex').slice(0, 12);
 })();
 
@@ -153,24 +155,53 @@ link('Teste: envio?', 'Resposta simulada', 1);
 schedule('Semanal - Captação', '0 7 * * 1', [0, 0]);
 supa('Buscar taxa de resposta', [1, 0], { path: '/prospeccao_taxa_resposta?select=*' });
 code('Montar buscas da semana', 'a_montar_buscas.js', [2, 0]);
-supa('Reservar cota Places', [3, 0], { method: 'POST', path: '/rpc/prospeccao_reservar_cota',
-  body: `={{ JSON.stringify({ p_servico: 'google_places', p_limite: ${Math.min(CONFIG.limiteMensalPlaces, CONFIG.tetoMensalPlaces || CONFIG.limiteMensalPlaces)} }) }}` });
-iff('Cota Places ok?', '$json.ok === true', [4, 0]);
+// Paginação (07/10): onda 1 = página 1 de cada busca; ondas 2 e 3 = próxima página só das buscas produtivas
+// (a_proxima_pagina.js), dentro de limitePlacesPorExecucao. Cada página reserva 1 chamada na cota mensal (RPC).
+// O field mask precisa pedir "nextPageToken": sem isso o Places nunca devolve o token (0 de 38 buscas até 05/10).
+const TETO_PLACES = Math.min(CONFIG.limiteMensalPlaces, CONFIG.tetoMensalPlaces || CONFIG.limiteMensalPlaces);
+const FIELD_MASK = 'places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.rating,places.userRatingCount,places.businessStatus,places.primaryType,places.primaryTypeDisplayName,places.types,nextPageToken';
+// A estrutura tem sempre 3 ondas; quem liga/desliga é CONFIG.paginacao.paginasMax em tempo de execução (a_proxima_pagina.js):
+// com 1, "Próxima página (p2)" devolve { fim: true } e o fluxo vai direto ao resumo. Ligar = só mudar o config.
+const PAGINAS = 3;
+const sfxPag = (k) => (k === 1 ? '' : ` (p${k})`);
+const ONDAS = Array.from({ length: PAGINAS }, (_, i) => i + 1).map((k) => ({
+  origem: k === 1 ? 'Montar buscas da semana' : `Próxima página${sfxPag(k)}`,
+  haPagina: `Há página ${k}?`,
+  reservar: `Reservar cota Places${sfxPag(k)}`, cotaOk: `Cota Places ok?${sfxPag(k)}`, places: `Places - Text Search${sfxPag(k)}`,
+  filtro: `Filtrar sem site + exclusões${sfxPag(k)}`, haLeads: `Há leads novos?${sfxPag(k)}`, upsert: `Upsert leads${sfxPag(k)}`,
+}));
 noop('Cota Places esgotada', [5, 1]);
-http('Places - Text Search', [5, 0], {
-  method: 'POST', url: 'https://places.googleapis.com/v1/places:searchText', cred: 'places', soft: true,
-  headers: { 'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.rating,places.userRatingCount,places.businessStatus,places.primaryType,places.primaryTypeDisplayName,places.types' },
-  body: `={{ JSON.stringify({ textQuery: $('Montar buscas da semana').item.json.textQuery, languageCode: 'pt-BR', regionCode: 'BR', pageSize: 20 }) }}`,
+ONDAS.forEach((o, i) => {
+  const k = i + 1, y = i * 2;
+  if (k > 1) {
+    code(o.origem, 'a_proxima_pagina.js', [9.5, y - 1],
+      `const FILTRO = '${ONDAS[i - 1].filtro}'; const PROXIMA = ${k}; const PLACES = ${JSON.stringify(ONDAS.slice(0, i).map((w) => w.places))};`);
+    iff(o.haPagina, '$json.fim !== true', [10.5, y - 1]);
+  }
+  supa(o.reservar, [3, y], { method: 'POST', path: '/rpc/prospeccao_reservar_cota',
+    body: `={{ JSON.stringify({ p_servico: 'google_places', p_limite: ${TETO_PLACES} }) }}` });
+  iff(o.cotaOk, '$json.ok === true', [4, y]);
+  http(o.places, [5, y], {
+    method: 'POST', url: 'https://places.googleapis.com/v1/places:searchText', cred: 'places', soft: true,
+    headers: { 'X-Goog-FieldMask': FIELD_MASK },
+    // Página seguinte: mesmos parâmetros + pageToken (exigência da API).
+    body: `={{ JSON.stringify(Object.assign({ textQuery: $('${o.origem}').item.json.textQuery, languageCode: 'pt-BR', regionCode: 'BR', pageSize: 20 }, $('${o.origem}').item.json.pageToken ? { pageToken: $('${o.origem}').item.json.pageToken } : {})) }}`,
+  });
+  code(o.filtro, 'a_filtrar_places.js', [6, y], `const ORIGEM_BUSCA = '${o.origem}';`);
+  iff(o.haLeads, '$json.total > 0', [7, y]);
+  // Sempre devolve item (always): o fluxo segue para a próxima página/resumo mesmo se todo lead já existia.
+  supa(o.upsert, [8, y], { method: 'POST', path: '/prospeccao_leads?on_conflict=place_id',
+    prefer: 'resolution=ignore-duplicates,return=representation', body: `={{ JSON.stringify($('${o.filtro}').first().json.rows) }}`, always: true });
 });
-code('Filtrar sem site + exclusões', 'a_filtrar_places.js', [6, 0]);
-iff('Há leads novos?', '$json.total > 0', [7, 0]);
-supa('Upsert leads', [8, 0], { method: 'POST', path: '/prospeccao_leads?on_conflict=place_id',
-  prefer: 'resolution=ignore-duplicates,return=representation', body: '={{ JSON.stringify($json.rows) }}', always: false });
-code('Resumo captação', 'a_resumo.js', [9, 0]);
-chain('Semanal - Captação', 'Buscar taxa de resposta', 'Montar buscas da semana', 'Reservar cota Places', 'Cota Places ok?');
-link('Cota Places ok?', 'Places - Text Search', 0); link('Cota Places ok?', 'Cota Places esgotada', 1);
-chain('Places - Text Search', 'Filtrar sem site + exclusões', 'Há leads novos?');
-link('Há leads novos?', 'Upsert leads', 0); link('Upsert leads', 'Resumo captação');
+code('Resumo captação', 'a_resumo.js', [12, 0], `const ONDAS = ${JSON.stringify(ONDAS.map(({ filtro, upsert, places }) => ({ filtro, upsert, places })))};`);
+chain('Semanal - Captação', 'Buscar taxa de resposta', 'Montar buscas da semana', ONDAS[0].reservar, ONDAS[0].cotaOk);
+ONDAS.forEach((o, i) => {
+  const seguinte = ONDAS[i + 1] ? ONDAS[i + 1].origem : 'Resumo captação';
+  if (i > 0) { link(o.origem, o.haPagina); link(o.haPagina, o.reservar, 0); link(o.haPagina, 'Resumo captação', 1); link(o.reservar, o.cotaOk); }
+  link(o.cotaOk, o.places, 0); link(o.cotaOk, 'Cota Places esgotada', 1);
+  chain(o.places, o.filtro, o.haLeads);
+  link(o.haLeads, o.upsert, 0); link(o.haLeads, seguinte, 1); link(o.upsert, seguinte);
+});
 link('Teste: captação?', 'Buscar taxa de resposta', 0);
 
 // ====================== B. ENVIO DIÁRIO (passos 3-5, 8) ======================
@@ -189,6 +220,17 @@ http('Reacher - variações do nome', [8, 2], { method: 'POST', url: CONFIG.reac
   body: '={{ JSON.stringify({ to_email: $json.email }) }}' });
 code('Resultado verificação (código)', 'b_resultado_verificacao.js', [9, 2.4]);
 iff('Reacher travou?', '$json.disjuntor === true', [10, 1.6]);
+// 09/10: orçamento GLOBAL do Reacher (migration 007; teto diário fixo na função do Supabase, vale para toda origem).
+// Cada lote é reservado ANTES de consultar; sem orçamento, nada é consultado.
+const reservarReacher = (name, pos, qtdExpr, origem) => supa(name, pos, { method: 'POST', path: '/rpc/prospeccao_reservar_reacher',
+  body: `={{ JSON.stringify({ p_qtd: ${qtdExpr}, p_origem: '${origem}' }) }}` });
+reservarReacher('Reservar Reacher (variações)', [7.5, 1.6], "$('Variações do nome').all().filter((i) => i.json && i.json.email).length", 'robson:variacoes');
+iff('Reacher liberado? (variações)', '$json.ok === true', [8, 1.2]);
+code('Variações reservadas', 'b_variacoes_reservadas.js', [8.5, 1.2]);
+code('Sem orçamento Reacher', 'b_sem_orcamento_reacher.js', [9, 0.8]);
+// Disjuntor registrado no Supabase: o watchdog das 10:15 avisa "Reacher travou".
+supa('Registrar disjuntor', [11, 1.2], { method: 'POST', path: '/prospeccao_reacher_reservas',
+  body: `={{ JSON.stringify({ origem: 'robson:disjuntor', qtd: 0, ok: false }) }}` });
 iff('E-mail do nome confirmado?', '$json.safe === true', [10, 2.4]);
 wait('Pausa entre verificações', CONFIG.pausaEntreVerificacoesSeg, [13, 2.4]);
 supa('Salvar contato verificado', [11, 2], { method: 'POST', path: '/prospeccao_contatos?on_conflict=email',
@@ -201,6 +243,7 @@ code('Fim da verificação', 'b_resumo_verificacao.js', [6, 3.2]);
 supa('Buscar fila com e-mail', [7, 3.2], { path: `/prospeccao_leads?select=*,contatos:prospeccao_contatos!inner(id,email,reacher_status,reacher_raw,bloqueado)&status=eq.novo&contatos.reacher_status=eq.safe&contatos.bloqueado=is.false&order=created_at.asc,id.asc&limit={{ $('Calcular limite do dia').first().json.lote }}` });
 supa('Buscar fila fallback', [8, 3.2], { path: `/prospeccao_leads?select=*&status=eq.novo&verificacao_codigo_em=not.is.null&order=updated_at.asc,id.asc&limit={{ $('Calcular limite do dia').first().json.lote }}` });
 code('Montar fila de envio', 'b_montar_fila.js', [9, 3.2]);
+// 07/10: "Buscar fila fallback" recebe 1 item por lead com e-mail e rodava uma vez por item (120 itens para 30 leads).
 
 loop('Loop leads', [4, 4]);
 supa('Status envios (lead)', [5, 4], { path: '/prospeccao_status_envio?select=*' });
@@ -210,6 +253,8 @@ code('Pedido IA - e-mail', 'b_pedido_ia.js', [8, 4]);
 reservarIA('Reservar cota IA (e-mail)', [9, 4]);
 iff('Cota IA ok? (e-mail)', '$json.ok === true', [10, 4]);
 noop('Parar: cota IA esgotada', [11, 5]);
+iff('Teto do fallback?', '$json.teto_fallback === true', [8.5, 5]);
+noop('Parar: teto do fallback', [9.5, 5.6]);
 openrouter('OpenRouter - gerar e-mail', 'Pedido IA - e-mail', [11, 4]);
 code('Validar resposta IA - e-mail', 'b_validar_ia.js', [12, 4]);
 iff('JSON válido? (e-mail)', '$json.ok === true', [13, 4]);
@@ -219,6 +264,9 @@ code('Preparar retry - e-mail', '_retry.js', [10, 7]);
 code('Revisão manual (e-mail)', 'b_revisao.js', [14, 7]);
 iff('E-mail já confirmado?', `!!$json.lead.fila && $json.lead.fila.modo === 'texto'`, [14, 4]);
 iff('Há candidatos novos?', '!!$json.candidatos && $json.candidatos.length > 0', [14, 5.2]);
+reservarReacher('Reservar Reacher (candidatos)', [14.5, 5.8], '$json.candidatos.length', 'robson:candidatos');
+iff('Reacher liberado? (candidatos)', '$json.ok === true', [15, 5.8]);
+noop('Parar: orçamento do Reacher', [15.5, 6.4]);
 code('Separar candidatos', 'b_separar_candidatos.js', [15, 5.2]);
 http('Reacher - candidatos da IA', [16, 5.2], { method: 'POST', url: CONFIG.reacherUrl, timeout: 90000, soft: true, intervaloMs: CONFIG.reacherIntervaloMs,
   body: '={{ JSON.stringify({ to_email: $json.email }) }}' });
@@ -246,10 +294,13 @@ link('Teste: envio?', 'Status envios (dia)', 0);
 link('Há leads p/ verificar?', 'Loop verificação', 0); link('Há leads p/ verificar?', 'Fim da verificação', 1);
 link('Loop verificação', 'Fim da verificação', 0); link('Loop verificação', 'Variações do nome', 1);
 chain('Variações do nome', 'Tem variação?');
-link('Tem variação?', 'Reacher - variações do nome', 0); link('Tem variação?', 'Resultado verificação (código)', 1);
+link('Tem variação?', 'Reservar Reacher (variações)', 0);
+chain('Reservar Reacher (variações)', 'Reacher liberado? (variações)');
+link('Reacher liberado? (variações)', 'Variações reservadas', 0); link('Reacher liberado? (variações)', 'Sem orçamento Reacher', 1);
+link('Variações reservadas', 'Reacher - variações do nome'); link('Sem orçamento Reacher', 'Fim da verificação'); link('Tem variação?', 'Resultado verificação (código)', 1);
 chain('Reacher - variações do nome', 'Resultado verificação (código)', 'Reacher travou?');
 // Disjuntor: consulta inconclusiva → encerra a fase 1 já (sem acumular timeouts) e segue p/ a fila com o que já foi confirmado.
-link('Reacher travou?', 'Fim da verificação', 0); link('Reacher travou?', 'E-mail do nome confirmado?', 1);
+link('Reacher travou?', 'Registrar disjuntor', 0); link('Registrar disjuntor', 'Fim da verificação'); link('Reacher travou?', 'E-mail do nome confirmado?', 1);
 link('E-mail do nome confirmado?', 'Salvar contato verificado', 0); link('E-mail do nome confirmado?', 'Marcar verificação (lead)', 1);
 chain('Salvar contato verificado', 'Marcar verificação (lead)', 'Pausa entre verificações', 'Loop verificação');
 chain('Fim da verificação', 'Buscar fila com e-mail', 'Buscar fila fallback', 'Montar fila de envio', 'Loop leads');
@@ -257,14 +308,18 @@ chain('Fim da verificação', 'Buscar fila com e-mail', 'Buscar fila fallback', 
 link('Loop leads', 'Status envios (lead)', 1);
 chain('Status envios (lead)', 'Checar limite (lead)', 'Cabe no limite?');
 link('Cabe no limite?', 'Pedido IA - e-mail', 0); link('Cabe no limite?', 'Loop leads', 1);
-chain('Pedido IA - e-mail', 'Reservar cota IA (e-mail)', 'Cota IA ok? (e-mail)');
+chain('Pedido IA - e-mail', 'Teto do fallback?');
+link('Teto do fallback?', 'Parar: teto do fallback', 0); link('Teto do fallback?', 'Reservar cota IA (e-mail)', 1);
+chain('Reservar cota IA (e-mail)', 'Cota IA ok? (e-mail)');
 link('Cota IA ok? (e-mail)', 'OpenRouter - gerar e-mail', 0); link('Cota IA ok? (e-mail)', 'Parar: cota IA esgotada', 1);
 chain('OpenRouter - gerar e-mail', 'Validar resposta IA - e-mail', 'JSON válido? (e-mail)');
 link('JSON válido? (e-mail)', 'E-mail já confirmado?', 0); link('JSON válido? (e-mail)', 'Ainda tem tentativa? (e-mail)', 1);
 link('Ainda tem tentativa? (e-mail)', 'Pausa retry (e-mail)', 0); link('Ainda tem tentativa? (e-mail)', 'Revisão manual (e-mail)', 1);
 chain('Pausa retry (e-mail)', 'Preparar retry - e-mail', 'Pedido IA - e-mail');
 link('E-mail já confirmado?', 'E-mail definido', 0); link('E-mail já confirmado?', 'Há candidatos novos?', 1);
-link('Há candidatos novos?', 'Separar candidatos', 0); link('Há candidatos novos?', 'Descartar lead', 1);
+link('Há candidatos novos?', 'Reservar Reacher (candidatos)', 0);
+chain('Reservar Reacher (candidatos)', 'Reacher liberado? (candidatos)');
+link('Reacher liberado? (candidatos)', 'Separar candidatos', 0); link('Reacher liberado? (candidatos)', 'Parar: orçamento do Reacher', 1); link('Há candidatos novos?', 'Descartar lead', 1);
 chain('Separar candidatos', 'Reacher - candidatos da IA', 'Escolher melhor e-mail', 'Tem e-mail válido?');
 link('Tem e-mail válido?', 'E-mail definido', 0); link('Tem e-mail válido?', 'Descartar lead', 1);
 chain('E-mail definido', 'Checar bloqueio LGPD', 'Montar e-mail final', 'Bloqueado?');
@@ -401,6 +456,8 @@ const wf = {
   settings: { executionOrder: 'v1', timezone: CONFIG.agenda.fuso, saveManualExecutions: true, saveDataErrorExecution: 'all', saveDataSuccessExecution: 'all', callerPolicy: 'workflowsFromSameOwner' },
 };
 mkdirSync(join(DIR, 'dist'), { recursive: true });
+// Rodam 1 vez por lote (recebem N itens): buscas da fila (07/10) e reservas/registro do Reacher (09/10).
+for (const n of nodes) if (['Buscar fila com e-mail', 'Buscar fila fallback', 'Reservar Reacher (variações)', 'Reservar Reacher (candidatos)', 'Registrar disjuntor'].includes(n.name)) n.executeOnce = true;
 writeFileSync(join(DIR, 'dist', 'novax-agente-prospeccao.json'), JSON.stringify(wf, null, 2));
 console.log(`build ${BUILD_ID} · ok: ${nodes.length} nós, ${Object.values(connections).reduce((a, c) => a + c.main.flat().length, 0)} conexões`);
 
@@ -420,10 +477,14 @@ supa('W: uso API hoje', [6, 0], { path: `/prospeccao_uso_api?select=servico,cham
 supa('W: respostas hoje', [7, 0], { path: `/prospeccao_envios?select=id&resposta_recebida_em=gte.{{ ${HOJE}.inicio }}` });
 supa('W: fila sem verificação', [8, 0], { path: '/prospeccao_leads?select=id&status=eq.novo&verificacao_codigo_em=is.null' });
 supa('W: contatos pendentes', [9, 0], { path: '/prospeccao_leads?select=id,contatos:prospeccao_contatos!inner(id)&status=eq.novo&contatos.reacher_status=eq.safe&contatos.bloqueado=is.false' });
+// Bloco semanal (segundas): view da migration 006. Falha suave: sem a view, o resumo diário sai normalmente.
+supa('W: Reacher hoje', [9.2, 1], { path: `/prospeccao_reacher_reservas?select=origem,qtd,ok&em=gte.{{ ${HOJE}.inicio }}`, soft: true });
+supa('W: confirmação por nicho', [9.5, 1], { path: '/prospeccao_confirmacao_nicho?select=*&order=captados.desc', soft: true });
 code('Montar resumo', 'w_resumo.js', [10, 0]);
 smtp('Enviar resumo (SMTP)', 'Montar resumo', [11, 0]);
 chain('Diário - Watchdog', 'Janela de hoje', 'W: status envio', 'W: envios hoje', 'W: verificados hoje', 'W: contatos hoje',
-  'W: uso API hoje', 'W: respostas hoje', 'W: fila sem verificação', 'W: contatos pendentes', 'Montar resumo', 'Enviar resumo (SMTP)');
+  'W: uso API hoje', 'W: respostas hoje', 'W: fila sem verificação', 'W: contatos pendentes', 'W: Reacher hoje', 'W: confirmação por nicho', 'Montar resumo',
+  'Enviar resumo (SMTP)');
 link('Teste manual (watchdog)', 'Janela de hoje');
 // Cada consulta roda UMA vez: sem isso o n8n repete o nó para cada item recebido do anterior e os números se multiplicam.
 for (const n of nodes) if (n.type === 'n8n-nodes-base.httpRequest') n.executeOnce = true;

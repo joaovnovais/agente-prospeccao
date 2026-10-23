@@ -86,6 +86,11 @@ São dois workflows do Robson: `prspAgenteProsp1` (Robson) e `prspWatchdog01` (r
 ## Dados de produção
 - Bloqueios manuais de contato usam `bloqueado_motivo` com data (ex.: `revisao_homonimo_06/10`). IDs e SQL de reversão ficam em `docs/local/`.
 
+## Reacher (desde 09/10)
+- Teto global de 25 consultas por dia, somando o Robson e qualquer script, teste ou amostra (migration 007).
+- **Nenhuma consulta ao Reacher fora do Robson sem `reservarReacher()`** (`docs/local/reacher-orcamento.mjs`).
+- Nada de rodadas avulsas no mesmo dia do envio só "para ver". Em 08/10, 19 consultas extras travaram o IP e o envio de 09/10 saiu zerado.
+
 ## Rollback
 - Código: `git revert` do commit + build + `deploy.sh` + recarga.
 - Dados: só por `UPDATE` reversível, com IDs e SQL de reversão registrados antes (nunca `DELETE`).

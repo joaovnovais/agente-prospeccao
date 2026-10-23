@@ -23,7 +23,29 @@ if (st.primeiro_envio) {
   limite = r[Math.min(Math.max(semana, 1), r.length) - 1];
 }
 
+// Bloco semanal (segundas): o gargalo é a oferta de e-mail confirmado, então o que importa por nicho é captado → safe.
+let semanal = '';
+let porNicho = [];
+if (j.semanal) {
+  porNicho = $('W: confirmação por nicho').all().map((i) => i.json).filter((r) => r && r.nicho != null);
+  const pct = (v) => (v == null ? '-' : `${String(v).replace('.', ',')}%`);
+  semanal = porNicho.length
+    ? ['', 'Semana — e-mail confirmado por nicho (captados → verificados → safe; taxa principal = safe/captados):',
+       ...porNicho.map((n) => `- ${n.nicho}: ${n.captados} → ${n.verificados} → ${n.com_safe} (safe/captados ${pct(n.pct_safe_captados)} · safe/verificados ${pct(n.pct_safe_verificados)}) · últimos 7 dias: +${n.captados_7d} captados, +${n.com_safe_7d} safe`)].join('\n')
+    : '\nSemana — taxa por nicho indisponível (view prospeccao_confirmacao_nicho ausente ou com erro).';
+}
+
+// 09/10: Reacher — orçamento global (migration 007) e disjuntor registrado pelo Robson.
+const reacherUsadas = Number((linhasDe('W: uso API hoje').find((u) => u.servico === 'reacher') || {}).chamadas || 0);
+const reservas = $('W: Reacher hoje').all().map((i) => i.json).filter((r) => r && r.origem);
+const disjuntores = reservas.filter((r) => r.origem === 'robson:disjuntor').length;
+const negadas = reservas.filter((r) => r.ok === false && r.qtd > 0).length;
+const porOrigem = {};
+for (const r of reservas.filter((x) => x.ok && x.qtd > 0)) porOrigem[r.origem] = (porOrigem[r.origem] || 0) + r.qtd;
+
 const alertas = [];
+if (disjuntores) alertas.push('Reacher travou (disjuntor): Gmail segurando o IP?');
+if (negadas) alertas.push(`orçamento do Reacher esgotado (${reacherUsadas} de ${CONFIG.reacherLimiteDiario})`);
 if (j.diaUtil && reais === 0) alertas.push('0 e-mails hoje');
 if (j.diaUtil && verificados === 0) alertas.push('0 leads verificados hoje');
 if (comErro) alertas.push(`${comErro} envio(s) com erro`);
@@ -38,13 +60,15 @@ const texto = [
   `Leads verificados: ${verificados}`,
   `Contatos confirmados (safe) hoje: ${safeHoje}`,
   `Chamadas de IA: ${ia} de ${CONFIG.limiteDiarioOpenRouter}`,
+  `Reacher: ${reacherUsadas} de ${CONFIG.reacherLimiteDiario} consultas${Object.keys(porOrigem).length ? ' (' + Object.entries(porOrigem).map(([o, n]) => `${o} ${n}`).join(', ') + ')' : ''}${disjuntores ? ' · disjuntor abriu' : ''}`,
   `Respostas recebidas: ${respostas}`,
   '',
   `Fila para o próximo envio: ${contatosPendentes} contato(s) confirmado(s) · ${filaSemVerificacao} lead(s) sem verificação`,
   alertas.length ? `\nALERTAS: ${alertas.join('; ')}` : '',
+  semanal,
   '',
   'Painel de execuções: https://hooks.novax.ia.br/workflow/prspAgenteProsp1/executions',
 ].join('\n');
 
 return [{ json: { destino: CONFIG.alertaDestino, assunto, texto, html: textoParaHtml(texto), alertas,
-  numeros: { reais, comErro, limite, verificados, safeHoje, ia, respostas, filaSemVerificacao, contatosPendentes } } }];
+  numeros: { reais, comErro, limite, verificados, safeHoje, ia, respostas, filaSemVerificacao, contatosPendentes, reacherUsadas, disjuntores, negadas }, porNicho } }];

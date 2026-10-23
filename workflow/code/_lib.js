@@ -107,6 +107,12 @@ function gastoMaximoMensalIA(cfg) {
   return { ok: usd <= cfg.tetoGastoIAMensalUSD, usd: Math.round(usd * 100) / 100, teto: cfg.tetoGastoIAMensalUSD,
            motivo: usd <= cfg.tetoGastoIAMensalUSD ? null : `pior caso US$ ${usd.toFixed(2)}/mês > teto US$ ${cfg.tetoGastoIAMensalUSD}` };
 }
+
+// 13/10: assunto padrão quando a IA insiste em "Presença digital para …" (nome + cidade; cabe no limite de 90).
+const assuntoPadrao = (lead) => {
+  const a = `${lead.nome} em ${lead.cidade}: perfil no Google sem site`;
+  return a.length <= 90 ? a : `${String(lead.nome).slice(0, 60).trim()}: perfil no Google sem site`;
+};
 function checarFatos(texto, lead) {
   const erros = [];
   // O nome pode estar cadastrado sem acento no Google (e a IA pode reescrevê-lo em outra caixa): removido sem diferenciar maiúsculas.
