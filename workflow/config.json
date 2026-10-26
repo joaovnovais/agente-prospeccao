@@ -1,6 +1,6 @@
 {
   "supabaseRest": "https://moquxzxzwuywuhojvcqi.supabase.co/rest/v1",
-  "reacherUrl": "http://novax-prospeccao-reacher:8080/v0/check_email",
+  "verifaliaUrl": "https://api.verifalia.com/v2.7/email-validations",
   "openRouterUrl": "https://openrouter.ai/api/v1/chat/completions",
   "modelos": [
     "openai/gpt-5.6-luna",
@@ -195,7 +195,8 @@
   "verificacaoPorExecucao": 15,
   "reacherFalhasSeguidasMax": 3,
   "pausaEntreVerificacoesSeg": 10,
-  "reacherIntervaloMs": 6000,
+  "verifaliaIntervaloMs": 1000,
+  "verifaliaEsperaMs": 30000,
   "reacherLimiteDiario": 25,
   "maxTentativasFallback": 2,
   "exclusoesJanelaMax": 4,

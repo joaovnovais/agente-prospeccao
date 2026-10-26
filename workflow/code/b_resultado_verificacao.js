@@ -18,6 +18,7 @@ return [{ json: {
   incompleto,
   disjuntor,
   falhasSeguidas: sd.reacherFalhas,
+  semCreditos: res.some((r) => r.sem_creditos === true), // 26/10: Verifalia 402
   email: safe ? String(safe.input).toLowerCase() : null,
   reacher: safe || null,
   verificados: res.map((r) => ({ email: r.input, status: r.is_reachable || 'erro' })),

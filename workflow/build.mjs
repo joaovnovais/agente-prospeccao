@@ -35,6 +35,7 @@ const CRED = {
   imap: { imap: { id: 'prspImapGmail001', name: 'Gmail IMAP - Prospeccao' } },
   gcal: { googleCalendarOAuth2Api: { id: 'prspGCalendar001', name: 'Google Calendar - Prospeccao' } },
   trello: { trelloApi: { id: 'prspTrello000001', name: 'Trello - Prospeccao' } },
+  verifalia: { httpBasicAuth: { id: 'prspVerifalia001', name: 'Verifalia - Prospeccao' } },
 };
 
 const nodes = [];
@@ -62,11 +63,13 @@ function code(name, file, pos, pre = '') {
     `const CONFIG = ${JSON.stringify(CONFIG)};\n${pre}\n${LIB}\n${src}`;
   return add(name, 'n8n-nodes-base.code', 2, { mode: 'runOnceForAllItems', jsCode }, pos);
 }
-function http(name, pos, { method = 'GET', url, cred, credType, body, query, headers, timeout = 30000, always = false, soft = false, intervaloMs = 0, retry = false }) {
+function http(name, pos, { method = 'GET', url, cred, credType, body, query, headers, timeout = 30000, always = false, soft = false, intervaloMs = 0, retry = false, completa = false }) {
   const p = { method, url: url.includes('{{') && !url.startsWith('=') ? '=' + url : url, options: { timeout } };
   // Uma requisição por vez com pausa entre elas (rajadas de consulta SMTP fazem o Gmail segurar o IP: 141 timeouts/258 consultas).
   if (intervaloMs) p.options.batching = { batch: { batchSize: 1, batchInterval: intervaloMs } };
-  if (cred === 'places') Object.assign(p, { authentication: 'genericCredentialType', genericAuthType: 'httpHeaderAuth' });
+  // 26/10: resposta completa (statusCode) sem erro em 4xx/5xx, para distinguir 200/202/402 da Verifalia no código.
+  if (completa) p.options.response = { response: { fullResponse: true, neverError: true } };
+  if (cred === 'places' || cred === 'verifalia') Object.assign(p, { authentication: 'genericCredentialType', genericAuthType: Object.keys(CRED[cred])[0] });
   else if (credType) Object.assign(p, { authentication: 'predefinedCredentialType', nodeCredentialType: credType });
   if (query) Object.assign(p, { sendQuery: true, queryParameters: { parameters: Object.entries(query).map(([name, value]) => ({ name, value })) } });
   if (headers) Object.assign(p, { sendHeaders: true, headerParameters: { parameters: Object.entries(headers).map(([name, value]) => ({ name, value })) } });
@@ -216,15 +219,34 @@ iff('Há leads p/ verificar?', '!!$json.id', [4, 2.4]);
 loop('Loop verificação', [5, 2.4]);
 code('Variações do nome', 'b_variacoes.js', [6, 2.4]);
 iff('Tem variação?', '!!$json.email', [7, 2.4]);
-http('Reacher - variações do nome', [8, 2], { method: 'POST', url: CONFIG.reacherUrl, timeout: 90000, soft: true, intervaloMs: CONFIG.reacherIntervaloMs,
-  body: '={{ JSON.stringify({ to_email: $json.email }) }}' });
+// 26/10: Verifalia no lugar do Reacher (calibração 16/17 safe = Deliverable; Hotmail/Outlook/Yahoo 14/16). Só o endereço vai
+// na chamada, retenção de 5 min. POST espera até 30 s; se voltar 202 (ainda em andamento), o GET seguinte espera mais 30 s.
+// O GET roda para todo item (o n8n não pula item no HTTP); para job já concluído ele só relê o resultado, sem gastar crédito.
+// "Verifalia → resultado" devolve o formato do Reacher ({ input, is_reachable }) que os nós seguintes já usam.
+const SEG_VERIFALIA = CONFIG.verifaliaEsperaMs / 1000;
+function verifalia(sfx, entrada, [col, row]) {
+  const post = http(`Verifalia - ${sfx}`, [col, row], { method: 'POST', url: `${CONFIG.verifaliaUrl}?waitTime=${CONFIG.verifaliaEsperaMs}`,
+    cred: 'verifalia', timeout: CONFIG.verifaliaEsperaMs + 15000, soft: true, completa: true, intervaloMs: CONFIG.verifaliaIntervaloMs,
+    body: `={{ JSON.stringify({ entries: [{ inputData: $json.email }], quality: 'Standard', retention: '0:5:0' }) }}` });
+  const espera = http(`Verifalia - aguardar (${sfx})`, [col + 0.5, row - 0.4], { cred: 'verifalia', timeout: CONFIG.verifaliaEsperaMs + 15000,
+    soft: true, completa: true, intervaloMs: CONFIG.verifaliaIntervaloMs,
+    url: `=${CONFIG.verifaliaUrl}/{{ ($json.body && $json.body.overview && $json.body.overview.id) || 'sem-job' }}?waitTime=${CONFIG.verifaliaEsperaMs}` });
+  const res = code(`Verifalia → resultado (${sfx})`, 'b_verifalia.js', [col + 1, row - 0.4],
+    `const VERIFALIA_POST = ${JSON.stringify(post)}; const VERIFALIA_ENTRADA = ${JSON.stringify(entrada)}; // espera ${SEG_VERIFALIA} s`);
+  chain(post, espera, res);
+  return [post, res];
+}
+const [VF_VAR, VF_VAR_RES] = verifalia('variações do nome', 'Variações reservadas', [8, 2]);
 code('Resultado verificação (código)', 'b_resultado_verificacao.js', [9, 2.4]);
+// 402 = créditos do dia acabaram na Verifalia: mesmo caminho de "sem orçamento" (encerra a verificação do dia, sem fallback).
+iff('Verifalia sem créditos? (variações)', '$json.semCreditos === true', [9.5, 1.6]);
 iff('Reacher travou?', '$json.disjuntor === true', [10, 1.6]);
 // 09/10: orçamento GLOBAL do Reacher (migration 007; teto diário fixo na função do Supabase, vale para toda origem).
 // Cada lote é reservado ANTES de consultar; sem orçamento, nada é consultado.
 const reservarReacher = (name, pos, qtdExpr, origem) => supa(name, pos, { method: 'POST', path: '/rpc/prospeccao_reservar_reacher',
   body: `={{ JSON.stringify({ p_qtd: ${qtdExpr}, p_origem: '${origem}' }) }}` });
-reservarReacher('Reservar Reacher (variações)', [7.5, 1.6], "$('Variações do nome').all().filter((i) => i.json && i.json.email).length", 'robson:variacoes');
+// 26/10: mesmo orçamento (teto 25/dia = grátis da Verifalia), origem "verifalia:*". O disjuntor segue "robson:disjuntor" (watchdog).
+reservarReacher('Reservar Reacher (variações)', [7.5, 1.6], "$('Variações do nome').all().filter((i) => i.json && i.json.email).length", 'verifalia:variacoes');
 iff('Reacher liberado? (variações)', '$json.ok === true', [8, 1.2]);
 code('Variações reservadas', 'b_variacoes_reservadas.js', [8.5, 1.2]);
 code('Sem orçamento Reacher', 'b_sem_orcamento_reacher.js', [9, 0.8]);
@@ -264,13 +286,13 @@ code('Preparar retry - e-mail', '_retry.js', [10, 7]);
 code('Revisão manual (e-mail)', 'b_revisao.js', [14, 7]);
 iff('E-mail já confirmado?', `!!$json.lead.fila && $json.lead.fila.modo === 'texto'`, [14, 4]);
 iff('Há candidatos novos?', '!!$json.candidatos && $json.candidatos.length > 0', [14, 5.2]);
-reservarReacher('Reservar Reacher (candidatos)', [14.5, 5.8], '$json.candidatos.length', 'robson:candidatos');
+reservarReacher('Reservar Reacher (candidatos)', [14.5, 5.8], '$json.candidatos.length', 'verifalia:candidatos');
 iff('Reacher liberado? (candidatos)', '$json.ok === true', [15, 5.8]);
 noop('Parar: orçamento do Reacher', [15.5, 6.4]);
 code('Separar candidatos', 'b_separar_candidatos.js', [15, 5.2]);
-http('Reacher - candidatos da IA', [16, 5.2], { method: 'POST', url: CONFIG.reacherUrl, timeout: 90000, soft: true, intervaloMs: CONFIG.reacherIntervaloMs,
-  body: '={{ JSON.stringify({ to_email: $json.email }) }}' });
-code('Escolher melhor e-mail', 'b_escolher_email.js', [17, 5.2]);
+const [VF_CAND, VF_CAND_RES] = verifalia('candidatos da IA', 'Separar candidatos', [16, 5.2]);
+iff('Verifalia sem créditos? (candidatos)', '$json.semCreditosLote === true', [17, 6]);
+code('Escolher melhor e-mail', 'b_escolher_email.js', [17.5, 5.2]);
 iff('Tem e-mail válido?', '$json.tem_email === true', [18, 5.2]);
 code('Descartar lead', 'b_descarte.js', [19, 6.4]);
 code('E-mail definido', 'b_email_definido.js', [18, 4]);
@@ -297,8 +319,9 @@ chain('Variações do nome', 'Tem variação?');
 link('Tem variação?', 'Reservar Reacher (variações)', 0);
 chain('Reservar Reacher (variações)', 'Reacher liberado? (variações)');
 link('Reacher liberado? (variações)', 'Variações reservadas', 0); link('Reacher liberado? (variações)', 'Sem orçamento Reacher', 1);
-link('Variações reservadas', 'Reacher - variações do nome'); link('Sem orçamento Reacher', 'Fim da verificação'); link('Tem variação?', 'Resultado verificação (código)', 1);
-chain('Reacher - variações do nome', 'Resultado verificação (código)', 'Reacher travou?');
+link('Variações reservadas', VF_VAR); link('Sem orçamento Reacher', 'Fim da verificação'); link('Tem variação?', 'Resultado verificação (código)', 1);
+chain(VF_VAR_RES, 'Resultado verificação (código)', 'Verifalia sem créditos? (variações)');
+link('Verifalia sem créditos? (variações)', 'Sem orçamento Reacher', 0); link('Verifalia sem créditos? (variações)', 'Reacher travou?', 1);
 // Disjuntor: consulta inconclusiva → encerra a fase 1 já (sem acumular timeouts) e segue p/ a fila com o que já foi confirmado.
 link('Reacher travou?', 'Registrar disjuntor', 0); link('Registrar disjuntor', 'Fim da verificação'); link('Reacher travou?', 'E-mail do nome confirmado?', 1);
 link('E-mail do nome confirmado?', 'Salvar contato verificado', 0); link('E-mail do nome confirmado?', 'Marcar verificação (lead)', 1);
@@ -320,7 +343,9 @@ link('E-mail já confirmado?', 'E-mail definido', 0); link('E-mail já confirmad
 link('Há candidatos novos?', 'Reservar Reacher (candidatos)', 0);
 chain('Reservar Reacher (candidatos)', 'Reacher liberado? (candidatos)');
 link('Reacher liberado? (candidatos)', 'Separar candidatos', 0); link('Reacher liberado? (candidatos)', 'Parar: orçamento do Reacher', 1); link('Há candidatos novos?', 'Descartar lead', 1);
-chain('Separar candidatos', 'Reacher - candidatos da IA', 'Escolher melhor e-mail', 'Tem e-mail válido?');
+chain('Separar candidatos', VF_CAND); chain(VF_CAND_RES, 'Verifalia sem créditos? (candidatos)');
+link('Verifalia sem créditos? (candidatos)', 'Parar: orçamento do Reacher', 0); link('Verifalia sem créditos? (candidatos)', 'Escolher melhor e-mail', 1);
+chain('Escolher melhor e-mail', 'Tem e-mail válido?');
 link('Tem e-mail válido?', 'E-mail definido', 0); link('Tem e-mail válido?', 'Descartar lead', 1);
 chain('E-mail definido', 'Checar bloqueio LGPD', 'Montar e-mail final', 'Bloqueado?');
 link('Bloqueado?', 'Descartar lead', 0); link('Bloqueado?', 'Dry-run?', 1);

@@ -23,13 +23,14 @@ ok(/revoke all on public\.prospeccao_reacher_reservas from anon, authenticated/.
    'tabela de reservas fechada para anon/authenticated; nada destrutivo');
 ok(/p_qtd < 1 or p_qtd > v_limite/.test(SQL) && /chamadas \+ p_qtd <= v_limite/.test(SQL), 'reserva tudo-ou-nada, sem passar do teto');
 
-console.log('Workflow: nenhuma consulta ao Reacher sem reserva antes');
+console.log('Workflow: nenhuma consulta ao verificador (Verifalia desde 26/10) sem reserva antes');
 const w = JSON.parse(readFileSync(`${R}/dist/novax-agente-prospeccao.json`, 'utf8'));
 const no = (n) => w.nodes.find((x) => x.name === n);
 const saidas = (n, i = 0) => (w.connections[n]?.main[i] || []).map((c) => c.node);
 const pais = (n) => Object.entries(w.connections).flatMap(([de, c]) => c.main.flatMap((br, i) => (br || []).filter((x) => x.node === n).map(() => ({ de, i }))));
-const reacher = w.nodes.filter((n) => n.type === 'n8n-nodes-base.httpRequest' && String(n.parameters.url).includes(CONFIG.reacherUrl));
-ok(reacher.length === 2, `2 nós consultam o Reacher (${reacher.map((n) => n.name).join(', ')})`);
+// 26/10: os nós que gastam crédito são os POST da Verifalia (o GET de espera só relê o job).
+const reacher = w.nodes.filter((n) => n.type === 'n8n-nodes-base.httpRequest' && n.parameters.method === 'POST' && String(n.parameters.url).includes(CONFIG.verifaliaUrl));
+ok(reacher.length === 2, `2 nós consultam a Verifalia (${reacher.map((n) => n.name).join(', ')})`);
 for (const r of reacher) {
   // sobe a cadeia até achar um "Reacher liberado?" (ramo verdadeiro) sem passar por outro Reacher
   const visto = new Set(); let achou = true; const fila = pais(r.name).map((p) => p.de);
@@ -43,14 +44,14 @@ for (const r of reacher) {
   ok(achou, `"${r.name}" só é alcançado pelo ramo "liberado" de uma reserva`);
 }
 ok(saidas('Tem variação?')[0] === 'Reservar Reacher (variações)' && saidas('Reservar Reacher (variações)')[0] === 'Reacher liberado? (variações)', 'variações: reserva antes');
-ok(saidas('Reacher liberado? (variações)', 0)[0] === 'Variações reservadas' && saidas('Variações reservadas')[0] === 'Reacher - variações do nome', 'liberado → consulta');
+ok(saidas('Reacher liberado? (variações)', 0)[0] === 'Variações reservadas' && saidas('Variações reservadas')[0] === 'Verifalia - variações do nome', 'liberado → consulta');
 ok(saidas('Reacher liberado? (variações)', 1)[0] === 'Sem orçamento Reacher' && saidas('Sem orçamento Reacher')[0] === 'Fim da verificação', 'sem orçamento → encerra a verificação do dia');
 ok(saidas('Há candidatos novos?')[0] === 'Reservar Reacher (candidatos)' && saidas('Reacher liberado? (candidatos)', 0)[0] === 'Separar candidatos'
    && saidas('Reacher liberado? (candidatos)', 1)[0] === 'Parar: orçamento do Reacher', 'candidatos: reserva antes; sem orçamento → para o loop');
 ok(saidas('Reacher travou?', 0)[0] === 'Registrar disjuntor' && saidas('Registrar disjuntor')[0] === 'Fim da verificação', 'disjuntor registrado no Supabase');
 ok(['Reservar Reacher (variações)', 'Reservar Reacher (candidatos)', 'Registrar disjuntor'].every((n) => no(n).executeOnce === true), 'reservas e registro rodam 1 vez por lote');
 ok(/p_qtd: \$\('Variações do nome'\)\.all\(\)\.filter/.test(no('Reservar Reacher (variações)').parameters.jsonBody)
-   && /p_origem: 'robson:variacoes'/.test(no('Reservar Reacher (variações)').parameters.jsonBody), 'variações: reserva o nº de e-mails do lote, origem robson:variacoes');
+   && /p_origem: 'verifalia:variacoes'/.test(no('Reservar Reacher (variações)').parameters.jsonBody), 'variações: reserva o nº de e-mails do lote, origem verifalia:variacoes');
 ok(/p_qtd: \$json\.candidatos\.length/.test(no('Reservar Reacher (candidatos)').parameters.jsonBody), 'candidatos: reserva o nº de candidatos');
 
 console.log('Código dos nós');

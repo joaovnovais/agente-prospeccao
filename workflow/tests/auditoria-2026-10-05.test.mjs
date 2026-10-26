@@ -14,7 +14,8 @@ ok(!lib.emailIdentificaEmpresa('consultoriajuridica@gmail.com', 'Brandalise - Ad
 ok(!lib.emailIdentificaEmpresa('advogada.indaial@gmail.com', 'Ione Valquer Advogada'), 'advogada.indaial@ recusado');
 ok(lib.emailIdentificaEmpresa('quarteroli@gmail.com', 'Quarteroli Advogados Associados'), 'nome de 1 palavra distintiva (quarteroli@) continua aceito');
 ok(!lib.emailIdentificaEmpresa('clinica@gmail.com', 'Clínica'), 'clinica@ continua recusado');
-ok(!lib.emailPossivel('clinicax@hotmail.com') && lib.emailPossivel('clinicax@gmail.com'), 'hotmail recusado, gmail aceito');
+// 26/10: com a Verifalia, Hotmail/Outlook/Yahoo voltam a ser aceitos (o Reacher não os concluía).
+ok(lib.emailPossivel('clinicax@hotmail.com') && lib.emailPossivel('clinicax@gmail.com') && !lib.emailPossivel('abc@gmail.com'), 'hotmail e gmail aceitos (26/10); gmail curto demais recusado');
 ok(lib.variantesEmail('Lumiar Beauty Estética').includes('lumiarbeautyestetica@gmail.com'), 'variação que já gerou envio real continua sendo gerada');
 console.log('A5 acentuação e nota');
 const L = { nome: 'Zeb Odonto', rating: 4.9, total_avaliacoes: 62 };

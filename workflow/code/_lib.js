@@ -267,11 +267,9 @@ function variantesEmail(nome, cidade = '') {
   for (const s of slugs) out.push(`${s}@gmail.com`, `contato.${s}@gmail.com`);
   return out.filter((e) => emailIdentificaEmpresa(e, nome, cidade));
 }
-// Gmail só aceita usuário de 6 a 30 caracteres: descarta candidatos impossíveis antes do Reacher.
-// Reacher nunca conclui Hotmail/Outlook/Yahoo (50/50 HeadlessError): consultar só gasta tempo e tarpit.
-const PROVEDOR_SEM_VERIFICACAO = /@(hotmail|outlook|live|msn|yahoo)\./;
+// Gmail só aceita usuário de 6 a 30 caracteres: descarta candidatos impossíveis antes do verificador.
+// 26/10: Hotmail/Outlook/Yahoo reativados. O Reacher nunca os concluía (50/50 HeadlessError); a Verifalia resolveu 14 de 16.
 const emailPossivel = (e) => {
-  if (PROVEDOR_SEM_VERIFICACAO.test(e)) return false;
   if (!e.endsWith('@gmail.com')) return true;
   const u = e.split('@')[0];
   return u.length >= 6 && u.length <= 30;

@@ -24,5 +24,5 @@ Procedimento verificado desde 2026-10-05. Motivo: em 05/10 um deploy manual reim
 ## Disjuntor da verificação (fase 1)
 - Lead com resultado inconclusivo do Reacher (`unknown`, timeout, erro HTTP) é pulado: não é marcado como verificado e vai para o fim da fila (`order=updated_at.asc,id.asc`).
 - A fase 1 só para depois de `reacherFalhasSeguidasMax` (3) inconclusivos seguidos na mesma execução.
-- As consultas ao Reacher saem uma por vez, com `reacherIntervaloMs` (6 s) entre elas: rajadas fazem o Gmail segurar o IP da VPS (141 timeouts em 258 consultas até 05/10).
+- ~~As consultas ao Reacher saem uma por vez, com `reacherIntervaloMs` (6 s) entre elas~~. Desde 26/10 o verificador é a Verifalia (`docs/verificador-verifalia.md`): uma consulta por vez, 1 s entre elas, sem depender do IP da VPS.
 - No fallback, se todos os candidatos derem `unknown`/erro, o lead volta para `novo` (até `maxTentativasFallback` = 2, coluna `tentativas_fallback`).
