@@ -192,9 +192,15 @@
       "Porto Belo"
     ]
   },
-  "verificacaoPorExecucao": 15,
+  "verificacaoPorExecucao": 30,
+  "ordemVariacoes": [
+    "completo",
+    "contato.completo",
+    "sem_conectivos",
+    "contato.sem_conectivos"
+  ],
   "reacherFalhasSeguidasMax": 3,
-  "pausaEntreVerificacoesSeg": 10,
+  "pausaEntreVerificacoesSeg": 3,
   "verifaliaIntervaloMs": 1000,
   "verifaliaEsperaMs": 30000,
   "reacherLimiteDiario": 25,

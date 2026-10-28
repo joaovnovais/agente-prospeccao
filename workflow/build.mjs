@@ -214,7 +214,8 @@ schedule('Diário - Envio', '30 9 * * 1-5', [0, 4]);
 supa('Status envios (dia)', [1, 4], { path: '/prospeccao_status_envio?select=*' });
 code('Calcular limite do dia', 'b_limite_dia.js', [2, 4]);
 
-supa('Buscar leads p/ verificação', [3, 2.4], { path: '/prospeccao_leads?select=*&status=eq.novo&verificacao_codigo_em=is.null&order=updated_at.asc,id.asc&limit={{ $json.loteVerificacao }}' });
+// 28/10: fila priorizada pela taxa de e-mail confirmado do nicho (view da migration 008, suavizada pela média geral).
+supa('Buscar leads p/ verificação', [3, 2.4], { path: '/prospeccao_fila_verificacao?select=*&order=taxa_nicho.desc,updated_at.asc,id.asc&limit={{ $json.loteVerificacao }}' });
 iff('Há leads p/ verificar?', '!!$json.id', [4, 2.4]);
 loop('Loop verificação', [5, 2.4]);
 code('Variações do nome', 'b_variacoes.js', [6, 2.4]);
@@ -246,13 +247,16 @@ iff('Reacher travou?', '$json.disjuntor === true', [10, 1.6]);
 const reservarReacher = (name, pos, qtdExpr, origem) => supa(name, pos, { method: 'POST', path: '/rpc/prospeccao_reservar_reacher',
   body: `={{ JSON.stringify({ p_qtd: ${qtdExpr}, p_origem: '${origem}' }) }}` });
 // 26/10: mesmo orçamento (teto 25/dia = grátis da Verifalia), origem "verifalia:*". O disjuntor segue "robson:disjuntor" (watchdog).
-reservarReacher('Reservar Reacher (variações)', [7.5, 1.6], "$('Variações do nome').all().filter((i) => i.json && i.json.email).length", 'verifalia:variacoes');
+// 28/10: 1 crédito por variação; a verificação do lead para no 1º e-mail confirmado ("Próxima variação" volta para cá).
+reservarReacher('Reservar Reacher (variações)', [7.5, 1.6], '1', 'verifalia:variacoes');
 iff('Reacher liberado? (variações)', '$json.ok === true', [8, 1.2]);
 code('Variações reservadas', 'b_variacoes_reservadas.js', [8.5, 1.2]);
 code('Sem orçamento Reacher', 'b_sem_orcamento_reacher.js', [9, 0.8]);
 // Disjuntor registrado no Supabase: o watchdog das 10:15 avisa "Reacher travou".
 supa('Registrar disjuntor', [11, 1.2], { method: 'POST', path: '/prospeccao_reacher_reservas',
   body: `={{ JSON.stringify({ origem: 'robson:disjuntor', qtd: 0, ok: false }) }}` });
+iff('Próxima variação?', '$json.proxima === true', [10, 2]);
+code('Próxima variação', 'b_proxima_variacao.js', [9, 1.9]);
 iff('E-mail do nome confirmado?', '$json.safe === true', [10, 2.4]);
 wait('Pausa entre verificações', CONFIG.pausaEntreVerificacoesSeg, [13, 2.4]);
 supa('Salvar contato verificado', [11, 2], { method: 'POST', path: '/prospeccao_contatos?on_conflict=email',
@@ -323,7 +327,8 @@ link('Variações reservadas', VF_VAR); link('Sem orçamento Reacher', 'Fim da v
 chain(VF_VAR_RES, 'Resultado verificação (código)', 'Verifalia sem créditos? (variações)');
 link('Verifalia sem créditos? (variações)', 'Sem orçamento Reacher', 0); link('Verifalia sem créditos? (variações)', 'Reacher travou?', 1);
 // Disjuntor: consulta inconclusiva → encerra a fase 1 já (sem acumular timeouts) e segue p/ a fila com o que já foi confirmado.
-link('Reacher travou?', 'Registrar disjuntor', 0); link('Registrar disjuntor', 'Fim da verificação'); link('Reacher travou?', 'E-mail do nome confirmado?', 1);
+link('Reacher travou?', 'Registrar disjuntor', 0); link('Registrar disjuntor', 'Fim da verificação'); link('Reacher travou?', 'Próxima variação?', 1);
+link('Próxima variação?', 'Próxima variação', 0); link('Próxima variação', 'Reservar Reacher (variações)'); link('Próxima variação?', 'E-mail do nome confirmado?', 1);
 link('E-mail do nome confirmado?', 'Salvar contato verificado', 0); link('E-mail do nome confirmado?', 'Marcar verificação (lead)', 1);
 chain('Salvar contato verificado', 'Marcar verificação (lead)', 'Pausa entre verificações', 'Loop verificação');
 chain('Fim da verificação', 'Buscar fila com e-mail', 'Buscar fila fallback', 'Montar fila de envio', 'Loop leads');
