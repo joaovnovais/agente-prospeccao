@@ -18,11 +18,12 @@ let falhas = 0; const ok = (c, m) => { console.log((c ? '  ✔ ' : '  ✘ ') + m
 
 const lead = (modo, extra = {}) => ({ id: 'L1', nome: 'Advocacia Vasconcelos Exemplar', cidade: 'Vila Fictícia', estado: 'GO', rating: 4.8,
   total_avaliacoes: 52, tipo_google: 'Advogado', tipos_google: ['lawyer'], nicho: 'advocacia', fila: { modo }, ...extra });
-const CORPO = 'Olá! Vi que a Advocacia Vasconcelos Exemplar, em Vila Fictícia/GO, tem nota 4,8 com 52 avaliações no Google, mas não possui site '
-  + 'vinculado ao perfil. Quem pesquisa pelo escritório no Google não encontra as áreas de atuação nem um canal direto para agendar uma consulta. '
-  + 'Um site simples resolveria essa lacuna, reunindo informações, endereço e um botão de contato. Posso mostrar como isso funcionaria em uma '
-  + 'reunião de diagnóstico gratuita de 30 minutos, online?';
-const ASSUNTO = 'Advocacia Vasconcelos Exemplar em Vila Fictícia: o que o Google mostra';
+// Copy v2 (12/10): texto de referência no molde novo (o antigo, com "lacuna" e "30 minutos", passou a ser reprovado).
+const CORPO = 'Olá! Sou o João, da Novax. Pesquisei escritórios de advocacia em Vila Fictícia no Google e o perfil da Advocacia Vasconcelos '
+  + 'Exemplar (nota 4,8, 52 avaliações) apareceu sem site, então quem quer ver as áreas de atuação ou agendar uma consulta não tem para onde ir. '
+  + 'Um site simples mostraria as áreas de atuação, o endereço e um botão de WhatsApp para agendar. '
+  + 'Faz sentido eu te explicar, em poucas linhas, como isso funcionaria para a Advocacia Vasconcelos Exemplar?';
+const ASSUNTO = 'Pergunta rápida sobre Advocacia Vasconcelos Exemplar'; // formato sorteado para o id 'L1'
 const CAND = 'contato.vasconcelosexemplar@gmail.com';
 const validar = (l, obj, tentativa = 1) => rodar('b_validar_ia.js', {
   input: [{ json: { model: 'teste', choices: [{ message: { content: JSON.stringify(obj) }, finish_reason: 'stop' }] } }],
@@ -57,18 +58,19 @@ console.log('(a) fallback sem candidato aproveitável não gera nova tentativa')
 console.log('(b) assunto "Presença digital para" corrigido sem nova chamada + prompt alinhado');
 {
   const v = validar(lead('texto'), { assunto: 'Presença digital para Advocacia Vasconcelos Exemplar', corpo: CORPO });
-  ok(v.ok === true && v.assunto_corrigido === true && v.assunto === 'Advocacia Vasconcelos Exemplar em Vila Fictícia: perfil no Google sem site',
-     'assunto trocado pelo padrão (nome + cidade) e aprovado');
+  ok(v.ok === true && v.assunto_corrigido === true && v.assunto === ASSUNTO,
+     'assunto trocado pelo padrão (formato sorteado do lead, copy v2) e aprovado');
   ok(validar(lead('texto'), { assunto: ASSUNTO, corpo: CORPO }).assunto_corrigido === false, 'assunto normal não é tocado');
   const v2 = validar(lead('texto'), { assunto: 'presenca digital para voces', corpo: CORPO.replace('Um site simples', 'Um site excelente') });
   ok(v2.ok === false && !/Presença digital/.test(v2.erro) && /excelente/.test(v2.erro), 'outros erros continuam valendo depois da correção');
   const longo = lib.assuntoPadrao({ nome: 'Sociedade de Advogados Exemplar Fictício Vasconcelos Albuquerque e Associados', cidade: 'Vila Fictícia do Norte' });
-  ok(longo.length <= 90 && longo.length >= 5, `nome longo cabe em 90 caracteres (${longo.length})`);
+  // 21/10: a forma curta é do código → todo lead tem assunto padrão.
+  ok(typeof longo === 'string' && longo.length <= 90 && !/{/.test(longo), `nome com mais de 4 palavras: assunto padrão com a forma curta do código ("${longo}")`);
   ok(!lib.ASSUNTO_SITE_EXISTE_RE.test(lib.assuntoPadrao(lead())), 'assunto padrão não sugere que a empresa já tem site');
   const sd = {};
   const p = rodar('b_pedido_ia.js', { input: [{ json: { lead: lead('texto') } }], staticData: sd })[0].json.messages[0].content;
   for (const w of ['bem avaliada', 'boa avaliação', 'reputação', 'nota alta']) ok(p.includes(`"${w}"`), `prompt proíbe "${w}"`);
-  ok((p.match(/\{empresa\}/g) || []).length >= 3 && /NUNCA comece com "Presença digital para"/.test(p), 'prompt traz 3 modelos de assunto');
+  ok(p.includes(`"${ASSUNTO}"`) && !/Presença digital para/.test(p), 'prompt traz o assunto no formato sorteado (copy v2), sem os modelos antigos');
 }
 
 console.log(`(c) teto diário do fallback (${CONFIG.maxChamadasFallbackDia}), ordem da fila inalterada`);
