@@ -50,14 +50,21 @@ ok(saidas('Há candidatos novos?')[0] === 'Reservar Reacher (candidatos)' && sai
    && saidas('Reacher liberado? (candidatos)', 1)[0] === 'Parar: orçamento do Reacher', 'candidatos: reserva antes; sem orçamento → para o loop');
 ok(saidas('Reacher travou?', 0)[0] === 'Registrar disjuntor' && saidas('Registrar disjuntor')[0] === 'Fim da verificação', 'disjuntor registrado no Supabase');
 ok(['Reservar Reacher (variações)', 'Reservar Reacher (candidatos)', 'Registrar disjuntor'].every((n) => no(n).executeOnce === true), 'reservas e registro rodam 1 vez por lote');
-ok(/p_qtd: \$\('Variações do nome'\)\.all\(\)\.filter/.test(no('Reservar Reacher (variações)').parameters.jsonBody)
-   && /p_origem: 'verifalia:variacoes'/.test(no('Reservar Reacher (variações)').parameters.jsonBody), 'variações: reserva o nº de e-mails do lote, origem verifalia:variacoes');
+// 28/10: uma variação por vez, parando no 1º e-mail confirmado → reserva de 1 crédito por variação.
+ok(/p_qtd: 1,/.test(no('Reservar Reacher (variações)').parameters.jsonBody)
+   && /p_origem: 'verifalia:variacoes'/.test(no('Reservar Reacher (variações)').parameters.jsonBody), 'variações: reserva 1 crédito por variação, origem verifalia:variacoes');
 ok(/p_qtd: \$json\.candidatos\.length/.test(no('Reservar Reacher (candidatos)').parameters.jsonBody), 'candidatos: reserva o nº de candidatos');
 
 console.log('Código dos nós');
 {
-  const v = rodar('b_variacoes_reservadas.js', { nodes: { 'Variações do nome': [{ json: { email: 'a@gmail.com' } }, { json: {} }, { json: { email: 'b@gmail.com' } }] } });
-  ok(v.length === 2 && v.every((i) => i.json.email), 'variações reservadas = só as que têm e-mail (mesmo nº da reserva)');
+  // 28/10: uma variação por vez (estado no static data da execução) — mesmo nº da reserva (1).
+  const sv = { variacoes: { exec: 'E7', lead: 'L', lista: ['a@gmail.com', 'b@gmail.com'], idx: 0, verificados: [] } };
+  const v = rodar('b_variacoes_reservadas.js', { staticData: sv, execId: 'E7' });
+  ok(v.length === 1 && v[0].json.email === 'a@gmail.com', 'variação reservada = só a da vez (1 crédito)');
+  rodar('b_proxima_variacao.js', { staticData: sv, execId: 'E7' });
+  ok(rodar('b_variacoes_reservadas.js', { staticData: sv, execId: 'E7' })[0].json.email === 'b@gmail.com', '"Próxima variação" avança para a seguinte');
+  let erro = false; try { rodar('b_variacoes_reservadas.js', { staticData: sv, execId: 'OUTRA' }); } catch (e) { erro = true; }
+  ok(erro, 'estado de outra execução nunca é reaproveitado');
   const sd = {};
   const s = rodar('b_sem_orcamento_reacher.js', { input: [{ json: { ok: false, usadas: 25, limite: 25 } }], staticData: sd, execId: 'E9' })[0].json;
   ok(s.semOrcamentoReacher === true && sd.reacherSemOrcamentoExec === 'E9', 'sem orçamento: marca a execução');

@@ -261,10 +261,14 @@ function classificarPerfil(nome, tipos = [], nicho = '') {
 function variantesEmail(nome, cidade = '') {
   const palavras = norm(nome).split(' ').filter(Boolean);
   const semConectivos = palavras.filter((w) => !['de', 'da', 'do', 'das', 'dos', 'e', 'dra', 'dr'].includes(w));
-  const slugs = [...new Set([palavras.join(''), semConectivos.join('')])];
-  const out = [];
-  for (const s of slugs) out.push(`${s}@gmail.com`, `contato.${s}@gmail.com`);
-  return out.filter((e) => emailIdentificaEmpresa(e, nome, cidade));
+  const completo = palavras.join(''), semCon = semConectivos.join('');
+  // 28/10: ordem pela taxa histórica de acerto (config.ordemVariacoes). Até 28/10, das 44 confirmações por variação:
+  // completo 36, contato.completo 6, sem_conectivos 1, contato.sem_conectivos 0. A verificação para no 1º confirmado.
+  const porPadrao = { completo: `${completo}@gmail.com`, 'contato.completo': `contato.${completo}@gmail.com` };
+  if (semCon !== completo) Object.assign(porPadrao, { sem_conectivos: `${semCon}@gmail.com`, 'contato.sem_conectivos': `contato.${semCon}@gmail.com` });
+  const ordem = CONFIG.ordemVariacoes || ['completo', 'contato.completo', 'sem_conectivos', 'contato.sem_conectivos'];
+  const out = [...ordem, ...Object.keys(porPadrao).filter((k) => !ordem.includes(k))].map((k) => porPadrao[k]).filter(Boolean);
+  return [...new Set(out)].filter((e) => emailIdentificaEmpresa(e, nome, cidade));
 }
 // Gmail só aceita usuário de 6 a 30 caracteres: descarta candidatos impossíveis antes do verificador.
 // 26/10: Hotmail/Outlook/Yahoo reativados. O Reacher nunca os concluía (50/50 HeadlessError); a Verifalia resolveu 14 de 16.
