@@ -10,7 +10,7 @@ O follow-up manda o 2º e o 3º toque na mesma conversa do e-mail inicial, pela 
 | Dias úteis | seg–sex, fora de `feriados` (nacionais: 02/11, 15/11, 20/11, 25/12…). Feriado: o módulo não roda e o dia não conta. |
 | Elegível | envio inicial real (`teste=false`, `status=enviado`, com `message_id`); lead em `email_enviado`; sem resposta (nem em `prospeccao_respostas`, nem `resposta_recebida_em`); contato sem bloqueio nem `bloqueado_motivo`; `retomar_em` vazio ou vencido. Toques de teste não avançam a cadência real. |
 | Ordem | toques 2 mais perto de sair da janela primeiro; depois os toques 3. |
-| Teto por dia | sombra: todos os elegíveis são registrados e só os 8 primeiros (`sombraMaxTextos`) ganham texto. Teste e 1ª semana ligado (5 dias úteis desde `ligadoDesde`): **3/dia** (`tetoSemana1`). Depois: **50% do limite diário** (`fracaoLimite`). Sempre ≤ espaço que sobra no limite do dia, que é compartilhado com o envio frio (`total_todos_hoje`). |
+| Teto por dia | sombra: todos os elegíveis são registrados e só os 8 primeiros (`sombraMaxTextos`) ganham texto. Teste: **3/dia** (`tetoTeste`). 1ª semana ligado (5 dias úteis desde `ligadoDesde`): **6/dia** (`tetoSemana1`, ajuste do João em 03/11). Depois: **50% do limite diário** (`fracaoLimite`). Sempre ≤ espaço que sobra no limite do dia, que é compartilhado com o envio frio (`total_todos_hoje`). |
 | Horário | para limpo às **09:25** (`pararAs`) e manda o resumo. |
 | Texto | mesma IA e mesma cota do envio frio. 2–4 frases, 20–70 palavras. Toque 2: fato verificável do Google + pergunta direta. Toque 3: encerramento educado ("se não fizer sentido agora, sem problema"). Proibido: repetir 6 palavras seguidas do e-mail anterior, urgência falsa, apresentar-se de novo, elogio, promessa, link, nota/avaliações erradas (`checarFatos`). Mesmo rodapé LGPD (SAIR). 3 tentativas; se reprovar, vira card de revisão no Trello (fora da sombra) e não envia. |
 | Conversa | assunto `Re: <assunto original>`; `In-Reply-To` = `Message-ID` do toque anterior; `References` = todos os `Message-ID` da conversa; `Message-ID` novo no formato `<uuid@gmail.com>`, gravado em `prospeccao_envios.message_id`. Sem threadId e sem ler a caixa. |
@@ -32,7 +32,7 @@ O follow-up manda o 2º e o 3º toque na mesma conversa do e-mail inicial, pela 
 | 09/11 | 3ª sombra + checagem às 10:55 → **AÇÃO DO JOÃO: aprovar os textos**. Às 15:00, se aprovado: estágio `teste` | follow-up (teste) |
 | 10/11 | teste às 09:00 (3 envios para o João) + checagem | — |
 | 11/11 | teste às 09:00 + checagem às 10:55 → **AÇÃO DO JOÃO: confirmar thread e remetente**. Às 15:00, se confirmado: estágio `ligado`, `ligadoDesde` = 2026-11-12 | follow-up (ligado) |
-| 12/11 | 1º dia ligado (3/dia até 18/11; 50% do limite a partir de 19/11) | — |
+| 12/11 | 1º dia ligado (6/dia até 18/11; 50% do limite a partir de 19/11) | — |
 
 **Aprovação do João:** ele responde na sessão ou escreve no topo da nota de estado a linha exata:
 - 09/11: `✅ TEXTOS FOLLOW-UP APROVADOS (09/11)`
@@ -40,7 +40,18 @@ O follow-up manda o 2º e o 3º toque na mesma conversa do e-mail inicial, pela 
 
 Sem a linha, a tarefa das 15:00 só registra e não muda de estágio.
 
-**Simulação (dados de 03/11):** dos 86 envios reais, 54 estariam elegíveis ao toque 2 em 05/11 e 48 em 12/11; 38 ficam de fora pela janela de 15 dias úteis. Com 3/dia na 1ª semana, parte desses 48 passa da janela antes de receber o toque, e a ordem prioriza quem está mais perto de sair.
+**Simulação (dados de 03/11):** dos 86 envios reais, 54 estariam elegíveis ao toque 2 em 05/11 e 48 em 12/11; 38 ficam de fora pela janela de 15 dias úteis.
+
+**Simulação dia a dia, de 12/11 a 30/11** (86 envios reais + hipótese de 7 envios frios novos por dia útil; limite 20):
+
+| Teto 1ª semana | Ordem | Toques 2 | Toques 3 | Perdem a janela |
+|---|---|---|---|---|
+| 3/dia | toque 2 primeiro | 85 | 0 | 3 |
+| **6/dia** | **toque 2 primeiro (atual)** | 100 | **0** | 0 |
+| 6/dia | toque 3 primeiro | 64 | 36 | 12 |
+| 6/dia | intercalado | 62 | 38 | 6 |
+
+Com a ordem atual, o toque 3 nunca chega a vez, porque entram ~7 toques 2 novos por dia. **Decisão pendente do João** até 11/11: manter a ordem ou intercalar.
 
 ## Mudança de estágio (procedimento)
 1. No repositório principal, em `main`, edite `workflow/config.json`: `modulos.followup.estagio` (e, para `ligado`, `followup.ligadoDesde`).

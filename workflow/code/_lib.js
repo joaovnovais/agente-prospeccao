@@ -445,13 +445,15 @@ function elegiveisFollowup(envios, leadsComResposta, hoje) {
   return { escolhidos, fora };
 }
 // Quantos toques cabem hoje. Sombra: todos os elegíveis são registrados (o teto da sombra só limita textos gerados).
-// Teste e 1ª semana ligado: CONFIG.followup.tetoSemana1. Depois: floor(limite × fracaoLimite). Sempre ≤ espaço do dia.
+// Teste: CONFIG.followup.tetoTeste (3). 1ª semana ligado (5 dias úteis desde ligadoDesde): tetoSemana1 (6, ajuste do João em
+// 03/11). Depois: floor(limite × fracaoLimite). Sempre ≤ espaço que sobra no limite do dia.
 function tetoFollowupDia(estagio, limite, enviadosHoje, hoje) {
   const F = CONFIG.followup;
   const espaco = Math.max(0, Number(limite || 0) - Number(enviadosHoje || 0));
   if (estagio === 'sombra') return F.sombraMaxTextos;
   let teto = Math.floor(Number(limite || 0) * F.fracaoLimite);
-  if (estagio === 'teste' || !F.ligadoDesde || diasUteisEntre(F.ligadoDesde, hoje) < 5) teto = Math.min(teto, F.tetoSemana1);
+  if (estagio === 'teste') teto = Math.min(teto, F.tetoTeste);
+  else if (!F.ligadoDesde || diasUteisEntre(F.ligadoDesde, hoje) < 5) teto = Math.min(teto, F.tetoSemana1);
   return Math.min(teto, espaco);
 }
 const URGENCIA_RE = /(últim[ao]s?\s+(chance|dias|vagas|oportunidade)|vagas?\s+limitad|s[óo]\s+hoje|somente\s+hoje|urgente|corr[ae]\b|n[ãa]o\s+perca|tempo\s+limitado|prazo\s+final|promo[çc][ãa]o|desconto|oferta\s+especial)/i;

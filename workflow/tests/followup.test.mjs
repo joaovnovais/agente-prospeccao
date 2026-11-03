@@ -77,11 +77,15 @@ console.log('Ordem e teto do dia');
   ok(r.escolhidos.map((e) => `${e.lead.id}${e.toque}`).join(',') === 'C2,A2,B3', 'toques 2 primeiro (mais perto de sair da janela), depois toques 3');
   const F = (o) => libCom({ ...CONFIG, followup: { ...CONFIG.followup, ...o } });
   ok(lib.tetoFollowupDia('sombra', 20, 0, '2026-11-05') === CONFIG.followup.sombraMaxTextos, `sombra: até ${CONFIG.followup.sombraMaxTextos} textos`);
-  ok(lib.tetoFollowupDia('teste', 20, 0, '2026-11-10') === 3, 'teste: 3/dia');
-  ok(F({ ligadoDesde: '2026-11-12' }).tetoFollowupDia('ligado', 20, 0, '2026-11-18') === 3, '1ª semana ligado (até 18/11): 3/dia');
+  ok(CONFIG.followup.tetoTeste === 3 && CONFIG.followup.tetoSemana1 === 6, 'config: teste 3/dia, 1ª semana ligado 6/dia (ajuste do João em 03/11)');
+  ok(F({ ligadoDesde: '2026-11-12' }).tetoFollowupDia('teste', 20, 0, '2026-11-10') === 3, 'teste: 3/dia (não usa o teto da 1ª semana)');
+  ok(F({ ligadoDesde: '2026-11-12' }).tetoFollowupDia('ligado', 20, 0, '2026-11-12') === 6, '1º dia ligado (12/11): 6/dia');
+  ok(F({ ligadoDesde: '2026-11-12' }).tetoFollowupDia('ligado', 20, 0, '2026-11-18') === 6, '1ª semana ligado (até 18/11): 6/dia');
   ok(F({ ligadoDesde: '2026-11-12' }).tetoFollowupDia('ligado', 20, 0, '2026-11-19') === 10, 'depois de 5 dias úteis (20/11 fora): 50% do limite (10 de 20)');
-  ok(F({ ligadoDesde: '2026-11-12' }).tetoFollowupDia('ligado', 20, 18, '2026-11-25') === 2, 'nunca passa do espaço que sobra no limite do dia');
-  ok(F({ ligadoDesde: null }).tetoFollowupDia('ligado', 20, 0, '2026-11-25') === 3, 'ligado sem data de início → fica no teto da 1ª semana (seguro)');
+  ok(F({ ligadoDesde: '2026-11-12' }).tetoFollowupDia('ligado', 10, 0, '2026-11-13') === 5, '1ª semana com limite baixo: o 50% (5) vale se for menor que 6');
+  ok(F({ ligadoDesde: '2026-11-12' }).tetoFollowupDia('ligado', 20, 16, '2026-11-13') === 4, '1ª semana: nunca passa do espaço que sobra no dia (4)');
+  ok(F({ ligadoDesde: '2026-11-12' }).tetoFollowupDia('ligado', 20, 18, '2026-11-25') === 2, 'depois: nunca passa do espaço que sobra no limite do dia');
+  ok(F({ ligadoDesde: null }).tetoFollowupDia('ligado', 20, 0, '2026-11-25') === 6, 'ligado sem data de início → fica no teto da 1ª semana (seguro)');
 }
 
 console.log('Validador do texto');
