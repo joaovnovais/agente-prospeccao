@@ -440,9 +440,14 @@ function elegiveisFollowup(envios, leadsComResposta, hoje) {
       references: [inicial.message_id, ...fus.map((f) => f.message_id)].filter(Boolean),
       anteriores: [inicial.corpo, ...fus.map((f) => f.corpo)].filter(Boolean) });
   }
-  // Toque 2 mais perto de sair da janela primeiro; depois os toques 3, dos mais antigos para os mais novos.
-  escolhidos.sort((a, b) => (a.toque - b.toque) || (b.du1 - a.du1) || String(a.lead.id).localeCompare(String(b.lead.id)));
-  return { escolhidos, fora };
+  // Ordem intercalada (decisão do João, 03/11): um toque 2, um toque 3, alternando; o que sobrar de um tipo vai no fim.
+  // Dentro de cada tipo, quem está mais perto de sair da janela primeiro (mais dias úteis desde o toque 1).
+  // Com "toque 2 sempre primeiro" o toque 3 nunca saía (simulação 12–30/11: 0 toques 3).
+  const porDias = (a, b) => (b.du1 - a.du1) || String(a.lead.id).localeCompare(String(b.lead.id));
+  const t2 = escolhidos.filter((e) => e.toque === 2).sort(porDias), t3 = escolhidos.filter((e) => e.toque === 3).sort(porDias);
+  const ordem = [];
+  for (let i = 0; i < Math.max(t2.length, t3.length); i++) { if (t2[i]) ordem.push(t2[i]); if (t3[i]) ordem.push(t3[i]); }
+  return { escolhidos: ordem, fora };
 }
 // Quantos toques cabem hoje. Sombra: todos os elegíveis são registrados (o teto da sombra só limita textos gerados).
 // Teste: CONFIG.followup.tetoTeste (3). 1ª semana ligado (5 dias úteis desde ligadoDesde): tetoSemana1 (6, ajuste do João em

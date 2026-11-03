@@ -74,7 +74,18 @@ console.log('Ordem e teto do dia');
 {
   const r = eleg([envio('A', '2026-11-09'), envio('C', '2026-10-27'),
     envio('B', '2026-10-27'), { ...envio('B', '2026-11-05'), tipo: 'followup', id: 'tB', message_id: '<tB@gmail.com>' }], '2026-11-12');
-  ok(r.escolhidos.map((e) => `${e.lead.id}${e.toque}`).join(',') === 'C2,A2,B3', 'toques 2 primeiro (mais perto de sair da janela), depois toques 3');
+  ok(r.escolhidos.map((e) => `${e.lead.id}${e.toque}`).join(',') === 'C2,B3,A2', 'intercalado: toque 2, toque 3, toque 2 (o que sobra vai no fim)');
+  // 3 toques 2 e 2 toques 3, com dias úteis diferentes: alterna começando pelo 2, e dentro de cada tipo o mais antigo primeiro.
+  const fu = (lead, d1, d2) => [envio(lead, d1), { ...envio(lead, d2), tipo: 'followup', id: 't' + lead, message_id: `<t${lead}@gmail.com>` }];
+  const r2 = eleg([envio('P', '2026-11-09'), envio('Q', '2026-10-26'), envio('R', '2026-11-04'),
+    ...fu('X', '2026-10-28', '2026-11-03'), ...fu('Y', '2026-10-21', '2026-11-02')], '2026-11-12');
+  ok(r2.escolhidos.map((e) => `${e.lead.id}${e.toque}`).join(',') === 'Q2,Y3,R2,X3,P2',
+    'alterna 2/3; dentro do toque 2: Q (13 dias) > R (6) > P (3); dentro do toque 3: Y (15) > X (11)');
+  const so2 = eleg([envio('P', '2026-11-09'), envio('Q', '2026-10-26')], '2026-11-12');
+  ok(so2.escolhidos.map((e) => e.lead.id).join(',') === 'Q,P', 'só toques 2 (ex.: 12/11, 1º dia ligado): mais antigo primeiro');
+  const F6 = libCom({ ...CONFIG, followup: { ...CONFIG.followup, ligadoDesde: '2026-11-12' } });
+  const fila = Array.from({ length: 8 }, (_, i) => i % 2 ? 't3' : 't2');
+  ok(fila.slice(0, F6.tetoFollowupDia('ligado', 20, 0, '2026-11-16')).filter((t) => t === 't3').length === 3, 'com teto 6 e as duas filas cheias: 3 toques 2 e 3 toques 3 no dia');
   const F = (o) => libCom({ ...CONFIG, followup: { ...CONFIG.followup, ...o } });
   ok(lib.tetoFollowupDia('sombra', 20, 0, '2026-11-05') === CONFIG.followup.sombraMaxTextos, `sombra: até ${CONFIG.followup.sombraMaxTextos} textos`);
   ok(CONFIG.followup.tetoTeste === 3 && CONFIG.followup.tetoSemana1 === 6, 'config: teste 3/dia, 1ª semana ligado 6/dia (ajuste do João em 03/11)');

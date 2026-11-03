@@ -9,7 +9,7 @@ O follow-up manda o 2º e o 3º toque na mesma conversa do e-mail inicial, pela 
 | Toque 3 | toque 1 há ≥ 7 dias úteis (`diasToque3`) **e** toque 2 há ≥ 4 dias úteis (`minDiasEntreToques`). Máximo de 3 toques. |
 | Dias úteis | seg–sex, fora de `feriados` (nacionais: 02/11, 15/11, 20/11, 25/12…). Feriado: o módulo não roda e o dia não conta. |
 | Elegível | envio inicial real (`teste=false`, `status=enviado`, com `message_id`); lead em `email_enviado`; sem resposta (nem em `prospeccao_respostas`, nem `resposta_recebida_em`); contato sem bloqueio nem `bloqueado_motivo`; `retomar_em` vazio ou vencido. Toques de teste não avançam a cadência real. |
-| Ordem | toques 2 mais perto de sair da janela primeiro; depois os toques 3. |
+| Ordem | **intercalada** (decisão do João em 03/11): um toque 2, um toque 3, alternando, começando pelo toque 2; o que sobrar de um tipo vai no fim. Dentro de cada tipo, quem está mais perto de sair da janela primeiro (mais dias úteis desde o toque 1). |
 | Teto por dia | sombra: todos os elegíveis são registrados e só os 8 primeiros (`sombraMaxTextos`) ganham texto. Teste: **3/dia** (`tetoTeste`). 1ª semana ligado (5 dias úteis desde `ligadoDesde`): **6/dia** (`tetoSemana1`, ajuste do João em 03/11). Depois: **50% do limite diário** (`fracaoLimite`). Sempre ≤ espaço que sobra no limite do dia, que é compartilhado com o envio frio (`total_todos_hoje`). |
 | Horário | para limpo às **09:25** (`pararAs`) e manda o resumo. |
 | Texto | mesma IA e mesma cota do envio frio. 2–4 frases, 20–70 palavras. Toque 2: fato verificável do Google + pergunta direta. Toque 3: encerramento educado ("se não fizer sentido agora, sem problema"). Proibido: repetir 6 palavras seguidas do e-mail anterior, urgência falsa, apresentar-se de novo, elogio, promessa, link, nota/avaliações erradas (`checarFatos`). Mesmo rodapé LGPD (SAIR). 3 tentativas; se reprovar, vira card de revisão no Trello (fora da sombra) e não envia. |
@@ -46,12 +46,12 @@ Sem a linha, a tarefa das 15:00 só registra e não muda de estágio.
 
 | Teto 1ª semana | Ordem | Toques 2 | Toques 3 | Perdem a janela |
 |---|---|---|---|---|
-| 3/dia | toque 2 primeiro | 85 | 0 | 3 |
-| **6/dia** | **toque 2 primeiro (atual)** | 100 | **0** | 0 |
+| **6/dia** | **intercalada (em uso desde 03/11)** | **62** | **38** | **6** |
+| 6/dia | toque 2 primeiro (antes) | 100 | 0 | 0 |
 | 6/dia | toque 3 primeiro | 64 | 36 | 12 |
-| 6/dia | intercalado | 62 | 38 | 6 |
+| 3/dia | intercalada | 56 | 29 | 15 |
 
-Com a ordem atual, o toque 3 nunca chega a vez, porque entram ~7 toques 2 novos por dia. **Decisão pendente do João** até 11/11: manter a ordem ou intercalar.
+Na ordem antiga (toque 2 primeiro), o toque 3 nunca chegava a vez: entram ~7 toques 2 por dia. Em 12/11 ainda não há toque 3 elegível (nenhum toque 2 foi enviado antes), então os 6 do dia são toques 2. Os primeiros toques 3 aparecem a partir de 18/11 (toque 2 + 4 dias úteis).
 
 ## Mudança de estágio (procedimento)
 1. No repositório principal, em `main`, edite `workflow/config.json`: `modulos.followup.estagio` (e, para `ligado`, `followup.ligadoDesde`).
