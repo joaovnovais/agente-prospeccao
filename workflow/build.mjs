@@ -78,11 +78,16 @@ function http(name, pos, { method = 'GET', url, cred, credType, body, query, hea
   if (cred) extra.credentials = CRED[cred];
   if (always) extra.alwaysOutputData = true;
   if (soft) extra.onError = 'continueRegularOutput';
-  if (retry) Object.assign(extra, { retryOnFail: true, maxTries: 3, waitBetweenTries: 2000 });
+  if (retry) Object.assign(extra, { retryOnFail: true, maxTries: 3, waitBetweenTries: 3000 });
   return add(name, 'n8n-nodes-base.httpRequest', 4.2, p, pos, extra);
 }
-const supa = (name, pos, o) => http(name, pos, { ...o, url: REST + o.path, cred: 'supabase', credType: 'supabaseApi',
+// 03/11: todo nó do Supabase tenta 3 vezes (3 s entre elas). Em 03/11 um EHOSTUNREACH de ~2 s numa reserva derrubou a
+// execução das 09:30 inteira (#602: 0 envios, com 1 contato já confirmado).
+const supa = (name, pos, o) => http(name, pos, { ...o, url: REST + o.path, cred: 'supabase', credType: 'supabaseApi', retry: o.retry ?? true,
   headers: { Prefer: o.prefer || 'return=representation', ...(o.headers || {}) }, always: o.always ?? true });
+// Reserva de cota/orçamento que ainda falha depois das tentativas segue adiante sem "ok" → cai no ramo "sem cota/orçamento"
+// do IF seguinte (fechado: nada é consultado sem reserva). O dia termina limpo e os já confirmados continuam sendo enviados.
+const reserva = (name, pos, o) => supa(name, pos, { ...o, soft: true });
 function iff(name, expr, pos) {
   return add(name, 'n8n-nodes-base.if', 2.2, {
     conditions: {
@@ -114,7 +119,7 @@ const openrouter = (name, pedido, pos) => http(name, pos, {
   headers: { 'HTTP-Referer': 'https://novax.ia.br', 'X-Title': 'NOVAX - Agente de Prospeccao' },
   body: `={{ JSON.stringify({ models: ${JSON.stringify(CONFIG.modelos)}, messages: $('${pedido}').first().json.messages, temperature: 0.4, max_tokens: ${CONFIG.maxTokensIA}, reasoning: { enabled: false }, provider: { data_collection: 'deny' } }) }}`,
 });
-const reservarIA = (name, pos) => supa(name, pos, { method: 'POST', path: '/rpc/prospeccao_reservar_cota',
+const reservarIA = (name, pos) => reserva(name, pos, { method: 'POST', path: '/rpc/prospeccao_reservar_cota',
   body: `={{ JSON.stringify({ p_servico: 'openrouter', p_limite: ${CONFIG.limiteDiarioOpenRouter} }) }}` });
 
 // Cauda comum B/C: grava envio (se houver) → atualiza lead → Trello (mover ou criar) → salva id do card.
@@ -181,7 +186,7 @@ ONDAS.forEach((o, i) => {
       `const FILTRO = '${ONDAS[i - 1].filtro}'; const PROXIMA = ${k}; const PLACES = ${JSON.stringify(ONDAS.slice(0, i).map((w) => w.places))};`);
     iff(o.haPagina, '$json.fim !== true', [10.5, y - 1]);
   }
-  supa(o.reservar, [3, y], { method: 'POST', path: '/rpc/prospeccao_reservar_cota',
+  reserva(o.reservar, [3, y], { method: 'POST', path: '/rpc/prospeccao_reservar_cota',
     body: `={{ JSON.stringify({ p_servico: 'google_places', p_limite: ${TETO_PLACES} }) }}` });
   iff(o.cotaOk, '$json.ok === true', [4, y]);
   http(o.places, [5, y], {
@@ -244,7 +249,7 @@ iff('Verifalia sem créditos? (variações)', '$json.semCreditos === true', [9.5
 iff('Reacher travou?', '$json.disjuntor === true', [10, 1.6]);
 // 09/10: orçamento GLOBAL do Reacher (migration 007; teto diário fixo na função do Supabase, vale para toda origem).
 // Cada lote é reservado ANTES de consultar; sem orçamento, nada é consultado.
-const reservarReacher = (name, pos, qtdExpr, origem) => supa(name, pos, { method: 'POST', path: '/rpc/prospeccao_reservar_reacher',
+const reservarReacher = (name, pos, qtdExpr, origem) => reserva(name, pos, { method: 'POST', path: '/rpc/prospeccao_reservar_reacher',
   body: `={{ JSON.stringify({ p_qtd: ${qtdExpr}, p_origem: '${origem}' }) }}` });
 // 26/10: mesmo orçamento (teto 25/dia = grátis da Verifalia), origem "verifalia:*". O disjuntor segue "robson:disjuntor" (watchdog).
 // 28/10: 1 crédito por variação; a verificação do lead para no 1º e-mail confirmado ("Próxima variação" volta para cá).
