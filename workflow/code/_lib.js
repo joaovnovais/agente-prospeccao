@@ -383,4 +383,132 @@ function checarCorpoV2(corpo, lead) {
   if (!/\?\s*$/.test(c)) erros.push('não termina com a pergunta de sim ou não');
   return erros.map((e) => 'corpo ' + e);
 }
+
+// ===== Fase 2: follow-up (prspFollowUp001, 03/11). Regras aprovadas pelo João em 03/11 (ver docs/followup.md). =====
+// Dia BRT (YYYY-MM-DD) de um instante; dia útil = seg–sex fora de CONFIG.feriados (nacionais).
+const diaBRT = (d) => new Intl.DateTimeFormat('en-CA', { timeZone: CONFIG.agenda.fuso, year: 'numeric', month: '2-digit', day: '2-digit' })
+  .format(d instanceof Date ? d : new Date(d));
+const ehDiaUtil = (ymd) => {
+  const dow = new Date(`${ymd}T12:00:00Z`).getUTCDay();
+  return dow >= 1 && dow <= 5 && !(CONFIG.feriados || []).includes(ymd);
+};
+// Dias úteis d com ini < d <= fim (o dia do envio não conta: toque 1 na segunda → D+3 na quinta).
+function diasUteisEntre(ini, fim) {
+  let n = 0;
+  for (let t = Date.parse(`${ini}T12:00:00Z`) + 864e5, f = Date.parse(`${fim}T12:00:00Z`); t <= f; t += 864e5) {
+    if (ehDiaUtil(new Date(t).toISOString().slice(0, 10))) n++;
+  }
+  return n;
+}
+// Quem recebe toque 2 ou 3 hoje. envios: linhas de prospeccao_envios com lead e contato embutidos.
+// Só envios reais (teste=false, status enviado) contam: toques do estágio "teste" não avançam a cadência de produção.
+function elegiveisFollowup(envios, leadsComResposta, hoje) {
+  const F = CONFIG.followup;
+  const porLead = new Map();
+  for (const e of envios || []) {
+    if (!e || !e.lead_id) continue;
+    if (!porLead.has(e.lead_id)) porLead.set(e.lead_id, []);
+    porLead.get(e.lead_id).push(e);
+  }
+  const escolhidos = [], fora = {};
+  const pular = (m) => { fora[m] = (fora[m] || 0) + 1; };
+  for (const [leadId, es] of porLead) {
+    const reais = es.filter((e) => !e.teste && e.status === 'enviado').sort((a, b) => Date.parse(a.enviado_em) - Date.parse(b.enviado_em));
+    const inicial = reais.find((e) => e.tipo === 'prospeccao');
+    if (!inicial) continue;
+    const fus = reais.filter((e) => e.tipo === 'followup');
+    const lead = inicial.lead || {}, contato = inicial.contato || {};
+    if (leadsComResposta.has(leadId) || es.some((e) => e.resposta_recebida_em)) { pular('respondeu'); continue; }
+    if (lead.status !== 'email_enviado') { pular('lead fora de email_enviado'); continue; }
+    if (contato.bloqueado || contato.bloqueado_motivo) { pular('contato bloqueado'); continue; }
+    if (!inicial.message_id) { pular('sem message_id'); continue; }
+    if (lead.retomar_em && Date.parse(lead.retomar_em) > Date.parse(`${hoje}T23:59:59-03:00`)) { pular('retomar depois'); continue; }
+    if (fus.length >= 2) { pular('3 toques feitos'); continue; }
+    const du1 = diasUteisEntre(diaBRT(inicial.enviado_em), hoje);
+    let toque, du2 = null;
+    if (fus.length === 0) {
+      if (du1 < F.diasToque2) { pular('toque 2 ainda não venceu'); continue; }
+      if (du1 > F.maxDiasToque2) { pular(`toque 1 há mais de ${F.maxDiasToque2} dias úteis`); continue; }
+      toque = 2;
+    } else {
+      du2 = diasUteisEntre(diaBRT(fus[0].enviado_em), hoje);
+      if (du1 < F.diasToque3 || du2 < F.minDiasEntreToques) { pular('toque 3 ainda não venceu'); continue; }
+      toque = 3;
+    }
+    const pai = fus.length ? fus[fus.length - 1] : inicial;
+    escolhidos.push({ lead: { ...lead, id: leadId }, contato, toque, du1, du2, inicial, pai,
+      references: [inicial.message_id, ...fus.map((f) => f.message_id)].filter(Boolean),
+      anteriores: [inicial.corpo, ...fus.map((f) => f.corpo)].filter(Boolean) });
+  }
+  // Toque 2 mais perto de sair da janela primeiro; depois os toques 3, dos mais antigos para os mais novos.
+  escolhidos.sort((a, b) => (a.toque - b.toque) || (b.du1 - a.du1) || String(a.lead.id).localeCompare(String(b.lead.id)));
+  return { escolhidos, fora };
+}
+// Quantos toques cabem hoje. Sombra: todos os elegíveis são registrados (o teto da sombra só limita textos gerados).
+// Teste e 1ª semana ligado: CONFIG.followup.tetoSemana1. Depois: floor(limite × fracaoLimite). Sempre ≤ espaço do dia.
+function tetoFollowupDia(estagio, limite, enviadosHoje, hoje) {
+  const F = CONFIG.followup;
+  const espaco = Math.max(0, Number(limite || 0) - Number(enviadosHoje || 0));
+  if (estagio === 'sombra') return F.sombraMaxTextos;
+  let teto = Math.floor(Number(limite || 0) * F.fracaoLimite);
+  if (estagio === 'teste' || !F.ligadoDesde || diasUteisEntre(F.ligadoDesde, hoje) < 5) teto = Math.min(teto, F.tetoSemana1);
+  return Math.min(teto, espaco);
+}
+const URGENCIA_RE = /(últim[ao]s?\s+(chance|dias|vagas|oportunidade)|vagas?\s+limitad|s[óo]\s+hoje|somente\s+hoje|urgente|corr[ae]\b|n[ãa]o\s+perca|tempo\s+limitado|prazo\s+final|promo[çc][ãa]o|desconto|oferta\s+especial)/i;
+// Validador do texto do follow-up (2 a 4 frases). Repete as regras de fato/elogio/acento do primeiro e-mail.
+function checarCorpoFollowup(corpo, lead, toque, anteriores = []) {
+  const F = CONFIG.followup;
+  const erros = [];
+  const c = String(corpo || '').trim();
+  const palavras = c.split(/\s+/).filter(Boolean).length;
+  if (palavras < F.palavrasMin || palavras > F.palavrasMax) erros.push(`com ${palavras} palavras (fora de ${F.palavrasMin}-${F.palavrasMax})`);
+  let t = c.replace(/^\s*ol[áa]\s*[!,.]?\s*/i, '');
+  if (lead.nome) t = t.replace(new RegExp(escRe(lead.nome), 'gi'), 'X');
+  t = t.replace(/\b(dra?|sra?|profa?)\./gi, '$1');
+  const frases = (t.match(/[.!?]+(?=\s|$)/g) || []).length;
+  if (frases < 2 || frases > 4) erros.push(`com ${frases} frases (fora de 2-4)`);
+  if (/[\[\]{}]/.test(c)) erros.push('com placeholder entre colchetes/chaves');
+  if (/https?:\/\/|www\./i.test(c)) erros.push('com link');
+  if (RECUSA_RE.test(c)) erros.push('com texto de recusa/meta-comentário da IA');
+  if (URGENCIA_RE.test(c)) erros.push('com urgência falsa ("' + c.match(URGENCIA_RE)[0] + '")');
+  for (const [re, nome] of TERMOS_PROIBIDOS_V2) if (re.test(c)) erros.push('contém ' + nome);
+  const pessoa = norm(CONFIG.remetente.nomePessoa || '');
+  if (pessoa && new RegExp(`\\bsou (o|a) ${escRe(pessoa)}\\b`).test(norm(c))) erros.push('se apresenta de novo (é resposta na mesma conversa)');
+  if (!nomeSugerePlural(lead.nome) && /(^|[^\p{L}])voc[êe]s(?!\p{L})/iu.test(c)) erros.push('trata por "vocês" um nome que não indica mais de uma pessoa (use "você")');
+  // Sem repetir o toque anterior: nenhum trecho de 6 palavras seguidas igual a um e-mail anterior.
+  const janelas = (s) => { const w = norm(s).split(' ').filter(Boolean); const o = new Set(); for (let i = 0; i + 6 <= w.length; i++) o.add(w.slice(i, i + 6).join(' ')); return o; };
+  const ant = new Set(anteriores.flatMap((a) => [...janelas(a)]));
+  const rep = [...janelas(c)].find((j) => ant.has(j));
+  if (rep) erros.push(`repete o e-mail anterior ("${rep}")`);
+  if (toque === 2) {
+    if (!/google/i.test(c)) erros.push('toque 2 sem o fato verificável do Google (perfil no Google sem site)');
+    if (!/\?\s*$/.test(c)) erros.push('toque 2 não termina com pergunta direta');
+  } else if (toque === 3) {
+    if (!/(sem problema|tudo bem|fique? à vontade|fica à vontade|não (vou|volto a) insistir|não faz(er)? sentido)/i.test(c)) erros.push('toque 3 sem o encerramento educado');
+  }
+  erros.push(...checarFatos(c, lead));
+  return erros.map((e) => 'corpo ' + e);
+}
+const uuidV4 = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (ch) => {
+  const r = Math.floor(Math.random() * 16);
+  return (ch === 'x' ? r : (r % 4) + 8).toString(16);
+});
+// E-mail RFC 2822 (multipart/alternative, UTF-8) em base64url para a Gmail API (users.messages.send, campo "raw").
+// Mesma conversa: In-Reply-To = Message-ID do toque anterior; References = todos os Message-ID da conversa.
+const b64 = (s) => Buffer.from(String(s), 'utf8').toString('base64');
+const cabecalhoUtf8 = (s) => (/^[\x20-\x7e]*$/.test(s) ? s : `=?UTF-8?B?${b64(s)}?=`);
+function emailRaw({ de, para, assunto, inReplyTo, references, messageId, texto, html }) {
+  const fronteira = 'novax-' + uuidV4();
+  const quebra = (s) => b64(s).replace(/.{76}/g, '$&\r\n');
+  const linhas = [
+    `From: ${de}`, `To: ${para}`, `Reply-To: ${CONFIG.remetente.email}`, `Subject: ${cabecalhoUtf8(assunto)}`,
+    `Date: ${new Date().toUTCString().replace('GMT', '+0000')}`, `Message-ID: ${messageId}`,
+    ...(inReplyTo ? [`In-Reply-To: ${inReplyTo}`] : []), ...(references && references.length ? [`References: ${references.join(' ')}`] : []),
+    'MIME-Version: 1.0', `Content-Type: multipart/alternative; boundary="${fronteira}"`, '',
+    `--${fronteira}`, 'Content-Type: text/plain; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', quebra(texto),
+    `--${fronteira}`, 'Content-Type: text/html; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', quebra(html),
+    `--${fronteira}--`, '',
+  ];
+  return Buffer.from(linhas.join('\r\n'), 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
 // ---- fim da biblioteca ----

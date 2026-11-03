@@ -36,6 +36,8 @@ const CRED = {
   gcal: { googleCalendarOAuth2Api: { id: 'prspGCalendar001', name: 'Google Calendar - Prospeccao' } },
   trello: { trelloApi: { id: 'prspTrello000001', name: 'Trello - Prospeccao' } },
   verifalia: { httpBasicAuth: { id: 'prspVerifalia001', name: 'Verifalia - Prospeccao' } },
+  // 07/10 (criada pelo João na UI): só o escopo gmail.send. Usada pelo follow-up (prspFollowUp001) para enviar na mesma conversa.
+  gmail: { googleOAuth2Api: { id: 'FkmazYel2pQxKksn', name: 'Gmail API - Prospeccao' } },
 };
 
 const nodes = [];
@@ -526,3 +528,83 @@ for (const n of nodes) if (n.type === 'n8n-nodes-base.httpRequest') n.executeOnc
 const wd = { ...wf, id: 'prspWatchdog01', name: 'NOVAX - Robson Watchdog', nodes, connections };
 writeFileSync(join(DIR, 'dist', 'novax-robson-watchdog.json'), JSON.stringify(wd, null, 2));
 console.log(`watchdog ${BUILD_ID} · ok: ${nodes.length} nós, ${Object.values(connections).reduce((a, c) => a + c.main.flat().length, 0)} conexões`);
+
+// ====================== FOLLOW-UP (Fase 2, workflow separado, prspFollowUp001) ======================
+// 09:00 BRT em dias úteis, antes do envio frio. Toques 2 e 3 na mesma conversa pela Gmail API (raw RFC 2822), sem Verifalia.
+// Estágio em CONFIG.modulos.followup.estagio: desligado | sombra (grava, não envia) | teste (envia para o João) | ligado.
+nodes.length = 0;
+for (const k of Object.keys(connections)) delete connections[k];
+add('Teste manual (follow-up)', 'n8n-nodes-base.manualTrigger', 1, {}, [0, 1]);
+schedule('Diário - Follow-up', '0 9 * * 1-5', [0, 0]);
+code('FU: início', 'f_inicio.js', [1, 0]);
+supa('FU: status envio', [2, 0], { path: '/prospeccao_status_envio?select=*' });
+supa('FU: envios', [3, 0], { path: '/prospeccao_envios?select=id,lead_id,contato_id,tipo,toque,teste,status,enviado_em,message_id,assunto,corpo,resposta_recebida_em,'
+  + 'lead:prospeccao_leads(id,nome,cidade,estado,nicho,status,rating,total_avaliacoes,tipo_google,tipos_google,retomar_em),'
+  + 'contato:prospeccao_contatos(id,email,bloqueado,bloqueado_motivo)&tipo=in.(prospeccao,followup)&status=eq.enviado&order=enviado_em.asc&limit=5000' });
+supa('FU: respostas', [4, 0], { path: '/prospeccao_respostas?select=lead_id&lead_id=not.is.null&limit=5000' });
+code('FU: elegíveis', 'f_elegiveis.js', [5, 0]);
+iff('FU: há elegíveis?', '!$json.vazio', [6, 0]);
+loop('FU: loop', [7, 0]);
+code('FU: hora', 'f_hora.js', [8, 1]);
+iff('FU: ainda dá tempo?', '$json.aTempo === true', [9, 1]);
+iff('FU: gerar texto?', '$json.gerarTexto === true', [10, 1]);
+code('FU: pedido IA', 'f_pedido_ia.js', [11, 1]);
+reservarIA('FU: reservar cota IA', [12, 1]);
+iff('FU: cota IA ok?', '$json.ok === true', [13, 1]);
+openrouter('FU: OpenRouter', 'FU: pedido IA', [14, 1]);
+code('FU: validar texto', 'f_validar_ia.js', [15, 1]);
+iff('FU: texto ok?', '$json.ok === true', [16, 1]);
+iff('FU: ainda tem tentativa?', `$json.tentativa < ${CONFIG.maxTentativasIA}`, [16, 3]);
+wait('FU: pausa retry', 15, [15, 3.5]);
+code('FU: preparar retry', '_retry.js', [13, 3.5]);
+code('FU: montar e-mail', 'f_montar.js', [17, 1]);
+iff('FU: sombra?', '$json.sombra === true', [18, 1]);
+supa('FU: checar bloqueio', [19, 0.4], { path: '/prospeccao_contatos', query: { select: 'email', bloqueado: 'is.true',
+  or: `={{ '(email.eq."' + $('FU: loop').first().json.contato.email + '",lead_id.eq.' + $('FU: loop').first().json.lead.id + ')' }}` } });
+code('FU: pode enviar?', 'f_pode_enviar.js', [20, 0.4]);
+iff('FU: liberado?', '$json.bloqueado !== true', [21, 0.4]);
+http('FU: Gmail enviar', [22, 0.4], { method: 'POST', url: 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
+  cred: 'gmail', credType: 'googleOAuth2Api', soft: true, completa: true, body: '={{ JSON.stringify({ raw: $json.raw }) }}' });
+code('FU: resultado', 'f_resultado.js', [23, 0.4]);
+supa('FU: registrar envio', [24, 0.4], { method: 'POST', path: '/prospeccao_envios', body: '={{ JSON.stringify($json.envio) }}' });
+wait('FU: espaçar envios', `={{ ${CONFIG.followup.esperaEntreEnviosSeg[0]} + Math.floor(Math.random() * ${CONFIG.followup.esperaEntreEnviosSeg[1] - CONFIG.followup.esperaEntreEnviosSeg[0]}) }}`, [25, 0.4]);
+code('FU: registro', 'f_registro.js', [19, 2.5]);
+iff('FU: card Trello?', '!!$json.trello', [20, 2.5]);
+add('FU: card Trello', 'n8n-nodes-base.trello', 1, {
+  resource: 'card', operation: 'create', listId: CONFIG.trello.revisaoManual,
+  name: "={{ $('FU: registro').first().json.trello.nome }}", description: "={{ $('FU: registro').first().json.trello.desc }}",
+  additionalFields: { pos: 'top' },
+}, [21, 2], { credentials: CRED.trello, onError: 'continueRegularOutput' });
+supa('FU: gravar registro', [22, 2.5], { method: 'POST', path: '/prospeccao_followup_sombra?on_conflict=dia,lead_id,toque',
+  prefer: 'resolution=ignore-duplicates,return=minimal', body: "={{ JSON.stringify($('FU: registro').first().json.registro) }}" });
+code('FU: resumo', 'f_resumo.js', [8, -1]);
+smtp('FU: e-mail ao João', 'FU: resumo', [9, -1]);
+
+link('Teste manual (follow-up)', 'FU: início');
+chain('Diário - Follow-up', 'FU: início', 'FU: status envio', 'FU: envios', 'FU: respostas', 'FU: elegíveis', 'FU: há elegíveis?');
+link('FU: há elegíveis?', 'FU: loop', 0); link('FU: há elegíveis?', 'FU: resumo', 1);
+link('FU: loop', 'FU: resumo', 0); link('FU: loop', 'FU: hora', 1);
+chain('FU: hora', 'FU: ainda dá tempo?');
+// 09:25: para limpo (o envio frio das 09:30 não compete com o follow-up); o resumo sai com o que já foi feito.
+link('FU: ainda dá tempo?', 'FU: gerar texto?', 0); link('FU: ainda dá tempo?', 'FU: resumo', 1);
+link('FU: gerar texto?', 'FU: pedido IA', 0); link('FU: gerar texto?', 'FU: registro', 1);
+chain('FU: pedido IA', 'FU: reservar cota IA', 'FU: cota IA ok?');
+link('FU: cota IA ok?', 'FU: OpenRouter', 0); link('FU: cota IA ok?', 'FU: resumo', 1);
+chain('FU: OpenRouter', 'FU: validar texto', 'FU: texto ok?');
+link('FU: texto ok?', 'FU: montar e-mail', 0); link('FU: texto ok?', 'FU: ainda tem tentativa?', 1);
+link('FU: ainda tem tentativa?', 'FU: pausa retry', 0); link('FU: ainda tem tentativa?', 'FU: registro', 1);
+chain('FU: pausa retry', 'FU: preparar retry', 'FU: pedido IA');
+chain('FU: montar e-mail', 'FU: sombra?');
+// Sombra: nada é enviado; o texto vai para prospeccao_followup_sombra.
+link('FU: sombra?', 'FU: registro', 0); link('FU: sombra?', 'FU: checar bloqueio', 1);
+chain('FU: checar bloqueio', 'FU: pode enviar?', 'FU: liberado?');
+link('FU: liberado?', 'FU: Gmail enviar', 0); link('FU: liberado?', 'FU: registro', 1);
+chain('FU: Gmail enviar', 'FU: resultado', 'FU: registrar envio', 'FU: espaçar envios', 'FU: loop');
+chain('FU: registro', 'FU: card Trello?');
+link('FU: card Trello?', 'FU: card Trello', 0); link('FU: card Trello?', 'FU: gravar registro', 1);
+chain('FU: card Trello', 'FU: gravar registro', 'FU: loop');
+chain('FU: resumo', 'FU: e-mail ao João');
+for (const n of nodes) if (['FU: status envio', 'FU: envios', 'FU: respostas'].includes(n.name)) n.executeOnce = true;
+const fu = { ...wf, id: 'prspFollowUp001', name: 'NOVAX - Robson Follow-up', nodes, connections };
+writeFileSync(join(DIR, 'dist', 'novax-robson-followup.json'), JSON.stringify(fu, null, 2));
+console.log(`follow-up ${BUILD_ID} · ok: ${nodes.length} nós, ${Object.values(connections).reduce((a, c) => a + c.main.flat().length, 0)} conexões`);

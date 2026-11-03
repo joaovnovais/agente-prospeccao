@@ -6,11 +6,12 @@
 #  - depois do import, exporta o workflow do banco e confere o BUILD_ID que o build.mjs embute nos Code nodes.
 set -euo pipefail
 cd "$(dirname "$0")"
-# Alvo: robson (padrão) ou watchdog. Lista fechada de IDs permitidos; o da Claudia é sempre recusado.
+# Alvo: robson (padrão), watchdog ou followup (Fase 2, 03/11). Lista fechada de IDs permitidos; o da Claudia é sempre recusado.
 case "${1:-robson}" in
   robson)   JSON=dist/novax-agente-prospeccao.json; WFID=prspAgenteProsp1 ;;
   watchdog) JSON=dist/novax-robson-watchdog.json;   WFID=prspWatchdog01 ;;
-  *) echo "alvo inválido: use robson ou watchdog"; exit 1 ;;
+  followup) JSON=dist/novax-robson-followup.json;   WFID=prspFollowUp001 ;;
+  *) echo "alvo inválido: use robson, watchdog ou followup"; exit 1 ;;
 esac
 node -e "const w=require('./$JSON'); if(w.id!=='$WFID' || w.id==='6NJ7fIsgaBsWh1iX'){console.error('ID inesperado: '+w.id);process.exit(1)}"
 # 21/10 (regras do João): nunca entre 06:30 e 10:30 (BRT) em dia útil; no máximo um deploy por dia. Robson + watchdog do

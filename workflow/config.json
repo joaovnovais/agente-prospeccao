@@ -366,7 +366,7 @@
   "alertaDestino": "joaovictornovais8@gmail.com",
   "modulos": {
     "followup": {
-      "estagio": "desligado"
+      "estagio": "sombra"
     },
     "respostasV2": {
       "estagio": "desligado"
@@ -525,5 +525,41 @@
         "loja de cosméticos"
       ]
     }
+  ],
+  "followup": {
+    "diasToque2": 3,
+    "diasToque3": 7,
+    "maxDiasToque2": 15,
+    "minDiasEntreToques": 4,
+    "tetoSemana1": 3,
+    "fracaoLimite": 0.5,
+    "ligadoDesde": null,
+    "sombraMaxTextos": 8,
+    "sombraTextosNoEmail": 5,
+    "pararAs": "09:25",
+    "esperaEntreEnviosSeg": [
+      30,
+      60
+    ],
+    "palavrasMin": 20,
+    "palavrasMax": 70,
+    "redirecionarPara": "joaovictornovais8@gmail.com",
+    "prefixoTeste": "[TESTE 2.0 → followup] "
+  },
+  "feriados": [
+    "2026-11-02",
+    "2026-11-15",
+    "2026-11-20",
+    "2026-12-25",
+    "2027-01-01",
+    "2027-03-26",
+    "2027-04-21",
+    "2027-05-01",
+    "2027-09-07",
+    "2027-10-12",
+    "2027-11-02",
+    "2027-11-15",
+    "2027-11-20",
+    "2027-12-25"
   ]
 }
