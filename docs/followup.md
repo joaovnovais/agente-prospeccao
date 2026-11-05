@@ -23,20 +23,20 @@ O follow-up manda o 2º e o 3º toque na mesma conversa do e-mail inicial, pela 
 - `ligado`: envia para o lead. Exige `followup.ligadoDesde` (o build e o teste recusam sem ela).
 - `desligado`: sai no primeiro nó.
 
-## Calendário (aprovado em 03/11)
+## Calendário (aprovado em 03/11; remarcado em 05/11 porque o deploy de 04/11 foi barrado)
 | Dia | O quê | Deploy do dia |
 |---|---|---|
-| 04/11 | migration 009 + merge de `robson2/followup` + `PACOTE=followup-sombra bash workflow/deploy.sh followup` (depois das 10:30) | follow-up (sombra) |
-| 05/11 | 1ª sombra às 09:00; checagem às 10:55; `PACOTE=watchdog-retry bash workflow/deploy.sh watchdog` (retry do hotfix de 03/11) | watchdog |
-| 06/11 | 2ª sombra + checagem | — |
-| 09/11 | 3ª sombra + checagem às 10:55 → **AÇÃO DO JOÃO: aprovar os textos**. Às 15:00, se aprovado: estágio `teste` | follow-up (teste) |
-| 10/11 | teste às 09:00 (3 envios para o João) + checagem | — |
-| 11/11 | teste às 09:00 + checagem às 10:55 → **AÇÃO DO JOÃO: confirmar thread e remetente**. Às 15:00, se confirmado: estágio `ligado`, `ligadoDesde` = 2026-11-12 | follow-up (ligado) |
-| 12/11 | 1º dia ligado (6/dia até 18/11; 50% do limite a partir de 19/11) | — |
+| 05/11 | `PACOTE=followup-sombra bash workflow/deploy.sh followup` (feito às 10:30, versão `16d960f7`) | follow-up (sombra) |
+| 06/11 | 1ª sombra às 09:00 (texto antigo); checagem às 10:55; às 11:15, **texto para lojas** em pacote único: `PACOTE=texto-varejo` para `robson` **e** `followup` | Robson + follow-up (mesmo pacote) |
+| 09/11 | 2ª sombra (já com a regra de lojas) + checagem às 10:55; `PACOTE=watchdog-retry bash workflow/deploy.sh watchdog` | watchdog |
+| 10/11 | 3ª sombra + checagem às 10:55 → **AÇÃO DO JOÃO: aprovar os textos**. Às 15:00, se aprovado: estágio `teste` | follow-up (teste) |
+| 11/11 | teste às 09:00 (até 3 envios para o João) + checagem | — |
+| 12/11 | teste às 09:00 + checagem às 10:55 → **AÇÃO DO JOÃO: confirmar thread e remetente**. Às 15:00, se confirmado: estágio `ligado`, `ligadoDesde` = 2026-11-13 | follow-up (ligado) |
+| 13/11 | 1º dia ligado (6/dia de 13 a 19/11; 20/11 é feriado; 50% do limite a partir de 23/11) | — |
 
 **Aprovação do João:** ele responde na sessão ou escreve no topo da nota de estado a linha exata:
-- 09/11: `✅ TEXTOS FOLLOW-UP APROVADOS (09/11)`
-- 11/11: `✅ THREAD E REMETENTE CONFIRMADOS (11/11)`
+- 10/11: `✅ TEXTOS FOLLOW-UP APROVADOS (10/11)`
+- 12/11: `✅ THREAD E REMETENTE CONFIRMADOS (12/11)`
 
 Sem a linha, a tarefa das 15:00 só registra e não muda de estágio.
 
