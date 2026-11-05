@@ -360,6 +360,33 @@ const TERMOS_PROIBIDOS_V2 = [
   [/\p{L}-l[oa]s?(?!\p{L})/iu, 'forma com gênero ("convidá-lo/la/los")'], [/\((?:o|a|os|as|s)\)/i, 'forma com gênero ("(a)")'],
   [/\bprezad[oa]/i, 'forma com gênero ("Prezado")'],
 ];
+// 05/11 (1ª resposta real): o e-mail ofereceu "serviços do pet shop" e "agendamentos" a uma agropecuária (tipo Google
+// pet_store/store) e o lead respondeu "não tenho banho e tosa… tenho 2 mil itens". Loja/varejo, pelo tipo do Google:
+// falar de produtos, catálogo e WhatsApp; nunca presumir serviços nem agendamento. Tipo principal de serviço vence.
+const TIPO_SERVICO_RE = /veterin[aá]ri|cl[ií]nica|oficina|mec[aâ]nic|sal[aã]o|barbear|academia|pilates|escola|autoescola|contab|advoc|advogad|imobili|fisioter|dentist|odonto|est[eé]tic|consult[oó]rio|spa\b/i;
+const TIPOS_VAREJO_RE = /(_store$|^store$|^supermarket$|^grocery|^shopping_mall$|^department_store$|^pharmacy$|^drugstore$|^market$)/;
+const TIPO_VAREJO_RE = /\b(loja|agropecu|pet ?shop|material de constru|ferrag|mercad|supermercad|boutique|papelaria|distribuidora|atacad|varejo|ra[çc][õo]es|[óo]tica|farm[áa]cia|drogaria)/i;
+// Tipo de serviço do Google ao lado do de loja (pet shop com pet_care/veterinary_care = banho e tosa ou veterinário):
+// aí o serviço existe segundo o Google e falar dele não é presumir. O tipo genérico "service" não conta.
+const TIPOS_SERVICO_RE = /^(pet_care|veterinary_care|beauty_salon|hair_care|spa|car_repair|car_wash|dentist|doctor|physiotherapist|gym|lawyer|accounting|school|driving_school)$/;
+function ehVarejo(lead) {
+  const tipo = String(lead.tipo_google || '');
+  if (TIPO_SERVICO_RE.test(tipo)) return false;
+  if ((lead.tipos_google || []).some((t) => TIPOS_SERVICO_RE.test(String(t)))) return false;
+  if ((lead.tipos_google || []).some((t) => TIPOS_VAREJO_RE.test(String(t))) || TIPO_VAREJO_RE.test(tipo)) return true;
+  // Sem tipo do Google (leads antigos): o nicho da busca decide.
+  return !tipo && !(lead.tipos_google || []).length && ['varejo_local', 'material_construcao'].includes(lead.nicho);
+}
+const SERVICO_EM_LOJA_RE = /\bagend\w*|\bconsultas?\b|\bservi[çc]os?\b|\breserv\w*|banho e tosa|\batendimentos?\b/i;
+const PRODUTO_RE = /produt|cat[áa]logo|\bitens\b|mercadoria|estoque|\bpe[çc]as?\b|\bvend(e|em)\b/i;
+function checarVarejo(texto, lead, exigeProduto = true) {
+  if (!ehVarejo(lead)) return [];
+  const erros = [];
+  const m = String(texto || '').match(SERVICO_EM_LOJA_RE);
+  if (m) erros.push(`presume serviço/agendamento numa loja ("${m[0]}"); fale de produtos, catálogo e WhatsApp`);
+  if (exigeProduto && !PRODUTO_RE.test(String(texto || ''))) erros.push('loja sem menção a produtos ou catálogo');
+  return erros;
+}
 function checarCorpoV2(corpo, lead) {
   const erros = [];
   const c = String(corpo || '').trim();
@@ -381,6 +408,7 @@ function checarCorpoV2(corpo, lead) {
   }
   if (!nomeSugerePlural(lead.nome) && /(^|[^\p{L}])voc[êe]s(?!\p{L})/iu.test(c)) erros.push('trata por "vocês" um nome que não indica mais de uma pessoa (use "você")');
   if (!/\?\s*$/.test(c)) erros.push('não termina com a pergunta de sim ou não');
+  erros.push(...checarVarejo(c, lead));
   return erros.map((e) => 'corpo ' + e);
 }
 
@@ -494,6 +522,8 @@ function checarCorpoFollowup(corpo, lead, toque, anteriores = []) {
     if (!/(sem problema|tudo bem|fique? à vontade|fica à vontade|não (vou|volto a) insistir|não faz(er)? sentido)/i.test(c)) erros.push('toque 3 sem o encerramento educado');
   }
   erros.push(...checarFatos(c, lead));
+  // Follow-up de loja: sem serviço/agendamento (o toque 3 de encerramento não precisa citar produtos).
+  erros.push(...checarVarejo(c, lead, false));
   return erros.map((e) => 'corpo ' + e);
 }
 const uuidV4 = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (ch) => {

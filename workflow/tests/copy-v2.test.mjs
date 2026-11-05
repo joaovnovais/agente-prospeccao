@@ -34,11 +34,12 @@ const BONS = [
       + '(nota 4,7, 58 avaliações) apareceu sem site. Quem procura revisão ou troca de óleo quer ver os serviços, o endereço e um jeito '
       + 'rápido de pedir orçamento. A Novax cria sites simples para oficinas, com botão de WhatsApp e agendamento de horário. '
       + 'Faz sentido eu te explicar, em poucas linhas, como isso funcionaria para o Auto Center Fictício?' },
+  // 05/11: pet shop é loja (tipo pet_store) → produtos, catálogo e WhatsApp; não serviços nem agendamento.
   { lead: lead('ficticio-05', 'Pet Shop Patinhas Fictícias', 'Morro Exemplo', 4.9, 12, 'Pet shop', 'pet_veterinaria'),
     assunto: 'Pergunta rápida sobre Pet Shop Patinhas Fictícias',
     corpo: 'Olá! Sou o João, da Novax. Pesquisei pet shops em Morro Exemplo no Google e o perfil do Pet Shop Patinhas Fictícias '
-      + '(nota 4,9, 12 avaliações) apareceu sem site. Um site simples mostraria os serviços de banho e tosa, o endereço e o horário, '
-      + 'com um botão de WhatsApp para agendar. Faz sentido eu te explicar, em poucas linhas, como isso funcionaria para o Pet Shop Patinhas Fictícias?' },
+      + '(nota 4,9, 12 avaliações) apareceu sem site. Um site simples mostraria os produtos e as marcas de ração, o endereço e o horário, '
+      + 'com um botão de WhatsApp para pedidos. Faz sentido eu te explicar, em poucas linhas, como isso funcionaria para o Pet Shop Patinhas Fictícias?' },
   // Poucas avaliações (< minAvaliacoesParaCitarNota): sem nota nem quantidade.
   { lead: lead('ficticio-09', 'Studio Bela Exemplo', 'Serra Fictícia', 5, 6, 'Salão de beleza', 'salao_barbearia'),
     assunto: 'Sobre o perfil de Studio Bela Exemplo no Google',

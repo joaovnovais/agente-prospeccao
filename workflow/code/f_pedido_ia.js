@@ -13,7 +13,10 @@ const angulo = it.toque === 2
     + (citaNota ? ` (se quiser, cite "nota ${fmtNota(lead.rating)}, ${lead.total_avaliacoes} avaliações", exatamente assim)` : ' (NÃO cite nota nem avaliações)')
     + ' — e termine com UMA pergunta direta de sim ou não.'
   : 'Toque 3 (último contato): encerramento educado e curto. Deixe claro que é a última mensagem e que, se não fizer sentido agora, sem problema. Não peça nada novo.';
-const system = `Você escreve, em nome de ${pessoa}, da Novax (novax.ia.br), uma resposta curta na MESMA conversa de e-mail com uma pequena empresa que ainda não respondeu. ${CONFIG.oferta}
+// 05/11: loja/varejo pelo tipo do Google → produtos, catálogo e WhatsApp; nada de serviços nem agendamento.
+const varejo = ehVarejo(lead);
+const system = `Você escreve, em nome de ${pessoa}, da Novax (novax.ia.br), uma resposta curta na MESMA conversa de e-mail com uma pequena empresa que ainda não respondeu. ${varejo ? CONFIG.ofertaVarejo : CONFIG.oferta}
+${varejo ? 'Esta empresa é uma LOJA: fale de produtos, catálogo e WhatsApp para dúvidas e pedidos. NÃO fale de serviços, agendamento, consultas nem reservas.\n' : ''}
 Responda SOMENTE com um objeto JSON válido — sem markdown, sem texto antes ou depois — exatamente neste formato:
 {"corpo": "..."}
 

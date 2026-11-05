@@ -68,6 +68,7 @@
     }
   },
   "oferta": "A Novax cria sites simples para pequenas empresas, com atendimento automático por IA (recepcionista digital que responde clientes pelo WhatsApp e agenda horários 24h).",
+  "ofertaVarejo": "A Novax cria sites simples para pequenas lojas, com as categorias de produtos (catálogo), endereço e horário, e atendimento automático por IA no WhatsApp, que responde dúvidas e recebe pedidos 24h.",
   "assuntoFormatos": [
     "Uma ideia para {nome}",
     "Pergunta rápida sobre {nome}",
