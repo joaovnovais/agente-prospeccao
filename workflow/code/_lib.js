@@ -369,10 +369,16 @@ const TIPO_VAREJO_RE = /\b(loja|agropecu|pet ?shop|material de constru|ferrag|me
 // Tipo de serviço do Google ao lado do de loja (pet shop com pet_care/veterinary_care = banho e tosa ou veterinário):
 // aí o serviço existe segundo o Google e falar dele não é presumir. O tipo genérico "service" não conta.
 const TIPOS_SERVICO_RE = /^(pet_care|veterinary_care|beauty_salon|hair_care|spa|car_repair|car_wash|dentist|doctor|physiotherapist|gym|lawyer|accounting|school|driving_school)$/;
+// Nichos de serviço: um tipo "Loja"/"store" genérico (sem *_store específico) não basta para tratar como loja
+// (amostra de 05/11: escritório de contabilidade e salão marcados só como "Loja" no Google).
+const NICHOS_SERVICO = new Set(['odontologia_estetica', 'advocacia', 'estetica_harmonizacao', 'oficina_mecanica', 'salao_barbearia',
+  'academia_pilates', 'contabilidade', 'imobiliaria', 'autoescola', 'escola_idiomas', 'fisioterapia', 'dedetizadora']);
 function ehVarejo(lead) {
   const tipo = String(lead.tipo_google || '');
-  if (TIPO_SERVICO_RE.test(tipo)) return false;
-  if ((lead.tipos_google || []).some((t) => TIPOS_SERVICO_RE.test(String(t)))) return false;
+  const tipos = (lead.tipos_google || []).map(String);
+  if (TIPO_SERVICO_RE.test(tipo) || TIPO_SERVICO_RE.test(String(lead.nome || ''))) return false;
+  if (tipos.some((t) => TIPOS_SERVICO_RE.test(t))) return false;
+  if (NICHOS_SERVICO.has(lead.nicho) && !tipos.some((t) => /_store$|^supermarket$|^pharmacy$/.test(t))) return false;
   if ((lead.tipos_google || []).some((t) => TIPOS_VAREJO_RE.test(String(t))) || TIPO_VAREJO_RE.test(tipo)) return true;
   // Sem tipo do Google (leads antigos): o nicho da busca decide.
   return !tipo && !(lead.tipos_google || []).length && ['varejo_local', 'material_construcao'].includes(lead.nicho);
