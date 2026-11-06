@@ -63,7 +63,7 @@ ok(!/É uma LOJA/.test(pDent) && pDent.includes(CONFIG.oferta) && /Exemplo Advoc
 
 console.log('Follow-up de loja');
 const ant = [real];
-const fu = 'Volto ao assunto porque o perfil da Bichoverde Agropecuária no Google continua sem site, e quem procura um produto não vê o que a loja tem. Você quer que eu mande um exemplo de catálogo com WhatsApp?';
+const fu = 'Pense em quem procura ração à noite: com um catálogo simples, a pessoa vê o que a Bichoverde Agropecuária tem e chama no WhatsApp para perguntar o preço. Você quer que eu mande um exemplo de catálogo com WhatsApp?';
 ok(lib.checarCorpoFollowup(fu, loja, 2, ant).length === 0, 'toque 2 de loja com produtos passa');
 ok(/presume serviço/.test(lib.checarCorpoFollowup(fu.replace('um exemplo de catálogo com WhatsApp', 'um exemplo com agendamento online'), loja, 2, ant).join()), 'toque 2 de loja com agendamento reprova');
 const fu3 = 'Esta é a minha última mensagem sobre o site da Bichoverde Agropecuária. Se não fizer sentido agora, sem problema, e fico à disposição se mudar de ideia.';

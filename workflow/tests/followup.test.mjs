@@ -103,14 +103,15 @@ console.log('Validador do texto');
 {
   const L = lead('A');
   const ant = ['Olá! Sou o João, da Novax. Pesquisei oficinas mecânicas em Vila Exemplo no Google e o perfil apareceu sem site.'];
-  const bom2 = 'Volto ao assunto porque o perfil da Oficina Aurora no Google continua sem site, e quem procura o endereço ou quer ver os serviços não tem para onde ir. Você quer que eu mande um exemplo de como ficaria?';
+  // 06/11: o toque 2 traz um ângulo novo (exemplo do dia a dia) em vez de repetir "perfil no Google sem site".
+  const bom2 = 'Imagine um cliente com o carro fazendo barulho às 21h: ele manda o modelo pelo WhatsApp, recebe resposta na hora e já combina o dia de levar o carro na Oficina Aurora. Posso te mandar um exemplo de como ficaria?';
   ok(lib.checarCorpoFollowup(bom2, L, 2, ant).length === 0, 'toque 2 correto passa');
   const bom3 = 'Esta é a minha última mensagem sobre o site da Oficina Aurora. Se não fizer sentido agora, sem problema, e fico à disposição se mudar de ideia.';
   ok(lib.checarCorpoFollowup(bom3, L, 3, ant).length === 0, 'toque 3 correto passa');
   const err = (t, toque = 2) => lib.checarCorpoFollowup(t, L, toque, ant).join(' | ');
   ok(/repete o e-mail anterior/.test(err('Pesquisei oficinas mecânicas em Vila Exemplo no Google e o perfil apareceu sem site. Posso te mandar um exemplo?')), 'repetir 6 palavras seguidas do toque anterior → reprovado');
   ok(/urgência falsa/.test(err('Última chance: o perfil da Oficina Aurora no Google segue sem site e temos vagas limitadas este mês. Quer conversar?')), 'urgência falsa → reprovado');
-  ok(/sem o fato verificável/.test(err('Volto ao assunto do site da Oficina Aurora, que ainda não existe para quem procura vocês na cidade. Você quer ver um exemplo?')), 'toque 2 sem o fato do Google → reprovado');
+  ok(/repete o argumento do 1º e-mail/.test(err('Volto ao assunto porque a Oficina Aurora continua sem site, e quem procura o endereço não tem para onde ir. Você quer ver um exemplo?')), 'toque 2 que repete "sem site" → reprovado (06/11)');
   ok(/pergunta direta/.test(err('O perfil da Oficina Aurora no Google segue sem site, então quem procura o endereço não acha os serviços. Fico no aguardo.')), 'toque 2 sem pergunta no fim → reprovado');
   ok(/encerramento educado/.test(err('Escrevo de novo sobre o site da Oficina Aurora no Google, que ainda não tem endereço nem serviços. Posso mandar um exemplo?', 3)), 'toque 3 sem encerramento educado → reprovado');
   ok(/se apresenta de novo/.test(err('Olá! Sou o João, da Novax, e volto ao perfil da Oficina Aurora no Google, ainda sem site e sem serviços. Quer ver um exemplo?')), 'apresentar-se de novo → reprovado');

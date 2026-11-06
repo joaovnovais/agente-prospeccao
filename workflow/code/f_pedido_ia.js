@@ -8,15 +8,22 @@ const F = CONFIG.followup;
 const plural = nomeSugerePlural(lead.nome);
 const nomeTxt = nomeCurtoAssunto(lead);
 const citaNota = lead.rating != null && lead.total_avaliacoes != null && lead.total_avaliacoes >= CONFIG.minAvaliacoesParaCitarNota;
-const angulo = it.toque === 2
-  ? `Toque 2 (o primeiro e-mail não teve resposta): lembre o fato verificável — o perfil de ${nomeTxt} no Google aparece sem site`
-    + (citaNota ? ` (se quiser, cite "nota ${fmtNota(lead.rating)}, ${lead.total_avaliacoes} avaliações", exatamente assim)` : ' (NÃO cite nota nem avaliações)')
-    + ' — e termine com UMA pergunta direta de sim ou não.'
-  : 'Toque 3 (último contato): encerramento educado e curto. Deixe claro que é a última mensagem e que, se não fizer sentido agora, sem problema. Não peça nada novo.';
 // 05/11: loja/varejo pelo tipo do Google → produtos, catálogo e WhatsApp; nada de serviços nem agendamento.
 const varejo = ehVarejo(lead);
+// 06/11 (João, sombra de 06/11): o toque 2 repetia o 1º e-mail ("Notei que o perfil … aparece sem site … sim ou não?").
+// Agora: ângulo novo (um exemplo concreto do dia a dia daquele tipo de negócio), abertura variada por lead,
+// nota só como "nota X com N avaliações", e pergunta aberta (nunca "sim ou não").
+const exemplo = toque2Exemplo(lead, varejo);
+const abertura = toque2Abertura(lead);
+const angulo = it.toque === 2
+  ? `Toque 2 (o primeiro e-mail não teve resposta). O primeiro e-mail já disse que o perfil no Google aparece sem site: NÃO repita isso (nada de "sem site", "perfil no Google", "notei", "vi que").
+Traga um ângulo NOVO: um benefício concreto para este tipo de negócio, contado como uma situação do dia a dia. Ideia para adaptar ao tipo "${lead.tipo_google || 'não informado'}": ${exemplo}
+Abertura: ${abertura}`
+    + (citaNota ? `\nSe citar a avaliação, escreva exatamente "nota ${fmtNota(lead.rating)} com ${lead.total_avaliacoes} avaliações" (não é obrigatório).` : '\nNÃO cite nota nem avaliações.')
+    + '\nTermine com UMA pergunta curta e aberta, oferecendo mandar um exemplo ou explicar como funcionaria. Nunca escreva "sim ou não".'
+  : 'Toque 3 (último contato): encerramento educado e curto. Deixe claro que é a última mensagem e que, se não fizer sentido agora, sem problema. Não peça nada novo. Nunca escreva "sim ou não".';
 const system = `Você escreve, em nome de ${pessoa}, da Novax (novax.ia.br), uma resposta curta na MESMA conversa de e-mail com uma pequena empresa que ainda não respondeu. ${varejo ? CONFIG.ofertaVarejo : CONFIG.oferta}
-${varejo ? 'Esta empresa é uma LOJA: fale de produtos, catálogo e WhatsApp para dúvidas e pedidos. NÃO fale de serviços, agendamento, consultas nem reservas.\n' : ''}
+${varejo ? 'Esta empresa é uma LOJA: fale de produtos, catálogo e WhatsApp para dúvidas e pedidos. NÃO fale de serviços, agendamento, consultas, reservas nem "atendimento" (diga "resposta automática").\n' : ''}
 Responda SOMENTE com um objeto JSON válido — sem markdown, sem texto antes ou depois — exatamente neste formato:
 {"corpo": "..."}
 

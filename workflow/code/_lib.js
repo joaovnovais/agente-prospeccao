@@ -497,6 +497,33 @@ function tetoFollowupDia(estagio, limite, enviadosHoje, hoje) {
 }
 const URGENCIA_RE = /(últim[ao]s?\s+(chance|dias|vagas|oportunidade)|vagas?\s+limitad|s[óo]\s+hoje|somente\s+hoje|urgente|corr[ae]\b|n[ãa]o\s+perca|tempo\s+limitado|prazo\s+final|promo[çc][ãa]o|desconto|oferta\s+especial)/i;
 // Validador do texto do follow-up (2 a 4 frases). Repete as regras de fato/elogio/acento do primeiro e-mail.
+// 06/11 — toque 2 com ângulo novo: um exemplo do dia a dia por tipo de negócio e abertura variada (fixa por lead).
+function toque2Exemplo(lead, varejo) {
+  const t = norm([lead.tipo_google, ...(lead.tipos_google || []), lead.nicho].filter(Boolean).join(' '));
+  if (varejo) return 'quem procura um produto à noite ou no fim de semana vê as categorias da loja e chama no WhatsApp para saber se tem e quanto custa; a resposta automática no WhatsApp informa na hora e já recebe o pedido, mesmo com a loja fechada.';
+  if (/car_repair|mecanic|oficina|auto ?center|funilaria|car_wash/.test(t)) return 'o cliente com o carro com problema manda no WhatsApp o modelo e o que está acontecendo, recebe resposta na hora (mesmo fora do expediente) e já combina o dia de levar o carro.';
+  if (/dentist|odonto|clinic|consultorio|fisioter|estetic|beauty|salao|barbear|hair|spa/.test(t)) return 'quem procura à noite pergunta pelo WhatsApp sobre valores e horários livres, recebe resposta na hora e já deixa o horário marcado, sem esperar o expediente.';
+  if (/lawyer|advoc|advogad|accounting|contab|imobili/.test(t)) return 'quem chega com uma dúvida fora do expediente recebe pelo WhatsApp uma primeira orientação e a lista de documentos, e o escritório já recebe o contato organizado.';
+  if (/gym|academia|pilates|school|escola|autoescola|idioma/.test(t)) return 'quem quer começar pergunta pelo WhatsApp sobre planos e horários das turmas, recebe resposta na hora e já agenda uma aula experimental.';
+  if (/pet_care|veterin|pet/.test(t)) return 'o tutor pergunta pelo WhatsApp, à noite, sobre horários e valores, recebe resposta na hora e já deixa o atendimento marcado.';
+  return 'o cliente que encontra a empresa fora do expediente tira as dúvidas pelo WhatsApp e recebe resposta na hora, em vez de procurar o concorrente.';
+}
+const TOQUE2_ABERTURAS = [
+  'comece direto pela situação do dia a dia (por exemplo "Imagine um cliente que…" ou "Pense em quem…").',
+  'comece retomando o assunto em poucas palavras (por exemplo "Complementando a minha mensagem," ou "Voltando ao assunto,").',
+  'comece pelo benefício concreto, numa frase afirmativa sobre o que o cliente consegue fazer.',
+  'comece com uma pergunta curta sobre o dia a dia (por exemplo como chegam as dúvidas fora do horário).',
+];
+function toque2Abertura(lead) {
+  const id = String(lead.id || lead.nome || '');
+  let h = 0; for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return TOQUE2_ABERTURAS[h % TOQUE2_ABERTURAS.length];
+}
+// Regras do João (06/11) para o follow-up.
+const SIM_OU_NAO_RE = /\bsim ou n[ãa]o\b/i;
+const NOTA_VIRGULA_RE = /\bnota \d+(?:[.,]\d)?\s*,\s*\d+ avalia/i;
+const ABERTURA_REPETIDA_RE = /^\s*(ol[áa][!,.]?\s*)?(notei|vi que|reparei|percebi|o perfil)(?!\p{L})/iu;
+const REPETE_SEM_SITE_RE = /sem site|perfil (d[aeo] .{1,60} )?no google/i;
 function checarCorpoFollowup(corpo, lead, toque, anteriores = []) {
   const F = CONFIG.followup;
   const erros = [];
@@ -521,8 +548,11 @@ function checarCorpoFollowup(corpo, lead, toque, anteriores = []) {
   const ant = new Set(anteriores.flatMap((a) => [...janelas(a)]));
   const rep = [...janelas(c)].find((j) => ant.has(j));
   if (rep) erros.push(`repete o e-mail anterior ("${rep}")`);
+  if (SIM_OU_NAO_RE.test(c)) erros.push('com "sim ou não"');
+  if (NOTA_VIRGULA_RE.test(c)) erros.push('cita a nota como "nota X, N avaliações" (use "nota X com N avaliações")');
   if (toque === 2) {
-    if (!/google/i.test(c)) erros.push('toque 2 sem o fato verificável do Google (perfil no Google sem site)');
+    if (REPETE_SEM_SITE_RE.test(c)) erros.push('toque 2 repete o argumento do 1º e-mail (perfil no Google sem site)');
+    if (ABERTURA_REPETIDA_RE.test(c)) erros.push('toque 2 abre com "Notei que"/"Vi que"/"O perfil" (varie a abertura)');
     if (!/\?\s*$/.test(c)) erros.push('toque 2 não termina com pergunta direta');
   } else if (toque === 3) {
     if (!/(sem problema|tudo bem|fique? à vontade|fica à vontade|não (vou|volto a) insistir|não faz(er)? sentido)/i.test(c)) erros.push('toque 3 sem o encerramento educado');
