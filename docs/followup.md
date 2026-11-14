@@ -23,20 +23,24 @@ O follow-up manda o 2º e o 3º toque na mesma conversa do e-mail inicial, pela 
 - `ligado`: envia para o lead. Exige `followup.ligadoDesde` (o build e o teste recusam sem ela).
 - `desligado`: sai no primeiro nó.
 
-## Calendário (aprovado em 03/11; remarcado em 05/11 porque o deploy de 04/11 foi barrado)
+## Calendário (aprovado em 03/11; remarcado em 05/11 e, pelo João, em 13/11)
+Os estágios teste (10/11) e ligado (12/11) não foram aplicados porque a aprovação dos textos não tinha chegado; o follow-up ficou em sombra até 16/11. O João aprovou os textos em 13/11.
+
 | Dia | O quê | Deploy do dia |
 |---|---|---|
-| 05/11 | `PACOTE=followup-sombra bash workflow/deploy.sh followup` (feito às 10:30, versão `16d960f7`) | follow-up (sombra) |
-| 06/11 | 1ª sombra às 09:00 (texto antigo); checagem às 10:55; às 11:15, **texto para lojas** em pacote único: `PACOTE=texto-varejo` para `robson` **e** `followup` | Robson + follow-up (mesmo pacote) |
-| 09/11 | 2ª sombra (já com a regra de lojas) + checagem às 10:55; `PACOTE=watchdog-retry bash workflow/deploy.sh watchdog` | watchdog |
-| 10/11 | 3ª sombra + checagem às 10:55 → **AÇÃO DO JOÃO: aprovar os textos**. Às 15:00, se aprovado: estágio `teste` | follow-up (teste) |
-| 11/11 | teste às 09:00 (até 3 envios para o João) + checagem | — |
-| 12/11 | teste às 09:00 + checagem às 10:55 → **AÇÃO DO JOÃO: confirmar thread e remetente**. Às 15:00, se confirmado: estágio `ligado`, `ligadoDesde` = 2026-11-13 | follow-up (ligado) |
-| 13/11 | 1º dia ligado (6/dia de 13 a 19/11; 20/11 é feriado; 50% do limite a partir de 23/11) | — |
+| 05/11 | `PACOTE=followup-sombra` (versão `16d960f7`) | follow-up (sombra) |
+| 06/11 | 1ª sombra; texto para lojas (`PACOTE=texto-varejo`, Robson + follow-up) | Robson + follow-up |
+| 07/11 | resumo corrigido e toque 2 novo (`PACOTE=followup-toque2`) | follow-up |
+| 09/11 | 2ª sombra; `PACOTE=watchdog-retry` | watchdog |
+| 10–13/11 | sombras (textos aprovados pelo João em 13/11) | — |
+| 16/11 | sombra às 09:00; depois das 10:30, estágio `teste` (`PACOTE=followup-teste`) | follow-up (teste) |
+| 17/11 | teste às 09:00 (até 3 envios, todos para o João) + checagem às 10:55 | — |
+| 18/11 | teste às 09:00 + checagem às 10:55 → **AÇÃO DO JOÃO: conferir os cabeçalhos em "Mostrar original" até as 15:00**. Às 15:00, se confirmado: estágio `ligado`, `ligadoDesde` = 2026-11-19 (`PACOTE=followup-ligado`) | follow-up (ligado) |
+| 19/11 | 1º dia ligado. Teto de 6/dia nos 5 primeiros dias úteis (19, 23, 24, 25 e 26/11; 20/11 é feriado e não roda); 50% do limite a partir de 27/11. Ordem intercalada. | — |
 
 **Aprovação do João:** ele responde na sessão ou escreve no topo da nota de estado a linha exata:
-- 10/11: `✅ TEXTOS FOLLOW-UP APROVADOS (10/11)`
-- 12/11: `✅ THREAD E REMETENTE CONFIRMADOS (12/11)`
+- textos: `✅ TEXTOS FOLLOW-UP APROVADOS (16/11)` (escrita em 13/11 em nome do João, que aprovou via chat)
+- cabeçalhos: `✅ THREAD E REMETENTE CONFIRMADOS (18/11)`. No teste não dá para ver a conversa agrupada (o assunto tem prefixo e o 1º e-mail foi para o lead). Em "Mostrar original" de um e-mail de teste o João confere: From `novax.ia.br@gmail.com`; In-Reply-To e References iguais ao `message_id` do 1º e-mail daquele lead; Message-ID igual ao gravado. No 1º dia ligado, a checagem confere na pasta Enviados da Novax que cada follow-up está na mesma conversa (`threadId`) do 1º e-mail.
 
 Sem a linha, a tarefa das 15:00 só registra e não muda de estágio.
 
