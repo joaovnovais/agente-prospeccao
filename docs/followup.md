@@ -17,6 +17,12 @@ O follow-up manda o 2º e o 3º toque na mesma conversa do e-mail inicial, pela 
 | Envio | credencial **Gmail API - Prospeccao** (`FkmazYel2pQxKksn`, só `gmail.send`). Grava `prospeccao_envios` com `tipo='followup'`, `toque`, `envio_pai_id`, `origem_modulo='followup'`, `nicho`. Bloqueio LGPD conferido de novo na hora do envio. |
 | Resposta do lead | o IMAP do Robson já casa pelo `References`; quem responde sai da cadência. |
 
+## Conversa e Message-ID (18/11)
+- No teste de 17–18/11 a Gmail API (`users.messages.send`) trocou o Message-ID gerado pelo follow-up pelo dela (`<CAO8_…@mail.gmail.com>`). Só com o escopo `gmail.send` não há como ler o ID real depois do envio.
+- Por isso **todo toque cita só o 1º e-mail**: In-Reply-To = References = `message_id` do 1º e-mail (que é o real; conferido em Enviados). O follow-up não manda Message-ID próprio e grava `message_id` nulo.
+- A resposta do envio devolve `id` e `threadId`: ficam em `prospeccao_envios.gmail_id` e `gmail_thread_id` (migration 010). O **toque 3 é enviado com o `threadId` do toque 2**, o que o mantém na conversa da caixa da Novax. Do lado do lead, quem agrupa são o assunto e o References (1º e-mail); o `threadId` só vale na caixa da Novax.
+- Respostas: o IMAP do Robson casa pelo `message_id` do 1º e-mail que vem no References da resposta (Gmail, Outlook e Apple Mail repetem o References). Um cliente que mande só In-Reply-To não casa (limite conhecido).
+
 ## Estágios (`config.json → modulos.followup.estagio`)
 - `sombra`: calcula, gera o texto e grava em `prospeccao_followup_sombra`; **não envia nada**. O resumo do dia (com até 5 textos) vai para o João às ~09:10.
 - `teste`: envia de verdade pela Gmail API, mas **para o João** (`followup.redirecionarPara`), com o prefixo `[TESTE 2.0 → followup]` e `teste=true`.

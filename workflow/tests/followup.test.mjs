@@ -64,7 +64,9 @@ console.log('Toque 3 e fim da cadência');
   const r = eleg(base, '2026-11-11');
   const b = so(r, 'B');
   ok(b?.toque === 3 && b.pai.id === 't2-2026-11-05', 'toque 1 há ≥7 dias úteis e toque 2 há 4 → toque 3, respondendo ao toque 2');
-  ok(JSON.stringify(b.references) === JSON.stringify(['<B-2026-11-02@gmail.com>', '<t2-2026-11-05@gmail.com>']), 'References = toque 1 + toque 2');
+  // 18/11: o Message-ID gravado do toque 2 não é o que o Gmail enviou; o toque 3 cita só o 1º e-mail.
+  ok(JSON.stringify(b.references) === JSON.stringify(['<B-2026-11-02@gmail.com>']) && b.inReplyTo === '<B-2026-11-02@gmail.com>',
+    'toque 3: In-Reply-To = References = 1º e-mail (18/11)');
   ok(!so(eleg(base, '2026-11-10'), 'B'), 'toque 2 há só 3 dias úteis → toque 3 espera (mínimo 4)');
   ok(!so(eleg([envio('B', '2026-11-04'), t2('2026-11-05')], '2026-11-11'), 'B'), 'toque 1 há menos de 7 dias úteis → toque 3 espera');
   ok(!so(eleg([...base, t2('2026-11-11', { id: 't3' })], '2026-11-20'), 'B'), '3 toques feitos → nunca mais');
@@ -143,7 +145,7 @@ console.log('Nós do módulo');
   const t = montar('teste'), l = montar('ligado'), s = montar('sombra');
   ok(t.destino === CONFIG.followup.redirecionarPara && t.assunto === CONFIG.followup.prefixoTeste + 'Re: Uma ideia para Oficina Aurora', 'teste: vai para o João, com o prefixo [TESTE 2.0 → followup]');
   ok(l.destino === 'oficinaauroraficticia@gmail.com' && l.assunto === 'Re: Uma ideia para Oficina Aurora', 'ligado: vai para o lead, "Re: <assunto original>"');
-  ok(s.sombra === true && /^<[0-9a-f-]{36}@gmail\.com>$/.test(l.messageId), 'sombra marcada; Message-ID no formato dos envios (<uuid@gmail.com>)');
+  ok(s.sombra === true && l.messageId === undefined, 'sombra marcada; sem Message-ID próprio (o Gmail gera o dele, 18/11)');
   ok(l.texto.includes('responda com a palavra SAIR'), 'mesmo rodapé LGPD (SAIR)');
   const reg = (j, o = {}) => rodar('f_registro.js', { input: [{ json: j }], nodes: { 'FU: loop': [{ json: { ...it, estagio: 'ligado', ...o } }] } })[0].json;
   ok(reg({ sombra: true, corpoIA: 'x' }, { estagio: 'sombra' }).registro.corpo === 'x', 'sombra: registro guarda o texto (sem rodapé)');
@@ -153,9 +155,10 @@ console.log('Nós do módulo');
   ok(reg({ ok: false, erro: 'x' }, { estagio: 'sombra' }).trello === null, 'na sombra, falha não abre card');
   ok(reg({ bloqueado: true }).trello === null && reg({ bloqueado: true }).registro.erro === 'contato bloqueado na hora do envio', 'bloqueio na hora: registra, sem card');
   const res = rodar('f_resultado.js', { input: [{ json: { statusCode: 200, body: { id: 'gm1', threadId: 'th' } } }],
-    nodes: { 'FU: loop': [{ json: { ...it, estagio: 'teste' } }], 'FU: pode enviar?': [{ json: { assunto: 'Re: x', texto: 'y', messageId: '<m@gmail.com>' } }] } })[0].json;
+    nodes: { 'FU: loop': [{ json: { ...it, estagio: 'teste' } }], 'FU: pode enviar?': [{ json: { assunto: 'Re: x', texto: 'y' } }] } })[0].json;
   ok(res.ok && res.envio.tipo === 'followup' && res.envio.toque === 2 && res.envio.envio_pai_id === it.pai.id && res.envio.origem_modulo === 'followup'
-     && res.envio.teste === true && res.envio.message_id === '<m@gmail.com>', 'envio gravado: tipo followup, toque, envio_pai_id, origem_modulo, teste');
+     && res.envio.teste === true && res.envio.message_id === null && res.envio.gmail_id === 'gm1' && res.envio.gmail_thread_id === 'th',
+     'envio gravado: tipo, toque, envio_pai_id, origem_modulo, teste; message_id nulo, gmail_id e gmail_thread_id da resposta (18/11)');
   const erro = rodar('f_resultado.js', { input: [{ json: { statusCode: 403, body: { error: { message: 'insufficient' } } } }],
     nodes: { 'FU: loop': [{ json: { ...it, estagio: 'ligado' } }], 'FU: pode enviar?': [{ json: {} }] } })[0].json;
   ok(!erro.ok && erro.envio.status === 'erro' && /gmail 403/.test(erro.envio.erro), 'falha da Gmail API → envio com status erro');
@@ -182,7 +185,8 @@ console.log('Estrutura do workflow');
   ok(no('Diário - Follow-up').parameters.rule.interval[0].expression === '0 9 * * 1-5', 'cron 09:00 em dias úteis');
   const g = no('FU: Gmail enviar');
   ok(g.credentials.googleOAuth2Api.id === 'FkmazYel2pQxKksn' && /gmail\.googleapis\.com\/gmail\/v1\/users\/me\/messages\/send$/.test(g.parameters.url)
-     && g.parameters.jsonBody === '={{ JSON.stringify({ raw: $json.raw }) }}', 'envio pela Gmail API (raw) com a credencial Gmail API - Prospeccao');
+     && g.parameters.jsonBody === '={{ JSON.stringify($json.threadId ? { raw: $json.raw, threadId: $json.threadId } : { raw: $json.raw }) }}',
+     'envio pela Gmail API (raw; threadId quando houver) com a credencial Gmail API - Prospeccao');
   // Caminhos até o Gmail: só por "FU: liberado?" (verdadeiro), que só vem de "FU: sombra?" falso.
   const pais = (n) => Object.entries(w.connections).flatMap(([de, c]) => c.main.flatMap((s, i) => s.filter((x) => x.node === n).map(() => ({ de, i }))));
   ok(JSON.stringify(pais('FU: Gmail enviar')) === JSON.stringify([{ de: 'FU: liberado?', i: 0 }]) && saidas('FU: sombra?', 0)[0] === 'FU: registro'

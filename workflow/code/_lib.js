@@ -470,8 +470,13 @@ function elegiveisFollowup(envios, leadsComResposta, hoje) {
       toque = 3;
     }
     const pai = fus.length ? fus[fus.length - 1] : inicial;
-    escolhidos.push({ lead: { ...lead, id: leadId }, contato, toque, du1, du2, inicial, pai,
-      references: [inicial.message_id, ...fus.map((f) => f.message_id)].filter(Boolean),
+    // 18/11: a Gmail API troca o Message-ID do follow-up pelo dela e, só com gmail.send, não há como ler o real.
+    // Por isso todo toque cita só o 1º e-mail (In-Reply-To = References = message_id do 1º e-mail, que é o real,
+    // conferido em Enviados) e o toque 3 vai no threadId da Novax devolvido no envio do toque 2 (gmail_thread_id).
+    const threadId = [...fus].reverse().map((f) => f.gmail_thread_id).find(Boolean) || null;
+    escolhidos.push({ lead: { ...lead, id: leadId }, contato, toque, du1, du2, inicial, pai, threadId,
+      inReplyTo: inicial.message_id,
+      references: [inicial.message_id],
       anteriores: [inicial.corpo, ...fus.map((f) => f.corpo)].filter(Boolean) });
   }
   // Ordem intercalada (decisão do João, 03/11): um toque 2, um toque 3, alternando; o que sobrar de um tipo vai no fim.
@@ -567,7 +572,8 @@ const uuidV4 = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (ch
   return (ch === 'x' ? r : (r % 4) + 8).toString(16);
 });
 // E-mail RFC 2822 (multipart/alternative, UTF-8) em base64url para a Gmail API (users.messages.send, campo "raw").
-// Mesma conversa: In-Reply-To = Message-ID do toque anterior; References = todos os Message-ID da conversa.
+// Mesma conversa: In-Reply-To e References = Message-ID do 1º e-mail (o único Message-ID real que temos; ver 18/11).
+// Sem messageId, o cabeçalho Message-ID fica de fora e o Gmail gera o dele (ele trocaria o nosso de qualquer forma).
 const b64 = (s) => Buffer.from(String(s), 'utf8').toString('base64');
 const cabecalhoUtf8 = (s) => (/^[\x20-\x7e]*$/.test(s) ? s : `=?UTF-8?B?${b64(s)}?=`);
 function emailRaw({ de, para, assunto, inReplyTo, references, messageId, texto, html }) {
@@ -575,7 +581,7 @@ function emailRaw({ de, para, assunto, inReplyTo, references, messageId, texto, 
   const quebra = (s) => b64(s).replace(/.{76}/g, '$&\r\n');
   const linhas = [
     `From: ${de}`, `To: ${para}`, `Reply-To: ${CONFIG.remetente.email}`, `Subject: ${cabecalhoUtf8(assunto)}`,
-    `Date: ${new Date().toUTCString().replace('GMT', '+0000')}`, `Message-ID: ${messageId}`,
+    `Date: ${new Date().toUTCString().replace('GMT', '+0000')}`, ...(messageId ? [`Message-ID: ${messageId}`] : []),
     ...(inReplyTo ? [`In-Reply-To: ${inReplyTo}`] : []), ...(references && references.length ? [`References: ${references.join(' ')}`] : []),
     'MIME-Version: 1.0', `Content-Type: multipart/alternative; boundary="${fronteira}"`, '',
     `--${fronteira}`, 'Content-Type: text/plain; charset=UTF-8', 'Content-Transfer-Encoding: base64', '', quebra(texto),

@@ -538,7 +538,7 @@ add('Teste manual (follow-up)', 'n8n-nodes-base.manualTrigger', 1, {}, [0, 1]);
 schedule('Diário - Follow-up', '0 9 * * 1-5', [0, 0]);
 code('FU: início', 'f_inicio.js', [1, 0]);
 supa('FU: status envio', [2, 0], { path: '/prospeccao_status_envio?select=*' });
-supa('FU: envios', [3, 0], { path: '/prospeccao_envios?select=id,lead_id,contato_id,tipo,toque,teste,status,enviado_em,message_id,assunto,corpo,resposta_recebida_em,'
+supa('FU: envios', [3, 0], { path: '/prospeccao_envios?select=id,lead_id,contato_id,tipo,toque,teste,status,enviado_em,message_id,gmail_thread_id,assunto,corpo,resposta_recebida_em,'
   + 'lead:prospeccao_leads(id,nome,cidade,estado,nicho,status,rating,total_avaliacoes,tipo_google,tipos_google,retomar_em),'
   + 'contato:prospeccao_contatos(id,email,bloqueado,bloqueado_motivo)&tipo=in.(prospeccao,followup)&status=eq.enviado&order=enviado_em.asc&limit=5000' });
 supa('FU: respostas', [4, 0], { path: '/prospeccao_respostas?select=lead_id&lead_id=not.is.null&limit=5000' });
@@ -564,7 +564,8 @@ supa('FU: checar bloqueio', [19, 0.4], { path: '/prospeccao_contatos', query: { 
 code('FU: pode enviar?', 'f_pode_enviar.js', [20, 0.4]);
 iff('FU: liberado?', '$json.bloqueado !== true', [21, 0.4]);
 http('FU: Gmail enviar', [22, 0.4], { method: 'POST', url: 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
-  cred: 'gmail', credType: 'googleOAuth2Api', soft: true, completa: true, body: '={{ JSON.stringify({ raw: $json.raw }) }}' });
+  cred: 'gmail', credType: 'googleOAuth2Api', soft: true, completa: true,
+  body: '={{ JSON.stringify($json.threadId ? { raw: $json.raw, threadId: $json.threadId } : { raw: $json.raw }) }}' });
 code('FU: resultado', 'f_resultado.js', [23, 0.4]);
 supa('FU: registrar envio', [24, 0.4], { method: 'POST', path: '/prospeccao_envios', body: '={{ JSON.stringify($json.envio) }}' });
 wait('FU: espaçar envios', `={{ ${CONFIG.followup.esperaEntreEnviosSeg[0]} + Math.floor(Math.random() * ${CONFIG.followup.esperaEntreEnviosSeg[1] - CONFIG.followup.esperaEntreEnviosSeg[0]}) }}`, [25, 0.4]);
