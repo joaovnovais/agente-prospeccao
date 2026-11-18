@@ -367,7 +367,7 @@
   "alertaDestino": "joaovictornovais8@gmail.com",
   "modulos": {
     "followup": {
-      "estagio": "teste"
+      "estagio": "ligado"
     },
     "respostasV2": {
       "estagio": "desligado"
@@ -535,7 +535,7 @@
     "tetoTeste": 3,
     "tetoSemana1": 6,
     "fracaoLimite": 0.5,
-    "ligadoDesde": null,
+    "ligadoDesde": "2026-11-19",
     "sombraMaxTextos": 8,
     "sombraTextosNoEmail": 5,
     "pararAs": "09:25",
