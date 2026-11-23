@@ -388,9 +388,15 @@ supa('Gravar resposta bruta', [6.5, 11], { method: 'POST', path: '/prospeccao_re
   prefer: 'resolution=ignore-duplicates,return=minimal',
   body: `={{ JSON.stringify({ message_id: ${CTX}.resposta.message_id, in_reply_to: ${CTX}.resposta.in_reply_to, references_raw: ${CTX}.resposta.references_raw,
     remetente: ${CTX}.resposta.from, assunto: ${CTX}.resposta.assunto, corpo_texto: ${CTX}.resposta.texto, recebido_em: ${CTX}.resposta.recebido_em,
-    envio_id: ${CTX}.envio.id, lead_id: ${CTX}.lead.id, teste: !!${CTX}.envio.teste, acao_v1: ${CTX}.acao === 'optout' ? 'optout' : 'pendente' }) }}` });
+    envio_id: ${CTX}.envio.id, lead_id: ${CTX}.lead.id, teste: !!${CTX}.envio.teste,
+    acao_v1: ${CTX}.acao === 'optout' ? 'optout' : ${CTX}.acao === 'bounce' ? 'bounce' : 'pendente' }) }}` });
 supa('Registrar resposta no envio', [7, 12], { method: 'PATCH', path: `/prospeccao_envios?id=eq.{{ ${CTX}.envio.id }}`,
   body: `={{ JSON.stringify(${CTX}.resposta_patch) }}` });
+// 23/11: bounce (aviso de não entrega) → contato inválido e bloqueado, lead sai do follow-up; sem IA, sem card, sem aviso.
+iff('É bounce?', `$('Contexto da resposta').first().json.acao === 'bounce'`, [7.5, 13]);
+code('Dados bounce', 'c_bounce.js', [8, 17]);
+supa('Marcar bounce', [9, 17], { method: 'POST', path: '/prospeccao_contatos?on_conflict=email',
+  prefer: 'resolution=merge-duplicates,return=representation', body: '={{ JSON.stringify($json.rows) }}' });
 iff('É descadastro?', `$('Contexto da resposta').first().json.acao === 'optout'`, [8, 12]);
 // respostas.motor = "v2": o v1 só grava (o módulo prspRespostas02 decide). SAIR continua imediato no v1 (LGPD).
 iff('Motor v1?', `${MOTOR_V1} === true`, [8.5, 13]);
@@ -435,7 +441,7 @@ code('Montar proposta de horários', 'c_horarios.js', [19, 14]);
 iff('Calendar ok? (proposta)', '$json.calendario_falhou !== true', [19.5, 15]);
 smtp('Enviar proposta (SMTP)', 'Montar proposta de horários', [20, 14]);
 code('Resultado proposta', 'c_resultado_resposta.js', [21, 14], `const MODO = 'proposta';`);
-code('Saída (C)', '_saida.js', [0, 20], `const ORIGEM_FALLBACK = 'Dados bloqueio';`);
+code('Saída (C)', '_saida.js', [0, 20], `const ORIGEM_FALLBACK = ['Dados bloqueio', 'Dados bounce'];`);
 
 chain('Gmail IMAP - respostas', 'Loop respostas');
 link('Resposta simulada', 'Loop respostas');
@@ -445,7 +451,9 @@ link('É resposta do agente?', 'Buscar envio original', 0); link('É resposta do
 chain('Buscar envio original', 'Contexto da resposta', 'Ignorar? (C)');
 link('Ignorar? (C)', 'Loop respostas', 0); link('Ignorar? (C)', 'Gravar resposta bruta', 1);
 chain('Gravar resposta bruta', 'Registrar resposta no envio');
-chain('Registrar resposta no envio', 'É descadastro?');
+chain('Registrar resposta no envio', 'É bounce?');
+link('É bounce?', 'Dados bounce', 0); link('É bounce?', 'É descadastro?', 1);
+chain('Dados bounce', 'Marcar bounce', 'Saída (C)');
 link('É descadastro?', 'Dados bloqueio', 0); link('É descadastro?', 'Motor v1?', 1);
 link('Motor v1?', 'Pedido IA - qualificação', 0); link('Motor v1?', 'Motor v2: só registra', 1); link('Motor v2: só registra', 'Loop respostas');
 chain('Pedido IA - qualificação', 'Reservar cota IA (resposta)', 'Cota IA ok? (resposta)');
@@ -511,7 +519,8 @@ supa('W: envios hoje', [3, 0], { path: `/prospeccao_envios?select=tipo,status,te
 supa('W: verificados hoje', [4, 0], { path: `/prospeccao_leads?select=id&verificacao_codigo_em=gte.{{ ${HOJE}.inicio }}` });
 supa('W: contatos hoje', [5, 0], { path: `/prospeccao_contatos?select=reacher_status&verificado_em=gte.{{ ${HOJE}.inicio }}` });
 supa('W: uso API hoje', [6, 0], { path: `/prospeccao_uso_api?select=servico,chamadas&periodo=eq.{{ ${HOJE}.dia }}` });
-supa('W: respostas hoje', [7, 0], { path: `/prospeccao_envios?select=id&resposta_recebida_em=gte.{{ ${HOJE}.inicio }}` });
+// 23/11: só respostas de leads — sem bounce (aviso de não entrega) e sem teste.
+supa('W: respostas hoje', [7, 0], { path: `/prospeccao_respostas?select=id&teste=is.false&or=(acao_v1.is.null,acao_v1.neq.bounce)&recebido_em=gte.{{ ${HOJE}.inicio }}` });
 supa('W: fila sem verificação', [8, 0], { path: '/prospeccao_leads?select=id&status=eq.novo&verificacao_codigo_em=is.null' });
 supa('W: contatos pendentes', [9, 0], { path: '/prospeccao_leads?select=id,contatos:prospeccao_contatos!inner(id)&status=eq.novo&contatos.reacher_status=eq.safe&contatos.bloqueado=is.false' });
 // Bloco semanal (segundas): view da migration 006. Falha suave: sem a view, o resumo diário sai normalmente.
@@ -541,7 +550,7 @@ supa('FU: status envio', [2, 0], { path: '/prospeccao_status_envio?select=*' });
 supa('FU: envios', [3, 0], { path: '/prospeccao_envios?select=id,lead_id,contato_id,tipo,toque,teste,status,enviado_em,message_id,gmail_thread_id,assunto,corpo,resposta_recebida_em,'
   + 'lead:prospeccao_leads(id,nome,cidade,estado,nicho,status,rating,total_avaliacoes,tipo_google,tipos_google,retomar_em),'
   + 'contato:prospeccao_contatos(id,email,bloqueado,bloqueado_motivo)&tipo=in.(prospeccao,followup)&status=eq.enviado&order=enviado_em.asc&limit=5000' });
-supa('FU: respostas', [4, 0], { path: '/prospeccao_respostas?select=lead_id&lead_id=not.is.null&limit=5000' });
+supa('FU: respostas', [4, 0], { path: '/prospeccao_respostas?select=lead_id&lead_id=not.is.null&or=(acao_v1.is.null,acao_v1.neq.bounce)&limit=5000' });
 code('FU: elegíveis', 'f_elegiveis.js', [5, 0]);
 iff('FU: há elegíveis?', '!$json.vazio', [6, 0]);
 loop('FU: loop', [7, 0]);

@@ -134,7 +134,8 @@ for (const motor of ['v1', 'v2']) {
   const g = no('Gravar resposta bruta');
   ok(g && g.retryOnFail && g.maxTries === 3 && g.onError === 'continueRegularOutput', `[${motor}] gravação com 3 tentativas e sem bloquear o fluxo`);
   ok(saidas('Ignorar? (C)', 1)[0] === 'Gravar resposta bruta' && saidas('Gravar resposta bruta')[0] === 'Registrar resposta no envio'
-     && saidas('Registrar resposta no envio')[0] === 'É descadastro?', `[${motor}] gravação logo após casar o e-mail, antes de qualquer ação`);
+     && saidas('Registrar resposta no envio')[0] === 'É bounce?' && saidas('É bounce?', 1)[0] === 'É descadastro?',
+     `[${motor}] gravação logo após casar o e-mail, antes de qualquer ação (bounce separado antes do SAIR, 23/11)`);
   ok(saidas('É descadastro?', 0)[0] === 'Dados bloqueio', `[${motor}] SAIR continua imediato no v1`);
   ok(saidas('Motor v1?', 0)[0] === 'Pedido IA - qualificação' && saidas('Motor v1?', 1)[0] === 'Motor v2: só registra', `[${motor}] desvio do motor`);
   ok(no('Motor v1?').parameters.conditions.conditions[0].leftValue === `={{ ${motor === 'v1'} === true }}`, `[${motor}] flag embutida no build`);

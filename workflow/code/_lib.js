@@ -590,4 +590,25 @@ function emailRaw({ de, para, assunto, inReplyTo, references, messageId, texto, 
   ];
   return Buffer.from(linhas.join('\r\n'), 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
+// 23/11 — bounce (aviso de não entrega) não é resposta de lead. O Gmail devolve o DSN com os References do e-mail
+// original, então ele casa com o envio como se fosse resposta (23/11 09:02: virou revisão manual, card e aviso).
+// Bounce: remetente mailer-daemon/postmaster; ou assunto de DSN; ou corpo com código 5.x.x / NoSuchUser / "endereço não encontrado".
+const BOUNCE_REMETENTE_RE = /^(mailer-daemon|postmaster)@/i;
+const BOUNCE_ASSUNTO_RE = /delivery status notification|undeliver|delivery (has )?failed|mail delivery (failed|subsystem)|returned mail|failure notice|n[ãa]o (foi poss[ií]vel )?entregue|falha na entrega/i;
+const BOUNCE_CORPO_RE = /\b5\.[0-9]\.[0-9]{1,3}\b|nosuchuser|endere[çc]o n[ãa]o encontrado|address not found|user unknown|mailbox (unavailable|not found)|does not exist/i;
+const BOUNCE_CORPO_FORTE_RE = /\b5\.1\.1\b|nosuchuser/i;
+function ehBounce({ from, assunto, texto }) {
+  if (BOUNCE_REMETENTE_RE.test(String(from || ''))) return true;
+  const a = String(assunto || ''), t = String(texto || '');
+  if (BOUNCE_CORPO_FORTE_RE.test(t)) return true;
+  // Assunto de DSN só conta junto com sinal no corpo: um lead pode escrever "não foi entregue" numa resposta comum.
+  return BOUNCE_ASSUNTO_RE.test(a) && BOUNCE_CORPO_RE.test(t);
+}
+// Código SMTP e endereço que falhou, quando o aviso traz (só para registro).
+function dadosBounce(texto) {
+  const t = String(texto || '');
+  const codigo = (t.match(/\b[45][0-9]{2}[ -]?[45]\.[0-9]\.[0-9]{1,3}\b/) || t.match(/\b5\.[0-9]\.[0-9]{1,3}\b/) || [null])[0];
+  const email = (t.match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i) || [null])[0];
+  return { codigo, email: email ? email.toLowerCase() : null, nosuchuser: /nosuchuser|endere[çc]o n[ãa]o encontrado|address not found|user unknown/i.test(t) };
+}
 // ---- fim da biblioteca ----
